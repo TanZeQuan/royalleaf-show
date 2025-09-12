@@ -8,8 +8,11 @@ import MenuStack from "./stacks/MenuStack";
 import ProfileStack from "./stacks/ProfileStack";
 
 const Tab = createBottomTabNavigator();
+interface RootNavigatorProps {
+  onLogout: () => void;
+}
 
-export default function RootNavigator({ onLogout }: { onLogout: () => void }) {
+export default function RootNavigator({ onLogout }: RootNavigatorProps) {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({

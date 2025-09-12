@@ -1,21 +1,23 @@
+import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { useState } from "react";
 import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
   Alert,
   Dimensions,
   Image,
+  Platform,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { Ionicons } from '@expo/vector-icons';
-import { Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { loginUser } from "../../services/userApi"; //api
 
 interface LoginScreenProps {
   navigation: any;
-  onLogin: (username: string) => void; // ✅ expects a string
+  onLogin: (username: string) => void;
 }
 
 const { width, height } = Dimensions.get("window");
@@ -39,23 +41,23 @@ export default function LoginScreen({ navigation, onLogin }: LoginScreenProps) {
 
     setLoading(true);
     try {
-      // ✅ Test mode: simulate a successful login
-      Alert.alert("Success", "Logged in (test mode)");
-      onLogin(username);
+      // 调用后端登录 API
+      const response = await loginUser({
+        username: username.trim(),
+        passcode: password,
+      });
 
-      // -------------------------------
-      // Real API call (commented out for test mode)
-      // const response = await loginUser({
-      //   username: username,
-      //   passcode: password,
-      // });
+      if (response.success) {
+        // 保存用户信息到 AsyncStorage
+        await AsyncStorage.setItem("user", JSON.stringify(response.data));
 
-      // if (response.success) {
-      //   Alert.alert("Success", response.message);
-      //   onLogin();
-      // } else {
-      //   Alert.alert("Login Failed", response.message || "Invalid credentials.");
-      // }
+        // 更新 app 状态
+        onLogin(username); // 不传参数，保持类型一致
+
+        Alert.alert("Success", response.message || "Logged in successfully!");
+      } else {
+        Alert.alert("Login Failed", response.message || "Invalid credentials.");
+      }
     } catch (error: any) {
       const errorMessage =
         error.response?.data?.message || "Unable to login. Please try again.";
@@ -237,10 +239,9 @@ export default function LoginScreen({ navigation, onLogin }: LoginScreenProps) {
           </View>
 
           {/* Register */}
-          {/* Register / Sign Up */}
           <View style={styles.registerSection}>
             <Text style={styles.registerText}>Don't have an account?</Text>
-            <TouchableOpacity onPress={() => navigation.navigate("Register")}>
+            <TouchableOpacity onPress={navigateToRegister}>
               <Text style={styles.registerLink}>Sign up</Text>
             </TouchableOpacity>
           </View>

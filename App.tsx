@@ -5,6 +5,8 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { NavigationContainer } from "@react-navigation/native";
 import * as Font from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
+import "language/i18n";
+
 
 import store from "store";
 import { fonts } from "styles";

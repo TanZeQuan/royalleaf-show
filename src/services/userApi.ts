@@ -12,7 +12,7 @@ export const registerUser = async (data: {
   address: string;
 }) => {
   try {
-    const response = await api.post("http://192.168.0.241:8090/rl/register", data);
+    const response = await api.post("http://192.168.0.241:8080/rl/register", data);
     return response.data;
   } catch (error: any) {
     console.error("Register error:", error.response?.data || error.message);
@@ -23,7 +23,7 @@ export const registerUser = async (data: {
 // ✅ 登录
 export const loginUser = async (data: { username: string; passcode: string }) => {
   try {
-    const response = await api.post("http://192.168.0.241:8090/rl/login", data);
+    const response = await api.post("http://192.168.0.241:8080/rl/login", data);
     return response.data;
   } catch (error: any) {
     console.error("Login error:", error.response?.data || error.message);
@@ -34,7 +34,7 @@ export const loginUser = async (data: { username: string; passcode: string }) =>
 // ✅ 发送 OTP (忘记密码用)
 export const sendOtp = async (email: string, phone?: string) => {
   try {
-    const response = await api.post("http://192.168.0.241:8090/rl/send_otp", {
+    const response = await api.post("http://192.168.0.241:8080/rl/send_otp", {
       email,
       ...(phone ? { phone } : {}), // phone 可选
     });
@@ -48,7 +48,7 @@ export const sendOtp = async (email: string, phone?: string) => {
 // ✅ 验证 OTP
 export const verifyOtp = async (email: string, otp: string) => {
   try {
-    const response = await api.post("http://192.168.0.241:8090/rl/validate_otp", {
+    const response = await api.post("http://192.168.0.241:8080/rl/validate_otp", {
       email,
       otp,
     });
@@ -63,7 +63,7 @@ export const verifyOtp = async (email: string, otp: string) => {
 export const resetPassword = async (data: { email: string; new_passcode: string }) => {
   try {
     const response = await api.post(
-      "http://192.168.0.241:8090/rl/force_reset_password",
+      "http://192.168.0.241:8080/rl/force_reset_password",
       data
     );
     return response.data;

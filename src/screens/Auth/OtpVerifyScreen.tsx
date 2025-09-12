@@ -1,7 +1,6 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, Alert, StyleSheet, TouchableOpacity, SafeAreaView } from "react-native";
-import { Ionicons } from '@expo/vector-icons';
-import { verifyOtp } from "../../services/registerApi";
+import { Alert, SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { verifyOtp } from "../../services/userApi";
 
 export default function OtpVerificationScreen({ route, navigation }: any) {
   const { email } = route.params; // 从 ForgotPassword 页面传过来的

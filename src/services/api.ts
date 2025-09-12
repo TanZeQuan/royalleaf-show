@@ -5,11 +5,11 @@ import { Platform } from "react-native";
 let baseURL = ""; 
 
 if (Platform.OS === "android") {
-  baseURL = "http://10.0.2.2:8090"; // Android Emulator
+  baseURL = "http://10.0.2.2:8080"; // Android Emulator
 } else if (Platform.OS === "ios") {
-  baseURL = "http://localhost:8090"; // iOS Simulator
+  baseURL = "http://localhost:8080"; // iOS Simulator
 } else {
-  baseURL = "http://192.168.0.241:8090"; // Physical device
+  baseURL = "http://192.168.0.241:8080"; // Physical device
 }
 
 const api = axios.create({

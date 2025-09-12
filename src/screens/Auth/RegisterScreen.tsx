@@ -1,30 +1,30 @@
+import { Ionicons } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
 import React, { useState } from "react";
 import {
-  View,
+  Alert,
+  Dimensions,
+  Image,
+  KeyboardAvoidingView,
+  Modal,
+  PixelRatio,
+  Platform,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  StyleSheet,
-  Alert,
-  ScrollView,
-  Image,
-  Dimensions,
-  Platform,
-  Modal,
-  KeyboardAvoidingView,
-  StatusBar,
+  View,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import {
-  parseBirthdayInput,
-  getDateFromBirthday,
-  formatDateForDisplay,
-  formatDateForApi
-} from "../../utils/dateUtils";
-import * as ImagePicker from "expo-image-picker";
-import { registerUser } from "../../services/registerApi";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { PixelRatio } from 'react-native';
+import { registerUser } from "../../services/userApi";
+import {
+  formatDateForApi,
+  formatDateForDisplay,
+  getDateFromBirthday,
+  parseBirthdayInput
+} from "../../utils/dateUtils";
 
 const { width, height } = Dimensions.get("window");
 
@@ -44,7 +44,7 @@ const wp = (percentage: number) => (width * percentage) / 100;
 
 type RegisterScreenProps = {
   navigation: any;
-  onRegister?: () => void; // optional
+  onRegister?: (username: string) => void; // 可传 username
 };
 
 interface LocationData {
