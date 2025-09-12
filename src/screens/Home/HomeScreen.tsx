@@ -33,7 +33,7 @@ export default function BubbleTeaHomepage() {
       >
         {/* Hero Section */}
         <Image
-          source={require("assets/images/home-bg.jpg")}
+          source={require("../../assets/images/home-bg.jpg")}
           style={styles.heroBackground}
           resizeMode="cover"
         />
@@ -47,7 +47,7 @@ export default function BubbleTeaHomepage() {
             </Text>
             <View style={styles.logoCircle}>
               <Image
-                source={require("assets/icons/login-logo.png")}
+                source={require("../../assets/icons/login-logo.png")}
                 style={styles.logoImage}
                 resizeMode="contain"
               />
@@ -108,7 +108,7 @@ export default function BubbleTeaHomepage() {
             >
               <View style={styles.recommendationIcon}>
                 <Image
-                  source={require("assets/icons/login-vote.png")}
+                  source={require("../../assets/icons/login-vote.png")}
                   style={{ width: 28, height: 28, tintColor: colors.black }}
                   resizeMode="contain"
                 />
@@ -122,7 +122,7 @@ export default function BubbleTeaHomepage() {
         <View style={styles.navigationSection}>
           <TouchableOpacity style={styles.navCard}>
             <Image
-              source={require("assets/icons/home-pickup.png")}
+              source={require("../../assets/icons/home-pickup.png")}
               style={styles.navIcon}
             />
             <Text style={styles.navCardText}>自取</Text>
@@ -130,7 +130,7 @@ export default function BubbleTeaHomepage() {
 
           <TouchableOpacity style={styles.navCard}>
             <Image
-              source={require("assets/icons/home-delivery.png")}
+              source={require("../../assets/icons/home-delivery.png")}
               style={styles.navIcon}
             />
             <Text style={styles.navCardText}>外送</Text>
@@ -140,7 +140,7 @@ export default function BubbleTeaHomepage() {
         {/* Sales Banner */}
         <View style={styles.salesSection}>
           <ImageBackground
-            source={require("assets/images/home-sales.png")}
+            source={require("../../assets/images/home-sales.png")}
             style={styles.banner}
             resizeMode="cover"
           >
@@ -148,68 +148,6 @@ export default function BubbleTeaHomepage() {
           </ImageBackground>
         </View>
 
-        {/* Feature Cards */}
-        <View style={styles.cardsContainer}>
-          <View style={styles.cardRow}>
-            <TouchableOpacity style={styles.card}>
-              <ImageBackground
-                source={require("assets/images/home-bg-catogeries.png")}
-                style={styles.cardBackground}
-                imageStyle={{ borderRadius: 8 }}
-              >
-                <Image
-                  source={require("assets/icons/home-story.png")}
-                  style={styles.cardIcon}
-                />
-                <Text style={styles.cardTitle}>OUR STORY</Text>
-              </ImageBackground>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.card}>
-              <ImageBackground
-                source={require("assets/images/home-bg-catogeries.png")}
-                style={styles.cardBackground}
-                imageStyle={{ borderRadius: 8 }}
-              >
-                <Image
-                  source={require("assets/icons/home-location.png")}
-                  style={styles.cardIcon}
-                />
-                <Text style={styles.cardTitle}>STORE LOCATION</Text>
-              </ImageBackground>
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.cardRow}>
-            <TouchableOpacity style={styles.card}>
-              <ImageBackground
-                source={require("assets/images/home-bg-catogeries.png")}
-                style={styles.cardBackground}
-                imageStyle={{ borderRadius: 8 }}
-              >
-                <Image
-                  source={require("assets/icons/home-crown.png")}
-                  style={styles.cardIcon}
-                />
-                <Text style={styles.cardTitle}>CROWN</Text>
-              </ImageBackground>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.card}>
-              <ImageBackground
-                source={require("assets/images/home-bg-catogeries.png")}
-                style={styles.cardBackground}
-                imageStyle={{ borderRadius: 8 }}
-              >
-                <Image
-                  source={require("assets/icons/home-refferal.png")}
-                  style={styles.cardIcon}
-                />
-                <Text style={styles.cardTitle}>REFER A FRIEND</Text>
-              </ImageBackground>
-            </TouchableOpacity>
-          </View>
-        </View>
       </ScrollView>
 
       {/* Floating Gift Button */}
@@ -248,16 +186,16 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   welcomeTitle: typography.body, // ✅ 用 typography
-  welcomeText: { ...typography.body, color: colors.black },
-  brandText: { ...typography.h2, color: colors.black },
+  welcomeText: { ...typography.body, fontFamily: "semiFuturaPT-Bold", color: colors.black },
+  brandText: { ...typography.h2, fontFamily: "FuturaPT-Bold", color: colors.black },
   dividerLine: { height: 1, backgroundColor: colors.gray_nav, marginVertical: 5 },
   logoCircle: { width: 50, height: 50, justifyContent: "center", alignItems: "center" },
   logoImage: { width: 110, height: 110 },
 
   walletStats: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   walletItem: { alignItems: "center", flex: 1 },
-  walletAmount: { fontSize: 18, fontFamily: "FuturaPT-Bold", color: colors.black, marginBottom: 4 },
-  walletLabel: { fontSize: 11, fontFamily: "FuturaPT-Medium", color: colors.gray_text, textTransform: "uppercase" },
+  walletAmount: { fontSize: 18, fontFamily: "inter-medium", color: colors.black, marginBottom: 4 },
+  walletLabel: { fontSize: 11, fontFamily: "inter-medium", color: colors.gray_text, textTransform: "uppercase" },
   walletDivider: { width: 1, height: 40, backgroundColor: colors.gray_nav, marginHorizontal: 16 },
   qrIcon: { marginLeft: 15, marginRight: 6 },
 
@@ -278,7 +216,7 @@ const styles = StyleSheet.create({
       android: { elevation: 4 },
     }),
   },
-  sectionTitle: { ...typography.caption, marginBottom: 15 },
+  sectionTitle: { ...typography.caption,fontFamily: "inter-medium", marginBottom: 15 },
   recommendationRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
   recommendationItem: { flex: 1, alignItems: "center" },
   recommendationIcon: {
@@ -290,7 +228,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 8,
   },
-  recommendationText: { ...typography.body, color: colors.gray_text },
+  recommendationText: { ...typography.body,fontFamily: "inter-medium", fontSize:14, color: colors.black },
 
   giftButton: {
     position: "absolute",
@@ -338,7 +276,7 @@ const styles = StyleSheet.create({
   salesSection: { width: "100%", alignItems: "center", marginVertical: 10 },
   banner: {
     width: screenWidth * 0.9,
-    height: screenWidth * 0.26,
+    height: screenWidth * 0.35,
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 18,
@@ -347,12 +285,4 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   salesTitle: { ...typography.h2, textAlign: "center" },
-
-  cardsContainer: { width: screenWidth, paddingHorizontal: 20 },
-  cardRow: { flexDirection: "row", justifyContent: "space-between", marginVertical: 5 },
-  card: { flex: 0.49, overflow: "hidden", height: 180 },
-  cardBackground: { flex: 1, justifyContent: "center", alignItems: "center", paddingVertical: 20 },
-  cardIcon: { width: 60, height: 60, resizeMode: "contain", marginBottom: 15 },
-  cardTitle: { ...typography.caption, textAlign: "center" },
-  cardGreen: { backgroundColor: colors.green },
 });

@@ -20,16 +20,18 @@ export default function RootNavigator({ onLogout }: RootNavigatorProps) {
         tabBarActiveTintColor: "#000000ff",
         tabBarInactiveTintColor: "#999",
         tabBarStyle: {
-          backgroundColor: "#fff",
-          borderTopLeftRadius: 15,
-          borderTopRightRadius: 15,
-          height: 65,
-          paddingBottom: Platform.OS === "ios" ? 15 : 10,
+          backgroundColor: "#F9F5EC",
+          height: 80, // 从 70 ➝ 90 或更大
+          paddingBottom: Platform.OS === "ios" ? 25 : 15, // 底部留白
           shadowColor: "#000",
           shadowOffset: { width: 0, height: -2 },
           shadowOpacity: 0.1,
           shadowRadius: 4,
           elevation: 5,
+        },
+        tabBarLabelStyle: {
+          fontSize: 13,
+          marginTop: 5,
         },
         tabBarIcon: ({ focused, color, size }) => {
           let iconName: keyof typeof Ionicons.glyphMap = "home";
@@ -46,7 +48,7 @@ export default function RootNavigator({ onLogout }: RootNavigatorProps) {
               break;
           }
 
-          return <Ionicons name={iconName} size={size} color={color} />;
+          return <Ionicons name={iconName} size={30} color={color} />;
         },
       })}
     >
@@ -65,12 +67,12 @@ export default function RootNavigator({ onLogout }: RootNavigatorProps) {
         component={ProfileStack}
         options={{
           title: "我的",
-          headerShown: true,
-          headerRight: () => (
-            <TouchableOpacity onPress={onLogout} style={{ marginRight: 15, padding: 5 }}>
-              <Text style={{ color: "red", fontWeight: "bold" }}>Logout</Text>
-            </TouchableOpacity>
-          ),
+          headerShown: false,
+          // headerRight: () => (
+          //   <TouchableOpacity onPress={onLogout} style={{ marginRight: 15, padding: 5 }}>
+          //     <Text style={{ color: "red", fontWeight: "bold" }}>Logout</Text>
+          //   </TouchableOpacity>
+          // ),
         }}
       />
     </Tab.Navigator>
