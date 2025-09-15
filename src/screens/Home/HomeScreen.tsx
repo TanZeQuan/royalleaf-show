@@ -13,10 +13,13 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { typography, colors } from "styles"; // ✅ 用统一字体 & 颜色
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import ButtonAnimation from "../../components/AppButton";
 import { useNavigation } from "@react-navigation/native";
+import { HomeStackParamList } from "../../navigation/stacks/HomeStack";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
+type HomeScreenNavProp = NativeStackNavigationProp<HomeStackParamList, "Home">;
 
 export default function BubbleTeaHomepage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -81,21 +84,30 @@ export default function BubbleTeaHomepage() {
         <View style={styles.recommendationSection}>
           <Text style={styles.sectionTitle}>推荐</Text>
           <View style={styles.recommendationRow}>
-            <TouchableOpacity style={styles.recommendationItem}>
+            <TouchableOpacity
+              style={styles.recommendationItem}
+              onPress={() => navigation.navigate("Reward" as never)}
+            >
               <View style={styles.recommendationIcon}>
                 <Ionicons name="gift-outline" size={28} color={colors.black} />
               </View>
               <Text style={styles.recommendationText}>奖励</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.recommendationItem}>
+            <TouchableOpacity
+              style={styles.recommendationItem}
+              onPress={() => navigation.navigate("Social" as never)}
+            >
               <View style={styles.recommendationIcon}>
                 <Ionicons name="leaf" size={28} color={colors.black} />
               </View>
               <Text style={styles.recommendationText}>茶会</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.recommendationItem}>
+            <TouchableOpacity
+              style={styles.recommendationItem}
+              onPress={() => navigation.navigate("Creator" as never)}
+            >
               <View style={styles.recommendationIcon}>
                 <Ionicons name="create-outline" size={28} color={colors.black} />
               </View>
@@ -104,7 +116,7 @@ export default function BubbleTeaHomepage() {
 
             <TouchableOpacity
               style={styles.recommendationItem}
-              onPress={() => navigation.navigate("CommunityScreen" as never)}
+              onPress={() => navigation.navigate("Vote" as never)}
             >
               <View style={styles.recommendationIcon}>
                 <Image
@@ -216,7 +228,7 @@ const styles = StyleSheet.create({
       android: { elevation: 4 },
     }),
   },
-  sectionTitle: { ...typography.caption,fontFamily: "inter-medium", marginBottom: 15 },
+  sectionTitle: { ...typography.caption, fontFamily: "inter-medium", marginBottom: 15 },
   recommendationRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
   recommendationItem: { flex: 1, alignItems: "center" },
   recommendationIcon: {
@@ -228,7 +240,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 8,
   },
-  recommendationText: { ...typography.body,fontFamily: "inter-medium", fontSize:14, color: colors.black },
+  recommendationText: { ...typography.body, fontFamily: "inter-medium", fontSize: 14, color: colors.black },
 
   giftButton: {
     position: "absolute",

@@ -3,14 +3,21 @@ import { ActivityIndicator, View } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import LoginScreen from '../screens/Auth/LoginScreen';
 import RegisterScreen from '../screens/Auth/RegisterScreen';
+import ForgetPasswordScreen from '../screens/Auth/ForgetPassScreen';
+import OtpVerifyScreen from '../screens/Auth/OtpVerifyScreen';
+import ResetPasswordScreen from '../screens/Auth/ResetPassScreen';
 import { getItem, setItem, removeItem } from '../utils/storage';
 import RootNavigator from './RootNavigator';
 
 export type AuthStackParamList = {
   Login: undefined;
   Register: undefined;
+  ForgetPassword: undefined;
+  OtpVerify: { email: string }; // 需要传递邮箱
+  ResetPassword: { email: string }; // 需要传递邮箱
   Main: undefined;
 };
+
 
 const Stack = createNativeStackNavigator<AuthStackParamList>();
 
@@ -57,8 +64,12 @@ export default function AppNavigation() {
             {props => <LoginScreen {...props} onLogin={handleLogin} />}
           </Stack.Screen>
           <Stack.Screen name="Register" component={RegisterScreen} />
+          <Stack.Screen name="ForgetPassword" component={ForgetPasswordScreen} />
+          <Stack.Screen name="OtpVerify" component={OtpVerifyScreen} />
+          <Stack.Screen name="ResetPassword" component={ResetPasswordScreen} />
         </>
       )}
     </Stack.Navigator>
   );
+
 }

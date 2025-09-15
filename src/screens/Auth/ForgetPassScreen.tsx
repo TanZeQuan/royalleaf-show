@@ -21,7 +21,7 @@ export default function ForgetPasswordScreen() {
       return;
     }
 
-    navigation.navigate("OtpVerification", { email });
+    navigation.navigate("OtpVerify", { email });
   };
 
   return (

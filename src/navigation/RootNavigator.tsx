@@ -64,17 +64,10 @@ export default function RootNavigator({ onLogout }: RootNavigatorProps) {
       />
       <Tab.Screen
         name="ProfileStack"
-        component={ProfileStack}
-        options={{
-          title: "我的",
-          headerShown: false,
-          // headerRight: () => (
-          //   <TouchableOpacity onPress={onLogout} style={{ marginRight: 15, padding: 5 }}>
-          //     <Text style={{ color: "red", fontWeight: "bold" }}>Logout</Text>
-          //   </TouchableOpacity>
-          // ),
-        }}
-      />
+        options={{ title: "我的" }}
+      >
+        {props => <ProfileStack {...props} onLogout={onLogout} />}
+      </Tab.Screen>
     </Tab.Navigator>
   );
 }
