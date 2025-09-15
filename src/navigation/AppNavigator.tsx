@@ -13,11 +13,10 @@ export type AuthStackParamList = {
   Login: undefined;
   Register: undefined;
   ForgetPassword: undefined;
-  OtpVerify: { email: string }; // 需要传递邮箱
-  ResetPassword: { email: string }; // 需要传递邮箱
+  OtpVerify: { email: string };
+  ResetPassword: { email: string };
   Main: undefined;
 };
-
 
 const Stack = createNativeStackNavigator<AuthStackParamList>();
 
@@ -27,7 +26,7 @@ export default function AppNavigation() {
 
   useEffect(() => {
     const checkLogin = async () => {
-      const username = await getItem('user'); // 读取存储
+      const username = await getItem('user');
       if (username) setIsLoggedIn(true);
       setLoading(false);
     };
@@ -71,5 +70,4 @@ export default function AppNavigation() {
       )}
     </Stack.Navigator>
   );
-
 }

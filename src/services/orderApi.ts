@@ -1,5 +1,4 @@
-// features/order/apiOrder.ts
-import axios from "axios";
+import api from "./api";
 
 const API_BASE_URL = "http://192.168.0.122:8080/royal/api";
 
@@ -42,7 +41,7 @@ export async function fetchProductOptions(
   productId: string
 ): Promise<ProductOptionsResponse> {
   try {
-    const response = await axios.get(`${API_BASE_URL}/product-options/product/${productId}`);
+    const response = await api.get(`${API_BASE_URL}/product-options/product/${productId}`);
     const options: ProductOption[] = response.data.data;
     
     // 添加调试输出

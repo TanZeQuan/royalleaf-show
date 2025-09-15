@@ -14,9 +14,9 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { typography, colors } from "styles"; // ✅ 用统一字体 & 颜色
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import ButtonAnimation from "../../components/AppButton";
+import ButtonAnimation from "components/AppButton";
 import { useNavigation } from "@react-navigation/native";
-import { HomeStackParamList } from "../../navigation/stacks/HomeStack";
+import { HomeStackParamList } from "navigation/stacks/HomeStack";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 type HomeScreenNavProp = NativeStackNavigationProp<HomeStackParamList, "Home">;
@@ -36,7 +36,7 @@ export default function BubbleTeaHomepage() {
       >
         {/* Hero Section */}
         <Image
-          source={require("../../assets/images/home-bg.jpg")}
+          source={require("assets/images/home-bg.jpg")}
           style={styles.heroBackground}
           resizeMode="cover"
         />
@@ -50,7 +50,7 @@ export default function BubbleTeaHomepage() {
             </Text>
             <View style={styles.logoCircle}>
               <Image
-                source={require("../../assets/icons/login-logo.png")}
+                source={require("assets/icons/login-logo.png")}
                 style={styles.logoImage}
                 resizeMode="contain"
               />
@@ -116,11 +116,11 @@ export default function BubbleTeaHomepage() {
 
             <TouchableOpacity
               style={styles.recommendationItem}
-              onPress={() => navigation.navigate("Vote" as never)}
+              onPress={() => navigation.navigate("VoteStack" as never)}
             >
               <View style={styles.recommendationIcon}>
                 <Image
-                  source={require("../../assets/icons/login-vote.png")}
+                  source={require("assets/icons/login-vote.png")}
                   style={{ width: 28, height: 28, tintColor: colors.black }}
                   resizeMode="contain"
                 />
@@ -134,7 +134,7 @@ export default function BubbleTeaHomepage() {
         <View style={styles.navigationSection}>
           <TouchableOpacity style={styles.navCard}>
             <Image
-              source={require("../../assets/icons/home-pickup.png")}
+              source={require("assets/icons/home-pickup.png")}
               style={styles.navIcon}
             />
             <Text style={styles.navCardText}>自取</Text>
@@ -142,7 +142,7 @@ export default function BubbleTeaHomepage() {
 
           <TouchableOpacity style={styles.navCard}>
             <Image
-              source={require("../../assets/icons/home-delivery.png")}
+              source={require("assets/icons/home-delivery.png")}
               style={styles.navIcon}
             />
             <Text style={styles.navCardText}>外送</Text>
@@ -152,7 +152,7 @@ export default function BubbleTeaHomepage() {
         {/* Sales Banner */}
         <View style={styles.salesSection}>
           <ImageBackground
-            source={require("../../assets/images/home-sales.png")}
+            source={require("assets/images/home-sales.png")}
             style={styles.banner}
             resizeMode="cover"
           >

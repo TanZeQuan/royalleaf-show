@@ -8,6 +8,7 @@ import MenuStack from "./stacks/MenuStack";
 import ProfileStack from "./stacks/ProfileStack";
 
 const Tab = createBottomTabNavigator();
+
 interface RootNavigatorProps {
   onLogout: () => void;
 }
@@ -41,7 +42,7 @@ export default function RootNavigator({ onLogout }: RootNavigatorProps) {
               iconName = focused ? "home" : "home-outline";
               break;
             case "MenuStack":
-              iconName = focused ? "fast-food" : "fast-food-outline";
+              iconName = focused ? "cafe" : "cafe-outline";
               break;
             case "ProfileStack":
               iconName = focused ? "person" : "person-outline";
@@ -65,8 +66,8 @@ export default function RootNavigator({ onLogout }: RootNavigatorProps) {
       <Tab.Screen
         name="ProfileStack"
         options={{ title: "我的" }}
+        children={() => <ProfileStack onLogout={onLogout} />}
       >
-        {props => <ProfileStack {...props} onLogout={onLogout} />}
       </Tab.Screen>
     </Tab.Navigator>
   );

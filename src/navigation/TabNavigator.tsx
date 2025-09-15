@@ -1,10 +1,12 @@
 import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { getFocusedRouteNameFromRoute } from "@react-navigation/native";
+import { ViewStyle } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+
 import HomeStack from "./stacks/HomeStack";
 import MenuStack from "./stacks/MenuStack";
 import ProfileStack from "./stacks/ProfileStack";
-import { Ionicons } from "@expo/vector-icons";
 
 export type TabParamList = {
   HomeStack: undefined;
@@ -14,26 +16,27 @@ export type TabParamList = {
 
 const Tab = createBottomTabNavigator<TabParamList>();
 
-// 所有需要隐藏 Tab 的页面名称
-const HIDE_TAB_ROUTES = [
-  // HomeStack
-  "VoteDetail",
-  "Comment",
-  "VoteSubmit",
-  // MenuStack
-  "Payment",
-  "ConfirmPayment",
-  // ProfileStack
-  "Wallet",
-  "VipLevel",
-  "OurStory",
-  "Points",
-  "Voucher",
-  "Settings",
-];
+export default function AppTabs() {
+  const handleLogout = () => {
+    console.log("User logged out");
+    // 清除 token / 跳转登录页等
+  };
 
-export default function TabNavigator() {
-  const getTabBarStyle = (route: any) => {
+  const HIDE_TAB_ROUTES = [
+    "VoteDetail",
+    "Comment",
+    "VoteSubmit",
+    "Payment",
+    "ConfirmPayment",
+    "Wallet",
+    "VipLevel",
+    "OurStory",
+    "Points",
+    "Voucher",
+    "Settings",
+  ];
+
+  const getTabBarStyle = (route: any): ViewStyle => {
     const routeName = getFocusedRouteNameFromRoute(route);
     if (routeName && HIDE_TAB_ROUTES.includes(routeName)) {
       return { display: "none" };
@@ -57,18 +60,25 @@ export default function TabNavigator() {
       <Tab.Screen
         name="HomeStack"
         component={HomeStack}
-        options={({ route }) => ({ title: "首页", tabBarStyle: getTabBarStyle(route) as any })}
+        options={({ route }) => ({
+          title: "首页",
+          tabBarStyle: getTabBarStyle(route),
+        })}
       />
       <Tab.Screen
         name="MenuStack"
         component={MenuStack}
-        options={({ route }) => ({ title: "菜单", tabBarStyle: getTabBarStyle(route) as any })}
+        options={({ route }) => ({
+          title: "菜单",
+          tabBarStyle: getTabBarStyle(route),
+        })}
       />
       <Tab.Screen
         name="ProfileStack"
-        component={ProfileStack}
-        options={({ route }) => ({ title: "个人中心", tabBarStyle: getTabBarStyle(route) as any })}
-      />
+        options={{ title: "我的" }}
+      >
+        {() => <ProfileStack onLogout={handleLogout} />}
+      </Tab.Screen>
     </Tab.Navigator>
   );
 }
