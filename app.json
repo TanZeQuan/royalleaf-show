@@ -23,8 +23,12 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.royalleaf.premium",
-      "buildNumber": "1.0.0"
-      
+      "buildNumber": "1.0.0",
+      "infoPlist": {
+        "NSCameraUsageDescription": "需要使用您的相机来拍照",
+        "NSPhotoLibraryUsageDescription": "需要访问您的相册以选择照片",
+        "NSPhotoLibraryAddUsageDescription": "需要保存图片到您的相册"
+      }
     },
     "plugins": [
       "expo-localization",

@@ -4,10 +4,11 @@ import ProfileScreen from "screens/Profile/ProfileScreen";
 import SettingScreen from "screens/Profile/Setting/SettingScreen";
 import ScanScreen from "screens/Profile/QRScan/ScanScreen";
 import BenefitScreen from "screens/Profile/Benefit/BenefitScreen";
+import SettingStack from "navigation/stacks/SettingStack"
 
 export type ProfileStackParamList = {
   Profile: undefined;
-  Setting: undefined;
+  SettingStack: undefined;
   Scan: undefined;
   Benefit: undefined;
 };
@@ -22,8 +23,8 @@ export default function ProfileStack({ onLogout }: ProfileStackProps) {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="Profile" component={ProfileScreen} />
-      <Stack.Screen name="Setting">
-        {props => <SettingScreen {...props} onLogout={onLogout} />}
+      <Stack.Screen name="SettingStack">
+        {props => <SettingStack {...props} onLogout={onLogout} />}
       </Stack.Screen>
       <Stack.Screen name="Scan" component={ScanScreen} />
       <Stack.Screen name="Benefit" component={BenefitScreen} />

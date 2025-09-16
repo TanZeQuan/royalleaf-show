@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native";
-import { typography, colors } from "styles"; // ✅ 用统一字体 & 颜色
+import { typography, colors } from "styles";
 
 export const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.primary_bg },
@@ -9,7 +9,7 @@ export const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 20,
     paddingVertical: 5,
-    backgroundColor: colors.primary_bg,
+    backgroundColor: colors.gold_light,
     borderBottomWidth: 1,
     borderBottomColor: colors.gold_light,
   },
@@ -23,10 +23,12 @@ export const styles = StyleSheet.create({
   postIcon: {
     width: 40,
     height: 40,
-    backgroundColor: colors.green_deep,
+    backgroundColor: colors.gold_deep,
     borderRadius: 50,
     alignItems: "center",
     justifyContent: "center",
+    borderWidth:2,
+    borderColor:colors.white,
   },
   backButton: { padding: 5 },
   backIcon: { fontSize: 24, color: colors.black },

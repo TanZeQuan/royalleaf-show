@@ -59,8 +59,8 @@ const VoteMainScreen = () => {
 
   const handleGoBack = () => navigation.goBack();
 
-  return (
-    <SafeAreaView style={[styles.container, { paddingTop: insets.top }]}>
+   return (
+    <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
 
       {/* Header */}
@@ -86,20 +86,20 @@ const VoteMainScreen = () => {
                 source={category.image}
                 style={styles.categoryCard}
                 imageStyle={styles.cardBackground}
-              >
+              > 
                 <View style={styles.categoryContentRow}>
-                  <View style={styles.categoryIcon}>
+                  {/* <View style={styles.categoryIcon}>
                     <Text style={styles.iconText}>{category.icon}</Text>
-                  </View>
+                  </View> */}
                   <View style={styles.categoryContent}>
                     <Text style={styles.categoryTitle}>{category.title}</Text>
                     <Text style={styles.categoryDescription}>
                       {category.description}
                     </Text>
                   </View>
-                  <View style={styles.arrowIcon}>
+                  {/* <View style={styles.arrowIcon}>
                     <Text style={styles.arrowText}>→</Text>
-                  </View>
+                  </View> */}
                 </View>
               </ImageBackground>
             </TouchableOpacity>
@@ -146,7 +146,7 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    padding: 16,
+    padding: 20,
   },
   subtitle: {
     fontSize: 16,
@@ -201,17 +201,19 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: colors.black,
     marginBottom: 4,
+    textAlign:"center"
   },
   categoryDescription: {
     fontSize: 14,
     color: colors.gray_text,
+    textAlign:"center"
   },
-  arrowIcon: {
-    width: 30,
-    height: 30,
-    justifyContent: "center",
-    alignItems: "center",
-  },
+  // arrowIcon: {
+  //   width: 30,
+  //   height: 30,
+  //   justifyContent: "center",
+  //   alignItems: "center",
+  // },
   arrowText: {
     fontSize: 30,
     color: colors.green_deep,

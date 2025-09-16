@@ -24,6 +24,7 @@ type HomeScreenNavProp = NativeStackNavigationProp<HomeStackParamList, "Home">;
 export default function BubbleTeaHomepage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const navigation = useNavigation();
+   const [showTaskModal, setShowTaskModal] = useState(false);
 
   return (
     <View style={styles.container}>
@@ -106,7 +107,7 @@ export default function BubbleTeaHomepage() {
 
             <TouchableOpacity
               style={styles.recommendationItem}
-              onPress={() => navigation.navigate("Creator" as never)}
+              onPress={() => navigation.navigate("CreatorStack" as never)}
             >
               <View style={styles.recommendationIcon}>
                 <Ionicons name="create-outline" size={28} color={colors.black} />

@@ -158,8 +158,8 @@ const VoteDetailScreen = () => {
 
   const handleGoBack = () => navigation.goBack();
 
-  return (
-    <SafeAreaView style={[styles.container, { paddingTop: insets.top }]}>
+ return (
+    <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
 
       {/* Header */}
@@ -277,7 +277,8 @@ const VoteDetailScreen = () => {
           <View style={styles.modalContainer}>
             <Text style={styles.modalTitle}>确认投票</Text>
             <Text style={styles.modalMessage}>
-              您确定要投票给{itemData.name ? `"${itemData.name}"` : "这个选项"}吗？
+              您确定要投票给{itemData.name ? `"${itemData.name}"` : "这个选项"}
+              吗？
             </Text>
             <View style={styles.modalButtons}>
               <TouchableOpacity
@@ -307,7 +308,9 @@ const VoteDetailScreen = () => {
         <View style={styles.notificationOverlay}>
           <View style={styles.notificationContainer}>
             <Text style={styles.notificationTitle}>{notificationTitle}</Text>
-            <Text style={styles.notificationMessage}>{notificationMessage}</Text>
+            <Text style={styles.notificationMessage}>
+              {notificationMessage}
+            </Text>
           </View>
         </View>
       </Modal>
@@ -324,7 +327,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
+    borderBottomColor: colors.gold_light,
     backgroundColor: colors.gold_light,
   },
   backButton: {
@@ -524,18 +527,18 @@ const styles = StyleSheet.create({
   // 通知样式
   notificationOverlay: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     paddingTop: 50,
     backgroundColor: "rgba(0,0,0,0.3)",
   },
   notificationContainer: {
-    backgroundColor: 'white',
+    backgroundColor: "white",
     borderRadius: 12,
     padding: 20,
-    width: '80%',
-    alignItems: 'center',
-    shadowColor: '#000',
+    width: "80%",
+    alignItems: "center",
+    shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 2,
@@ -546,14 +549,14 @@ const styles = StyleSheet.create({
   },
   notificationTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: colors.black,
     marginBottom: 8,
   },
   notificationMessage: {
     fontSize: 16,
     color: colors.black,
-    textAlign: 'center',
+    textAlign: "center",
   },
 });
 

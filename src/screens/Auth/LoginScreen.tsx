@@ -41,31 +41,31 @@ export default function LoginScreen({ navigation, onLogin }: LoginScreenProps) {
 
     setLoading(true);
     try {
-      // 调用后端登录 API
-      const response = await loginUser({
-        username: username.trim(),
-        passcode: password,
-      });
+      // 🔹 Test mode: simulate API response
+      const response = {
+        success: true, // change to false to simulate failure
+        message: "Mock login successful!",
+        data: { username: username.trim(), token: "mock-token-123" },
+      };
 
       if (response.success) {
         // 保存用户信息到 AsyncStorage
         await AsyncStorage.setItem("user", JSON.stringify(response.data));
 
         // 更新 app 状态
-        onLogin(username); // 不传参数，保持类型一致
+        onLogin(username); // ✅ 保持类型一致
 
-        Alert.alert("Success", response.message || "Logged in successfully!");
+        Alert.alert("Success", response.message);
       } else {
         Alert.alert("Login Failed", response.message || "Invalid credentials.");
       }
     } catch (error: any) {
-      const errorMessage =
-        error.response?.data?.message || "Unable to login. Please try again.";
-      Alert.alert("Error", errorMessage);
+      Alert.alert("Error", "Test mode: Something went wrong.");
     } finally {
       setLoading(false);
     }
   };
+
 
 
   const handleSocialLogin = (platform: string): void => {
@@ -259,7 +259,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: width * 0.05,
-    paddingVertical: height * 0.01,
     justifyContent: 'space-between',
   },
   content: {
@@ -269,7 +268,7 @@ const styles = StyleSheet.create({
   backgroundPattern: {
     position: 'absolute',
     top: -80,
-    left: -30,
+    left: -22,
     right: 0,
     height: height * 0.4,
     width: width,
@@ -280,8 +279,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   logo: {
-    width: height * 0.20,   // bigger logo
+    width: height * 0.20,
     height: height * 0.20,
+    alignSelf: "center",
   },
 
   brandName: {

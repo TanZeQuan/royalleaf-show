@@ -157,7 +157,7 @@ const VoteImagesScreen = () => {
   const handleGoBack = () => navigation.goBack();
 
   return (
-    <SafeAreaView style={[styles.container, { paddingTop: insets.top }]}>
+    <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
 
       {/* Header */}

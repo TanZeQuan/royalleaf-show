@@ -34,7 +34,7 @@ export default function ProfileScreen() {
         <View style={styles.settingContainer}>
           <TouchableOpacity
             style={styles.settingsButton}
-            onPress={() => navigation.navigate("Setting")}
+            onPress={() => navigation.navigate("SettingStack")}
           >
             <Image
               source={require("../../assets/icons/profile-setting.png")}

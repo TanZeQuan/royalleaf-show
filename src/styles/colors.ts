@@ -1,5 +1,5 @@
 const colors = {
-  // 基础色
+ // 基础色
   black: "#232323",
   white: "#FFFFFF",
   primary_bg: "#F9F5EC",
@@ -16,6 +16,11 @@ const colors = {
   gray_deep: "#4a5568",
   gray_light:"#e2e8f0",
   gray_button:"#f7fafc",
+
+  // 状态
+  success:"#4CAF50",
+  error:"#F44336",
+  pending:"#FFC107",
 };
 
 export default colors;

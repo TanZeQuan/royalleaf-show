@@ -8,7 +8,10 @@ import {
   StatusBar,
   Image,
   TextInput,
+  KeyboardAvoidingView,
+  Keyboard,
   Alert,
+  Platform,
   TouchableWithoutFeedback,
 } from "react-native";
 import {
@@ -334,7 +337,7 @@ export default function SocialScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { paddingTop: insets.top }]}>
+    <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#f7fafc" />
       {/* Header */}
       <View style={styles.header}>
@@ -354,11 +357,14 @@ export default function SocialScreen() {
 
       {/* Create Post Modal */}
       {showCreatePost && (
-        <TouchableWithoutFeedback onPress={handleCloseCreatePost}>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
           <View style={newStyles.overlay}>
-            <TouchableWithoutFeedback onPress={(e) => e.stopPropagation()}>
+            <KeyboardAvoidingView
+              behavior={Platform.OS === "ios" ? "padding" : undefined}
+              style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+            >
               <View style={styles.createPostSection}>
-                {/* 只在原有结构上添加关闭按钮的绝对定位 */}
+                {/* 关闭按钮绝对定位 */}
                 <TouchableOpacity
                   onPress={handleCloseCreatePost}
                   style={styles.closeButtonAbsolute}
@@ -366,7 +372,7 @@ export default function SocialScreen() {
                   <Text style={styles.closeButtonText}>×</Text>
                 </TouchableOpacity>
 
-                {/* 保持原有的布局结构不变 */}
+                {/* 原有布局保持不变 */}
                 <View style={styles.userAvatar}>
                   <Text style={styles.avatarEmoji}>👨🏾</Text>
                 </View>
@@ -398,28 +404,20 @@ export default function SocialScreen() {
                     </View>
                   ) : null}
 
-                  {/* 红色提示文字 */}
+                  {/* 提示 */}
                   {showPhotoRequired && (
-                    <Text
-                      style={{ color: "red", fontSize: 12, marginBottom: 8 }}
-                    >
+                    <Text style={{ color: "red", fontSize: 12, marginBottom: 8 }}>
                       ⚠︎ 请添加照片才能发布
                     </Text>
                   )}
 
                   <View style={styles.createPostActions}>
-                    <TouchableOpacity
-                      style={styles.photoButton}
-                      onPress={handleTakePhoto}
-                    >
+                    <TouchableOpacity style={styles.photoButton} onPress={handleTakePhoto}>
                       <Text style={styles.actionIcon}>📸</Text>
                       <Text style={styles.actionText}>拍照</Text>
                     </TouchableOpacity>
 
-                    <TouchableOpacity
-                      style={styles.photoButton}
-                      onPress={handlePickImage}
-                    >
+                    <TouchableOpacity style={styles.photoButton} onPress={handlePickImage}>
                       <Text style={styles.actionIcon}>🖼️</Text>
                       <Text style={styles.actionText}>相册</Text>
                     </TouchableOpacity>
@@ -447,7 +445,7 @@ export default function SocialScreen() {
                   </View>
                 </View>
               </View>
-            </TouchableWithoutFeedback>
+            </KeyboardAvoidingView>
           </View>
         </TouchableWithoutFeedback>
       )}
@@ -456,7 +454,7 @@ export default function SocialScreen() {
       {showShareOverlay && (
         <TouchableWithoutFeedback onPress={handleCloseShare}>
           <View style={shareStyles.overlay}>
-            <TouchableWithoutFeedback onPress={(e) => e.stopPropagation()}>
+            <TouchableWithoutFeedback>
               <View style={shareStyles.shareContainer}>
                 {/* 标题和关闭按钮 */}
                 <View style={shareStyles.shareHeader}>
@@ -525,7 +523,7 @@ export default function SocialScreen() {
       {showShareSuccess && (
         <TouchableWithoutFeedback onPress={() => setShowShareSuccess(false)}>
           <View style={newStyles.overlay}>
-            <TouchableWithoutFeedback onPress={(e) => e.stopPropagation()}>
+            <TouchableWithoutFeedback>
               <View style={shareStyles.shareSuccessModal}>
                 <Text style={shareStyles.shareSuccessText}>
                   分享成功到 {sharePlatform}
@@ -677,7 +675,7 @@ export default function SocialScreen() {
       {editingPostId && (
         <TouchableWithoutFeedback onPress={cancelEdit}>
           <View style={newStyles.overlay}>
-            <TouchableWithoutFeedback onPress={(e) => e.stopPropagation()}>
+            <TouchableWithoutFeedback>
               <View style={newStyles.editModal}>
                 <Text style={newStyles.modalTitle}>编辑帖子</Text>
                 <TextInput
@@ -720,15 +718,11 @@ export default function SocialScreen() {
       {showDropdown && (
         <TouchableWithoutFeedback onPress={closeDropdown}>
           <View style={newStyles.dropdownOverlay}>
-            <TouchableWithoutFeedback onPress={(e) => e.stopPropagation()}>
+            <TouchableWithoutFeedback>
               <View
                 style={[
                   newStylesdropdown.dropdownMenu,
-                  {
-                    top: dropdownPosition.y,
-                    left: dropdownPosition.x,
-                    position: 'absolute'
-                  },
+                  { top: dropdownPosition.y, left: dropdownPosition.x },
                 ]}
               >
                 <TouchableOpacity
@@ -761,7 +755,7 @@ export default function SocialScreen() {
       {showDeleteDropdown && (
         <TouchableWithoutFeedback onPress={cancelDelete}>
           <View style={newStyles.overlay}>
-            <TouchableWithoutFeedback onPress={(e) => e.stopPropagation()}>
+            <TouchableWithoutFeedback>
               <View style={newStyles.deleteModal}>
                 <Text style={newStyles.modalTitle}>确认删除</Text>
                 <Text style={newStyles.buttonMessage}>
@@ -769,10 +763,10 @@ export default function SocialScreen() {
                 </Text>
                 <View style={newStyles.buttonsAll}>
                   <TouchableOpacity
-                    style={[newStyles.buttonLeft]}
+                    style={newStyles.buttonLeft}
                     onPress={confirmDelete}
                   >
-                    <Text style={[newStyles.buttonText]}>删除</Text>
+                    <Text style={newStyles.buttonText}>删除</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={newStyles.buttonRight}

@@ -6,14 +6,14 @@ import HomeScreen from "screens/Home/HomeScreen";
 
 // 子页面
 import RewardScreen from "screens/Home/Reward/RewardScreen";
-import CreatorScreen from "screens/Home/Creator/CreatorScreen";
 import SocialScreen from "screens/Home/Social/SocialScreen";
-import VoteStack from "navigation/stacks/VoteStack"; // <- your nested vote stack
+import VoteStack from "navigation/stacks/VoteStack"; 
+import CreatorStack from "navigation/stacks/CreatorStack";
 
 export type HomeStackParamList = {
   Home: undefined;
   Reward: undefined;
-  Creator: undefined;
+  CreatorStack: undefined;
   Social: undefined;
   VoteStack: undefined; 
 };
@@ -28,7 +28,7 @@ export default function HomeStack() {
 
       {/* 子页面 */}
       <Stack.Screen name="Reward" component={RewardScreen} />
-      <Stack.Screen name="Creator" component={CreatorScreen} />
+      <Stack.Screen name="CreatorStack" component={CreatorStack} />
       <Stack.Screen name="Social" component={SocialScreen} />
 
       {/* 投票流程 Stack */}
