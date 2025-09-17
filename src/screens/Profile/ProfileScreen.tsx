@@ -17,7 +17,11 @@ import ButtonAnimation from "../../components/AppButton";
 import { typography, colors } from "styles";
 import { ProfileStackParamList } from "../../navigation/stacks/ProfileStack";
 
-const { width: screenWidth } = Dimensions.get("window");
+const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
+
+// Responsive scaling
+const scale = (size: number) => (screenWidth / 375) * size;
+const verticalScale = (size: number) => (screenHeight / 812) * size;
 
 type ProfileScreenNavigationProp = NativeStackNavigationProp<
   ProfileStackParamList,
@@ -29,12 +33,16 @@ export default function ProfileScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
         {/* Settings */}
         <View style={styles.settingContainer}>
           <TouchableOpacity
             style={styles.settingsButton}
             onPress={() => navigation.navigate("SettingStack")}
+            activeOpacity={0.7}
           >
             <Image
               source={require("../../assets/icons/profile-setting.png")}
@@ -53,12 +61,13 @@ export default function ProfileScreen() {
               />
             </View>
             <View style={styles.profileInfo}>
-              <Text style={styles.username}>XXXXX</Text>
-              <Text style={styles.userId}>0000000000</Text>
+              <Text style={styles.username} numberOfLines={1}>XXXXX</Text>
+              <Text style={styles.userId} numberOfLines={1}>0000000000</Text>
             </View>
             <TouchableOpacity
               style={styles.scanButton}
               onPress={() => navigation.navigate("Scan")}
+              activeOpacity={0.7}
             >
               <Image
                 source={require("../../assets/icons/profile-scan.png")}
@@ -72,13 +81,13 @@ export default function ProfileScreen() {
         <View style={styles.statsContainer}>
           <View style={styles.statsSection}>
             <View style={styles.statItem}>
-              <Text style={styles.statNumber}>0.00</Text>
-              <Text style={styles.statLabel}>钱包(RM)</Text>
+              <Text style={styles.statNumber} numberOfLines={1}>0.00</Text>
+              <Text style={styles.statLabel} numberOfLines={1}>钱包(RM)</Text>
             </View>
             <View style={styles.statDivider} />
             <View style={styles.statItem}>
-              <Text style={styles.statNumber}>30</Text>
-              <Text style={styles.statLabel}>皇冠</Text>
+              <Text style={styles.statNumber} numberOfLines={1}>30</Text>
+              <Text style={styles.statLabel} numberOfLines={1}>皇冠</Text>
             </View>
             <View style={styles.statDivider} />
             <View style={styles.statItem}>
@@ -86,7 +95,7 @@ export default function ProfileScreen() {
                 source={require("../../assets/icons/profile-delivery.png")}
                 style={styles.walletIcon}
               />
-              <Text style={styles.statLabel}>物流</Text>
+              <Text style={styles.statLabel} numberOfLines={1}>物流</Text>
             </View>
           </View>
         </View>
@@ -96,12 +105,13 @@ export default function ProfileScreen() {
           <ImageBackground
             source={require("../../assets/images/profile-leaf-bg.png")}
             style={styles.leafBackground}
-            imageStyle={{ borderRadius: 12 }}
+            imageStyle={styles.leafBackgroundImage}
+            resizeMode="cover"
           >
             <View style={styles.leafContent}>
               <View style={styles.leafTextContainer}>
-                <Text style={styles.leafTitle}>Leaf Guest</Text>
-                <Text style={styles.leafSubtitle}>
+                <Text style={styles.leafTitle} numberOfLines={1}>Leaf Guest</Text>
+                <Text style={styles.leafSubtitle} numberOfLines={2}>
                   9 Cups away from Leaf Knight
                 </Text>
               </View>
@@ -113,6 +123,7 @@ export default function ProfileScreen() {
                 <TouchableOpacity
                   style={styles.benefitsButton}
                   onPress={() => navigation.navigate("Benefit")}
+                  activeOpacity={0.7}
                 >
                   <Text style={styles.benefitsText}>View My Benefits</Text>
                   <Text style={styles.benefitsArrow}>›</Text>
@@ -125,61 +136,65 @@ export default function ProfileScreen() {
         {/* Feature Cards */}
         <View style={styles.cardsContainer}>
           <View style={styles.cardRow}>
-            <TouchableOpacity style={styles.card}>
+            <TouchableOpacity style={styles.card} activeOpacity={0.8}>
               <ImageBackground
                 source={require("../../assets/images/profile-card-bg.png")}
                 style={styles.cardBackground}
-                imageStyle={{ borderRadius: 8 }}
+                imageStyle={styles.cardBackgroundImage}
+                resizeMode="cover"
               >
                 <Image
                   source={require("../../assets/icons/home-story.png")}
                   style={styles.cardIcon}
                 />
-                <Text style={styles.cardTitle}>OUR STORY</Text>
+                <Text style={styles.cardTitle} numberOfLines={2}>OUR STORY</Text>
               </ImageBackground>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.card}>
+            <TouchableOpacity style={styles.card} activeOpacity={0.8}>
               <ImageBackground
                 source={require("../../assets/images/profile-card-bg.png")}
                 style={styles.cardBackground}
-                imageStyle={{ borderRadius: 8 }}
+                imageStyle={styles.cardBackgroundImage}
+                resizeMode="cover"
               >
                 <Image
                   source={require("../../assets/icons/home-location.png")}
                   style={styles.cardIcon}
                 />
-                <Text style={styles.cardTitle}>STORE LOCATION</Text>
+                <Text style={styles.cardTitle} numberOfLines={2}>STORE LOCATION</Text>
               </ImageBackground>
             </TouchableOpacity>
           </View>
 
           <View style={styles.cardRow}>
-            <TouchableOpacity style={styles.card}>
+            <TouchableOpacity style={styles.card} activeOpacity={0.8}>
               <ImageBackground
                 source={require("../../assets/images/profile-card-bg.png")}
                 style={styles.cardBackground}
-                imageStyle={{ borderRadius: 8 }}
+                imageStyle={styles.cardBackgroundImage}
+                resizeMode="cover"
               >
                 <Image
                   source={require("../../assets/icons/home-crown.png")}
                   style={styles.cardIcon}
                 />
-                <Text style={styles.cardTitle}>CROWN</Text>
+                <Text style={styles.cardTitle} numberOfLines={2}>CROWN</Text>
               </ImageBackground>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.card}>
+            <TouchableOpacity style={styles.card} activeOpacity={0.8}>
               <ImageBackground
                 source={require("../../assets/images/profile-card-bg.png")}
                 style={styles.cardBackground}
-                imageStyle={{ borderRadius: 8 }}
+                imageStyle={styles.cardBackgroundImage}
+                resizeMode="cover"
               >
                 <Image
                   source={require("../../assets/icons/home-refferal.png")}
                   style={styles.cardIcon}
                 />
-                <Text style={styles.cardTitle}>REFER A FRIEND</Text>
+                <Text style={styles.cardTitle} numberOfLines={2}>REFER A FRIEND</Text>
               </ImageBackground>
             </TouchableOpacity>
           </View>
@@ -187,160 +202,233 @@ export default function ProfileScreen() {
       </ScrollView>
 
       {/* Floating Gift Button */}
-      <ButtonAnimation />
+      {/* <ButtonAnimation /> */}
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#F8F6F4" },
+  container: {
+    flex: 1,
+    backgroundColor: "#F8F6F4"
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: verticalScale(20),
+  },
 
   // Settings
-  settingContainer: { alignItems: "flex-end", padding: 18 },
-  settingsButton: { width: 36, height: 36 },
-  settingsIcon: { width: 28, height: 28, resizeMode: "contain" },
+  settingContainer: {
+    alignItems: "flex-end",
+    paddingHorizontal: scale(20),
+    paddingVertical: verticalScale(18),
+  },
+  settingsButton: {
+    width: scale(36),
+    height: scale(36),
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  settingsIcon: {
+    width: scale(28),
+    height: scale(28),
+    resizeMode: "contain"
+  },
 
   // Profile
   profileSection: {
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    marginBottom: 10,
+    paddingHorizontal: scale(20),
+    paddingVertical: verticalScale(10),
+    marginBottom: verticalScale(10),
   },
-  profileRow: { flexDirection: "row", alignItems: "center" },
-  profileImageContainer: { marginRight: 15 },
+  profileRow: {
+    flexDirection: "row",
+    alignItems: "center"
+  },
+  profileImageContainer: {
+    marginRight: scale(15)
+  },
   profileImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 30,
+    width: scale(80),
+    height: scale(80),
+    borderRadius: scale(25),
     resizeMode: "cover",
   },
-  profileInfo: { flex: 1 },
+  profileInfo: {
+    flex: 1,
+    paddingRight: scale(10),
+  },
   username: {
-    fontSize: 18,
+    fontSize: scale(18),
     fontWeight: "600",
     color: "#333",
-    marginBottom: 3,
+    marginBottom: verticalScale(3),
   },
-  userId: { fontSize: 14, color: "#888" },
+  userId: {
+    fontSize: scale(14),
+    color: "#888"
+  },
   scanButton: {
-    width: 40,
-    height: 40,
+    width: scale(40),
+    height: scale(40),
     justifyContent: "center",
     alignItems: "center",
   },
-  scanIcon: { width: 35, height: 35, resizeMode: "contain" },
+  scanIcon: {
+    width: scale(35),
+    height: scale(35),
+    resizeMode: "contain"
+  },
 
   // Stats
-  statsContainer: { paddingHorizontal: 20, marginBottom: 20 },
+  statsContainer: {
+    paddingHorizontal: scale(20),
+    marginBottom: verticalScale(20)
+  },
   statsSection: {
     flexDirection: "row",
     backgroundColor: "white",
-    borderRadius: 6,
-    paddingVertical: 20,
-    paddingHorizontal: 10,
+    borderRadius: scale(6),
+    paddingVertical: verticalScale(20),
+    paddingHorizontal: scale(10),
     elevation: 2,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
   },
-  statItem: { flex: 1, alignItems: "center" },
+  statItem: {
+    flex: 1,
+    alignItems: "center"
+  },
   statNumber: {
-    fontSize: 18,
+    fontSize: scale(16),
     fontWeight: "600",
     color: "#333",
-    marginBottom: 4,
+    marginBottom: verticalScale(4),
   },
-  statLabel: { fontSize: 12, color: "#999" },
-  statDivider: { width: 1, backgroundColor: "#E5E5E5", marginVertical: 8 },
+  statLabel: {
+    fontSize: scale(11),
+    color: "#999",
+    textAlign: 'center',
+  },
+  statDivider: {
+    width: 1,
+    backgroundColor: "#E5E5E5",
+    marginVertical: verticalScale(8)
+  },
   walletIcon: {
-    width: 24,
-    height: 24,
+    width: scale(24),
+    height: scale(24),
     resizeMode: "contain",
-    marginBottom: 4,
+    marginBottom: verticalScale(4),
   },
 
   // Leaf Section
   leafSection: {
-    paddingHorizontal: 10,
-    marginBottom: 20,
-    alignItems: "center",
-    marginLeft: 25,
-    marginRight: 20,
+    paddingHorizontal: scale(20),
+    marginBottom: verticalScale(20),
   },
   leafBackground: {
-    width: "110%",
-    paddingVertical: 30,
-    paddingHorizontal: 20,
+    width: "105%",
+    paddingVertical: verticalScale(30),
+    paddingHorizontal: scale(15),
+    minHeight: verticalScale(120),
+  },
+  leafBackgroundImage: {
+    borderRadius: scale(8),
   },
   leafContent: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    flex: 1,
   },
   leafTextContainer: {
     flex: 1,
-    marginTop: -20,
+    paddingRight: scale(10),
   },
   leafTitle: {
-    fontSize: 28,
+    fontSize: scale(24),
     fontWeight: "700",
     color: "#1C1C1C",
     fontFamily: "futura-bold-32",
-    marginBottom: 2,
+    marginBottom: verticalScale(2),
   },
   leafSubtitle: {
-    fontSize: 11,
+    fontSize: scale(11),
     color: "#626B73",
     fontWeight: "400",
     fontFamily: "futura-spacing",
+    lineHeight: scale(14),
   },
   leafRightSection: {
     alignItems: "center",
+    justifyContent: "center",
   },
   leafLogo: {
-    width: 80,
-    height: 80,
-    marginBottom: 20,
-    marginTop: -10,
+    width: scale(80),
+    height: scale(80),
+    marginBottom: verticalScale(10),
+    resizeMode: "contain",
   },
   benefitsButton: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: -23,
+    paddingHorizontal: scale(10),
   },
   benefitsText: {
-    fontSize: 12,
+    fontSize: scale(11),
     color: "#626B73",
     fontFamily: "futura-medium-15",
     fontWeight: "500",
+    marginBottom: -25,
   },
   benefitsArrow: {
-    fontSize: 16,
+    fontSize: scale(16),
     color: "#626B73",
-    marginLeft: 4,
+    marginLeft: scale(4),
+    marginBottom: -25,
   },
 
   // Feature Cards
-  cardsContainer: { width: screenWidth, paddingHorizontal: 15 },
+  cardsContainer: {
+    paddingHorizontal: scale(10),
+  },
   cardRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginVertical: 5,
+    marginBottom: verticalScale(scale(10)),
   },
-  card: { flex: 0.69, overflow: "hidden", height: 180 },
+  card: {
+    flex: 0.58,
+    overflow: "hidden",
+    height: verticalScale(160),
+    borderRadius: scale(8),
+  },
   cardBackground: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    paddingVertical: 20,
+    paddingVertical: verticalScale(15),
+    paddingHorizontal: scale(10),
+  },
+  cardBackgroundImage: {
+    borderRadius: scale(8),
   },
   cardIcon: {
-    width: 60,
-    height: 60,
+    width: scale(60),
+    height: scale(60),
     resizeMode: "contain",
-    marginBottom: 15,
+    marginBottom: verticalScale(10),
   },
-  cardTitle: { ...typography.caption, textAlign: "center" },
-  cardGreen: { backgroundColor: colors.green },
+  cardTitle: {
+    ...typography.caption,
+    textAlign: "center",
+    fontSize: scale(12),
+    lineHeight: scale(14),
+  },
+  cardGreen: {
+    backgroundColor: colors.green
+  },
 });

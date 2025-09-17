@@ -9,11 +9,14 @@ import {
   FlatList,
   Animated,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function AppButton() {
   const [showTaskModal, setShowTaskModal] = useState(false);
+  const insets = useSafeAreaInsets();
 
-  // Heartbeat animation for floating button
+  // Heartbeat animation
   const pulseAnim = useRef(new Animated.Value(1)).current;
   useEffect(() => {
     Animated.loop(
@@ -56,7 +59,6 @@ export default function AppButton() {
     }
   }, [showTaskModal]);
 
-  // Fake data for tasks
   const tasks = [
     { id: "1", title: "日常登录", reward: "10" },
     { id: "2", title: "参与投票（完成评论）", reward: "50" },
@@ -67,30 +69,44 @@ export default function AppButton() {
 
   return (
     <>
-      {/* Floating Button with heartbeat */}
-      <TouchableOpacity activeOpacity={0.8} onPress={() => setShowTaskModal(true)}>
-        <Animated.View
+      {/* Floating Button */}
+      <SafeAreaView pointerEvents="box-none" style={{ flex: 1 }}>
+        <TouchableOpacity
+          activeOpacity={0.8}
+          onPress={() => setShowTaskModal(true)}
           style={[
             styles.giftButton,
-            { transform: [{ scale: pulseAnim }] }, // ❤️ heartbeat effect
+            {
+              bottom: 60 + insets.bottom,
+              right: 20 + insets.right,
+              zIndex: 9999,
+            },
           ]}
         >
-          <Image
-            source={require("assets/icons/login-checklist.png")}
-            style={styles.giftIcon}
-            resizeMode="contain"
-          />
-        </Animated.View>
-      </TouchableOpacity>
+          <Animated.View
+            style={{ transform: [{ scale: pulseAnim }], pointerEvents: "auto" }}
+          >
+            <Image
+              source={require("assets/icons/login-checklist.png")}
+              style={styles.giftIcon}
+              resizeMode="contain"
+            />
+          </Animated.View>
+        </TouchableOpacity>
+      </SafeAreaView>
 
-      {/* Professional Center Modal */}
+
+      {/* Modal */}
       <Modal
         transparent
         visible={showTaskModal}
-        animationType="none" // we control animation manually
+        animationType="none"
         onRequestClose={() => setShowTaskModal(false)}
       >
-        <View style={styles.modalOverlay}>
+        <View
+          style={styles.modalOverlay}
+          pointerEvents={showTaskModal ? "auto" : "none"}
+        >
           <Animated.View
             style={[
               styles.modalCard,
@@ -99,7 +115,6 @@ export default function AppButton() {
           >
             <Text style={styles.modalTitle}>日常任务</Text>
 
-            {/* Task List */}
             <FlatList
               data={tasks}
               keyExtractor={(item) => item.id}
@@ -118,7 +133,6 @@ export default function AppButton() {
               )}
             />
 
-            {/* Close Button */}
             <TouchableOpacity
               style={styles.closeButton}
               onPress={() => setShowTaskModal(false)}
@@ -135,21 +149,19 @@ export default function AppButton() {
 const styles = StyleSheet.create({
   giftButton: {
     position: "absolute",
-    bottom: 20,
-    right: 20,
     width: 60,
     height: 60,
     backgroundColor: "#E1C16E",
     borderRadius: 30,
     justifyContent: "center",
     alignItems: "center",
-    elevation: 8,
+    elevation: 8, // Android shadow
+    shadowColor: "#000", // iOS shadow
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
   },
-  giftIcon: {
-    width: 35,
-    height: 35,
-    tintColor: "#000000",
-  },
+  giftIcon: { width: 35, height: 35, tintColor: "#000" },
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.5)",
@@ -164,13 +176,7 @@ const styles = StyleSheet.create({
     maxHeight: "70%",
     elevation: 10,
   },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    textAlign: "center",
-    marginBottom: 15,
-    color: "#333",
-  },
+  modalTitle: { fontSize: 18, fontWeight: "bold", textAlign: "center", marginBottom: 15, color: "#333" },
   taskRow: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -179,29 +185,10 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "#eee",
   },
-  taskText: {
-    fontSize: 15,
-    color: "#444",
-  },
-  rewardBox: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-  },
-  rewardText: {
-    fontSize: 14,
-    fontWeight: "bold",
-    marginRight: 5,
-    color: "#333",
-  },
-  crownIcon: {
-    width: 18,
-    height: 18,
-    tintColor: "#E1C16E",
-  },
+  taskText: { fontSize: 15, color: "#444" },
+  rewardBox: { flexDirection: "row", alignItems: "center", backgroundColor: "#fff", borderRadius: 12, paddingHorizontal: 10, paddingVertical: 5 },
+  rewardText: { fontSize: 14, fontWeight: "bold", marginRight: 5, color: "#333" },
+  crownIcon: { width: 18, height: 18, tintColor: "#E1C16E" },
   closeButton: {
     alignSelf: "center",
     marginTop: 15,
@@ -211,18 +198,11 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     justifyContent: "center",
     alignItems: "center",
-
-    // ✅ iOS shadow
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 3,
-
-    // ✅ Android shadow
     elevation: 5,
   },
-  closeText: {
-    fontSize: 22,
-    color: "#444",
-  },
+  closeText: { fontSize: 22, color: "#444" },
 });

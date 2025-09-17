@@ -225,7 +225,7 @@ export default function MenuScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f8f9fa" },
+  container: { flex: 1, backgroundColor: theme.colors.primary_bg, },
   header1: {
     backgroundColor: theme.colors.primary_bg,
     flexDirection: "row",

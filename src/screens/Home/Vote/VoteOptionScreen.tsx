@@ -212,8 +212,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: colors.gold_light,
-    backgroundColor: colors.gold_light,
+    borderBottomColor: "rgba(215, 167, 64, 0.1)",
   },
   backButton: {
     width: 32,

@@ -24,7 +24,7 @@ type HomeScreenNavProp = NativeStackNavigationProp<HomeStackParamList, "Home">;
 export default function BubbleTeaHomepage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const navigation = useNavigation();
-   const [showTaskModal, setShowTaskModal] = useState(false);
+  const [showTaskModal, setShowTaskModal] = useState(false);
 
   return (
     <View style={styles.container}>
@@ -61,10 +61,13 @@ export default function BubbleTeaHomepage() {
           <View style={styles.dividerLine} />
 
           <View style={styles.walletStats}>
-            <View style={styles.walletItem}>
+            <TouchableOpacity
+              style={styles.walletItem}
+              onPress={() => navigation.navigate("WalletStack" as never)}
+            >
               <Text style={styles.walletAmount}>0.00</Text>
               <Text style={styles.walletLabel}>钱包(RM)</Text>
-            </View>
+            </TouchableOpacity>
 
             <View style={styles.walletDivider} />
 

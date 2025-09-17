@@ -12,28 +12,60 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "The app accesses your photos to let you share them in your creative submissions.",
+          "cameraPermission": "The app accesses your camera to let you take photos for your creative submissions."
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "需要使用您的相机来扫描二维码"
+        }
+      ],
+      [
+        "expo-barcode-scanner",
+        {
+          "cameraPermission": "需要使用您的相机来扫描二维码"
+        }
+      ],
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "需要访问您的相册以保存二维码图片",
+          "savePhotosPermission": "需要保存二维码图片到您的相册",
+          "isAccessMediaLocationEnabled": true
+        }
+      ],
+      "expo-localization",
+      "expo-notifications"
+    ],
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "src/assets/images/splashScreen.png",
         "backgroundColor": "#000000"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.royalleaf.premium"
+      "package": "com.royalleaf.premium",
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ]
     },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.royalleaf.premium",
       "buildNumber": "1.0.0",
       "infoPlist": {
-        "NSCameraUsageDescription": "需要使用您的相机来拍照",
-        "NSPhotoLibraryUsageDescription": "需要访问您的相册以选择照片",
-        "NSPhotoLibraryAddUsageDescription": "需要保存图片到您的相册"
+        "NSCameraUsageDescription": "需要使用您的相机来拍照和扫描二维码",
+        "NSPhotoLibraryUsageDescription": "需要访问您的相册以选择照片和扫描二维码",
+        "NSPhotoLibraryAddUsageDescription": "需要保存二维码图片到您的相册"
       }
     },
-    "plugins": [
-      "expo-localization",
-      "expo-notifications"
-    ],
     "extra": {
       "appDescription": "RoyalLeaf Premium 是专为奶茶爱好者设计的会员应用，提供会员积分、专属优惠及活动资讯。",
       "brandColor": "#4A5D23",

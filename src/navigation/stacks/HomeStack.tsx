@@ -9,6 +9,7 @@ import RewardScreen from "screens/Home/Reward/RewardScreen";
 import SocialScreen from "screens/Home/Social/SocialScreen";
 import VoteStack from "navigation/stacks/VoteStack"; 
 import CreatorStack from "navigation/stacks/CreatorStack";
+import WalletStack from "navigation/stacks/WalletStack"
 
 export type HomeStackParamList = {
   Home: undefined;
@@ -16,6 +17,7 @@ export type HomeStackParamList = {
   CreatorStack: undefined;
   Social: undefined;
   VoteStack: undefined; 
+  WalletStack: undefined;
 };
 
 const Stack = createNativeStackNavigator<HomeStackParamList>();
@@ -30,6 +32,7 @@ export default function HomeStack() {
       <Stack.Screen name="Reward" component={RewardScreen} />
       <Stack.Screen name="CreatorStack" component={CreatorStack} />
       <Stack.Screen name="Social" component={SocialScreen} />
+      <Stack.Screen name="WalletStack" component={WalletStack} />
 
       {/* 投票流程 Stack */}
       <Stack.Screen name="VoteStack" component={VoteStack} />
