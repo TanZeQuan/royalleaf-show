@@ -1,23 +1,24 @@
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
-  TextInput,
-  Modal,
-  Image,
-  Dimensions,
-  TouchableWithoutFeedback,
-} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { typography, colors } from "styles";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import type { WalletStackParamList } from "../../../navigation/stacks/WalletStack";
-import { Platform, StatusBar } from "react-native";
 import { useHideTabBar } from "hooks/useHideTabBar";
+import React, { useState } from "react";
+import {
+  Dimensions,
+  Image,
+  Modal,
+  Platform,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
+} from "react-native";
+import { colors } from "styles";
+import type { WalletStackParamList } from "../../../navigation/stacks/HomeNav/WalletStack";
 
 
 const { width } = Dimensions.get("window");

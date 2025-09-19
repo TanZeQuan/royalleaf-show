@@ -1,34 +1,34 @@
-import React, { useState, useEffect } from "react";
+import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useNavigation, useRoute } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import * as ImagePicker from "expo-image-picker";
+import React, { useEffect, useState } from "react";
 import {
-    View,
-    Text,
-    StyleSheet,
-    TouchableOpacity,
-    StatusBar,
-    Image,
-    FlatList,
-    ActivityIndicator,
-    Modal,
-    TextInput,
-    Switch,
-    Alert,
-    ScrollView,
-    Platform,
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  Image,
+  Keyboard,
+  Modal,
+  Platform,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View
 } from "react-native";
 import {
-    SafeAreaView,
-    useSafeAreaInsets,
+  SafeAreaView,
+  useSafeAreaInsets,
 } from "react-native-safe-area-context";
-import { useNavigation, useRoute } from "@react-navigation/native";
-import { TouchableWithoutFeedback, Keyboard } from "react-native";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { typography, colors } from "styles";
+import { colors } from "styles";
+import { CreatorStackParamList } from "../../../navigation/stacks/HomeNav/CreatorStack";
 import styles from "../../Home/Creator/CreatorStyles";
 import { ContestEntry, RouteParams } from "../Creator/CreatorSlice";
-import { CreatorStackParamList } from "../../../navigation/stacks/CreatorStack";
-import { Ionicons } from "@expo/vector-icons";
-import * as ImagePicker from "expo-image-picker";
 
 type MySubmissionsNavigationProp =
     NativeStackNavigationProp<CreatorStackParamList>;

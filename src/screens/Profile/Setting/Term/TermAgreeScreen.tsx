@@ -1,14 +1,14 @@
+import { Ionicons } from "@expo/vector-icons";
+import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import React from "react";
 import {
-  View,
-  Text,
   StyleSheet,
+  Text,
   TouchableOpacity,
+  View,
 } from "react-native";
-import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
-import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { SettingStackParamList } from "../../../navigation/stacks/SettingStack";
+import { SettingStackParamList } from "navigation/stacks/ProfileNav/SettingStack";
 
 type TermAgreeRouteProp = RouteProp<SettingStackParamList, "SettingTerm">;
 
@@ -71,6 +71,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     backgroundColor: "#F9F5EC",
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(215, 167, 64, 0.1)",
   },
   backButton: {
     width: 35,

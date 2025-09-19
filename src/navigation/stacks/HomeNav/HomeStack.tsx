@@ -1,14 +1,14 @@
-import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import React from "react";
 
+import CreatorStack from "@navigation/stacks/HomeNav/CreatorStack";
+import VoteStack from "@navigation/stacks/HomeNav/VoteStack";
+import WalletStack from "@navigation/stacks/HomeNav/WalletStack";
 import HomeScreen from "screens/Home/HomeScreen";
+import CrownHistory from "screens/Home/Reward/CrownHistory";
+import ExchangeHistory from "screens/Home/Reward/ExchangeHistory";
 import RewardScreen from "screens/Home/Reward/RewardScreen";
 import SocialScreen from "screens/Home/Social/SocialScreen";
-import CreatorStack from "navigation/stacks/CreatorStack";
-import WalletStack from "navigation/stacks/WalletStack";
-import VoteStack from "navigation/stacks/VoteStack";
-import ExchangeHistory from "screens/Home/Reward/ExchangeHistory";
-import CrownHistory from "screens/Home/Reward/CrownHistory";
 
 export type HomeStackParamList = {
   Home: undefined;

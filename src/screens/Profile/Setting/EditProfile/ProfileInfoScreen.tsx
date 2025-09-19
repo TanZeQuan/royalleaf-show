@@ -1,22 +1,21 @@
-import React, { useState, useRef } from "react";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import * as ImagePicker from "expo-image-picker";
+import React, { useRef, useState } from "react";
 import {
-  View,
+  Animated,
+  Image,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  StyleSheet,
-  ScrollView,
-  Image,
-  Modal,
-  Animated,
-  StatusBar,
+  View
 } from "react-native";
-import Ionicons from "@expo/vector-icons/Ionicons";
 import { SafeAreaView } from "react-native-safe-area-context";
-import * as ImagePicker from "expo-image-picker";
-import { useNavigation } from "@react-navigation/native";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { SettingStackParamList } from "../../../navigation/stacks/SettingStack";
+import { SettingStackParamList } from "navigation/stacks/ProfileNav/SettingStack";
 
 interface FormData {
   name: string;
@@ -280,7 +279,7 @@ const styles = StyleSheet.create({
     borderBottomColor: "rgba(215, 167, 64, 0.1)",
   },
   backButton: {
-     width: 35,
+    width: 35,
     height: 35,
     borderRadius: 20,
     backgroundColor: "#fff",
@@ -410,7 +409,7 @@ const styles = StyleSheet.create({
   passwordButton: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#fff",
+    backgroundColor: "#E1C16E",
     borderRadius: 16,
     paddingVertical: 16,
     paddingHorizontal: 20,
@@ -424,13 +423,14 @@ const styles = StyleSheet.create({
   },
   passwordButtonText: {
     flex: 1,
-    marginLeft: 12,
     fontSize: 15,
-    color: "#2C2C2C",
+    color: "#3B4650",
+    alignItems: "center",
+    textAlign: "center",
     fontWeight: "500",
   },
   saveButton: {
-    backgroundColor: "#D7A740",
+    backgroundColor: "#E1C16E",
     borderRadius: 16,
     paddingVertical: 16,
     alignItems: "center",
@@ -441,7 +441,7 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   saveButtonText: {
-    color: "#fff",
+    color: "#3B4650",
     fontSize: 16,
     fontWeight: "600",
   },

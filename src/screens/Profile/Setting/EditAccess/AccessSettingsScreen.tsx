@@ -1,16 +1,16 @@
+import { Ionicons } from "@expo/vector-icons";
+import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import React, { useState } from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
   ScrollView,
   StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { RouteProp, useRoute, useNavigation } from "@react-navigation/native";
-import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { SettingStackParamList } from "../../../navigation/stacks/SettingStack";
+import { SettingStackParamList } from "../../../../navigation/stacks/ProfileNav/SettingStack";
 
 type AccessSettingsRouteProp = RouteProp<SettingStackParamList, "SettingAccess">;
 

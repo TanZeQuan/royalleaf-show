@@ -1,6 +1,6 @@
-import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import WalletScreen from "../../screens/Home/Wallet/WalletScreen";
+import React from "react";
+import WalletScreen from "../../../screens/Home/Wallet/WalletScreen";
 
 export type WalletStackParamList = {
     WalletScreen: undefined;

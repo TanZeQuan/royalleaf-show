@@ -1,11 +1,11 @@
-import React from "react";
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { ViewStyle } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import React from "react";
+import { ViewStyle } from "react-native";
 
-import HomeStack from "./stacks/HomeStack";
-import MenuStack from "./stacks/MenuStack";
-import ProfileStack from "./stacks/ProfileStack";
+import HomeStack from "./stacks/HomeNav/HomeStack";
+import MenuStack from "./stacks/MenuNav/MenuStack";
+import ProfileStack from "./stacks/ProfileNav/ProfileStack";
 
 export type TabParamList = {
   HomeStack: undefined;

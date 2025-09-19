@@ -1,12 +1,12 @@
-import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import ProfileInfoScreen from "screens/Profile/Setting/ProfileInfoScreen";
-import LanguageScreen from "screens/Profile/Setting/LanguageScreen";
-import AccessSettingsScreen from "screens/Profile/Setting/AccessSettingsScreen";
-import DeleteAccScreen from "screens/Profile/Setting/DeleteAccScreen";
-import TermAgreeScreen from "screens/Profile/Setting/TermAgreeScreen";
+import React from "react";
+import DeleteAccScreen from "screens/Profile/Setting/DeleteProfile/DeleteAccScreen";
+import AccessSettingsScreen from "screens/Profile/Setting/EditAccess/AccessSettingsScreen";
+import LanguageScreen from "screens/Profile/Setting/EditLanguage/LanguageScreen";
+import ProfileInfoScreen from "screens/Profile/Setting/EditProfile/ProfileInfoScreen";
+import ResetPasswordScreen from "screens/Profile/Setting/EditProfile/ResetPassScreen"; // 👈 import
 import SettingScreen from "screens/Profile/Setting/SettingScreen";
-import ResetPasswordScreen from "screens/Profile/Setting/ResetPassScreen"; // 👈 import
+import TermAgreeScreen from "screens/Profile/Setting/Term/TermAgreeScreen";
 
 export type SettingStackParamList = {
   Setting: undefined; // 👈 add Setting here

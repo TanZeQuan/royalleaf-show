@@ -1,23 +1,23 @@
 // screens/Profile/SettingScreen.tsx
-import React, { useState, useRef } from "react";
+import { Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { useHideTabBar } from "hooks/useHideTabBar";
+import React, { useRef, useState } from "react";
 import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
   Alert,
-  StatusBar,
-  Modal,
   Animated,
   Dimensions,
+  Modal,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { useNavigation } from "@react-navigation/native";
-import { Ionicons } from "@expo/vector-icons";
-import { removeItem } from "../../../utils/storage";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { SettingStackParamList } from "../../../navigation/stacks/SettingStack";
-import { useHideTabBar } from "hooks/useHideTabBar";
+import { SettingStackParamList } from "../../../navigation/stacks/ProfileNav/SettingStack";
+import { removeItem } from "../../../utils/storage";
 
 const { height: screenHeight } = Dimensions.get('window');
 

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { resetPassword } from "../../services/userApi";
+import { resetPassword } from "../../services/UserService/userApi";
 
 export default function ResetPasswordScreen({ route, navigation }: any) {
   const { email } = route.params;

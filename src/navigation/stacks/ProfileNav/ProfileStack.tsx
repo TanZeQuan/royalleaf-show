@@ -1,9 +1,9 @@
-import React from "react";
+import SettingStack from "@navigation/stacks/ProfileNav/SettingStack";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import React from "react";
+import BenefitScreen from "screens/Profile/Benefit/BenefitScreen";
 import ProfileScreen from "screens/Profile/ProfileScreen";
 import ScanScreen from "screens/Profile/QRScan/ScanScreen";
-import BenefitScreen from "screens/Profile/Benefit/BenefitScreen";
-import SettingStack from "navigation/stacks/SettingStack"
 
 export type ProfileStackParamList = {
   Profile: undefined;

@@ -1,34 +1,34 @@
-import React, { useState, useLayoutEffect } from "react";
+import { Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import * as ImagePicker from "expo-image-picker";
+import React, { useLayoutEffect, useState } from "react";
 import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  Dimensions,
-  StatusBar,
-  Image,
-  TextInput,
-  KeyboardAvoidingView,
-  Keyboard,
   Alert,
+  Dimensions,
+  Image,
+  Keyboard,
+  KeyboardAvoidingView,
   Platform,
+  ScrollView,
+  StatusBar,
+  Text,
+  TextInput,
+  TouchableOpacity,
   TouchableWithoutFeedback,
+  View,
 } from "react-native";
 import {
   SafeAreaView,
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
-import { useNavigation } from "@react-navigation/native";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { HomeStackParamList } from "../../../navigation/stacks/HomeStack";
-import { Ionicons } from "@expo/vector-icons";
+import { HomeStackParamList } from "../../../navigation/stacks/HomeNav/HomeStack";
 import {
-  styles,
-  shareStyles,
   newStyles,
   newStylesdropdown,
+  shareStyles,
+  styles,
 } from "../Social/SocialStyles";
-import * as ImagePicker from "expo-image-picker";
 
 const { width: screenWidth } = Dimensions.get("window");
 

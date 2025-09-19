@@ -1,25 +1,24 @@
-import React, { useState, useLayoutEffect } from "react";
+import { Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { useHideTabBar } from "hooks/useHideTabBar";
+import React from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
   ScrollView,
   StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import {
   SafeAreaView,
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
-import { useNavigation } from "@react-navigation/native";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { Ionicons } from "@expo/vector-icons";
-import { typography, colors } from "styles";
-import { useHideTabBar } from "hooks/useHideTabBar";
+import { colors } from "styles";
 
 // 导入导航类型
-import { CreatorStackParamList } from "navigation/stacks/CreatorStack";
-import CreatorSubmitScreen from "../Creator/CreatorSubmitScreen";
+import { CreatorStackParamList } from "@navigation/stacks/HomeNav/CreatorStack";
 
 type CreatorNavigationProp = NativeStackNavigationProp<CreatorStackParamList>;
 

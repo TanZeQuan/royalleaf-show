@@ -1,21 +1,20 @@
-import React from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  Image,
-  Dimensions,
-  TouchableOpacity,
-  ScrollView,
-  ImageBackground,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import React from "react";
+import {
+  Dimensions,
+  Image,
+  ImageBackground,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-import ButtonAnimation from "../../components/AppButton";
-import { typography, colors } from "styles";
-import { ProfileStackParamList } from "../../navigation/stacks/ProfileStack";
+import { colors, typography } from "styles";
+import { ProfileStackParamList } from "../../navigation/stacks/ProfileNav/ProfileStack";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 
@@ -147,7 +146,7 @@ export default function ProfileScreen() {
                   source={require("../../assets/icons/home-story.png")}
                   style={styles.cardIcon}
                 />
-                <Text style={styles.cardTitle} numberOfLines={2}>OUR STORY</Text>
+                <Text style={styles.cardTitle} numberOfLines={2}>我们的故事</Text>
               </ImageBackground>
             </TouchableOpacity>
 
@@ -159,10 +158,10 @@ export default function ProfileScreen() {
                 resizeMode="cover"
               >
                 <Image
-                  source={require("../../assets/icons/home-location.png")}
+                  source={require("assets/icons/login-vote.png")}
                   style={styles.cardIcon}
                 />
-                <Text style={styles.cardTitle} numberOfLines={2}>STORE LOCATION</Text>
+                <Text style={styles.cardTitle} numberOfLines={2}>投票</Text>
               </ImageBackground>
             </TouchableOpacity>
           </View>
@@ -176,10 +175,10 @@ export default function ProfileScreen() {
                 resizeMode="cover"
               >
                 <Image
-                  source={require("../../assets/icons/home-crown.png")}
+                  source={require("../../assets/images/profile-creator.png")}
                   style={styles.cardIcon}
                 />
-                <Text style={styles.cardTitle} numberOfLines={2}>CROWN</Text>
+                <Text style={styles.cardTitle} numberOfLines={2}>创造者</Text>
               </ImageBackground>
             </TouchableOpacity>
 
@@ -191,10 +190,10 @@ export default function ProfileScreen() {
                 resizeMode="cover"
               >
                 <Image
-                  source={require("../../assets/icons/home-refferal.png")}
+                  source={require("../../assets/images/profile-leaf.png")}
                   style={styles.cardIcon}
                 />
-                <Text style={styles.cardTitle} numberOfLines={2}>REFER A FRIEND</Text>
+                <Text style={styles.cardTitle} numberOfLines={2}>茶会</Text>
               </ImageBackground>
             </TouchableOpacity>
           </View>
@@ -220,7 +219,7 @@ const styles = StyleSheet.create({
   // Settings
   settingContainer: {
     alignItems: "flex-end",
-    paddingHorizontal: scale(20),
+    paddingHorizontal: scale(22),
     paddingVertical: verticalScale(18),
   },
   settingsButton: {
@@ -378,10 +377,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: scale(10),
   },
   benefitsText: {
-    fontSize: scale(11),
+    fontSize: scale(13),
     color: "#626B73",
-    fontFamily: "futura-medium-15",
-    fontWeight: "500",
+    fontFamily: "FuturaPT-Medium",
     marginBottom: -25,
   },
   benefitsArrow: {
@@ -425,8 +423,9 @@ const styles = StyleSheet.create({
   cardTitle: {
     ...typography.caption,
     textAlign: "center",
-    fontSize: scale(12),
+    fontSize: scale(15),
     lineHeight: scale(14),
+    fontFamily: "Inter-Bold",
   },
   cardGreen: {
     backgroundColor: colors.green

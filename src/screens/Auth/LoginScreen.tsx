@@ -13,7 +13,6 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { loginUser } from "../../services/userApi"; //api
 
 interface LoginScreenProps {
   navigation: any;
@@ -121,7 +120,7 @@ export default function LoginScreen({ navigation, onLogin }: LoginScreenProps) {
               <TextInput
                 style={styles.input}
                 placeholder="输入您的电子邮件或电话号码"
-                placeholderTextColor="#999"
+                placeholderTextColor="#B4B4B4"
                 value={username}
                 onChangeText={setUsername}
                 keyboardType="email-address"
@@ -139,7 +138,7 @@ export default function LoginScreen({ navigation, onLogin }: LoginScreenProps) {
               <TextInput
                 style={styles.input}
                 placeholder="输入您的密码"
-                placeholderTextColor="#999"
+                placeholderTextColor="#B4B4B4"
                 secureTextEntry={!showPassword}
                 value={password}
                 onChangeText={setPassword}
@@ -347,8 +346,8 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    fontSize: height * 0.020,
-    color: '#2c2c2c',
+    fontSize: height * 0.018,
+    color: '#2c2c2ca6',
   },
   eyeIcon: {
     padding: 5,
@@ -392,6 +391,7 @@ const styles = StyleSheet.create({
     color: '#000000ff',
     fontSize: height * 0.022,
     textAlign: 'center',
+    fontFamily: "Inter-Medium",
   },
   socialSection: {},
   dividerContainer: {
@@ -406,7 +406,7 @@ const styles = StyleSheet.create({
   },
   dividerText: {
     marginHorizontal: 10,
-    color: '#888',
+    color: '#9D9D9B',
     fontSize: height * 0.018,
   },
   socialButtonsContainer: {

@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from "react";
-import { StyleSheet, Text, View, TouchableOpacity, Image, StatusBar, BackHandler } from "react-native";
-import { CameraView, useCameraPermissions } from "expo-camera";
-import QRCode from "react-native-qrcode-svg";
-import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { ProfileStackParamList } from "../../../navigation/stacks/ProfileStack";
+import { CameraView, useCameraPermissions } from "expo-camera";
+import React, { useEffect, useState } from "react";
+import { Image, StatusBar, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import QRCode from "react-native-qrcode-svg";
+import { ProfileStackParamList } from "../../../navigation/stacks/ProfileNav/ProfileStack";
 type ProfileScreenNavigationProp = NativeStackNavigationProp<
   ProfileStackParamList,
   "Profile"

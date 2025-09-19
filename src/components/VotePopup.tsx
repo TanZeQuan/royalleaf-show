@@ -1,16 +1,16 @@
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import React from "react";
 import {
+  Image,
   Modal,
-  View,
+  ScrollView,
   Text,
   TouchableOpacity,
-  ScrollView,
-  Image,
+  View,
 } from "react-native";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { useNavigation } from "@react-navigation/native";
+import type { HomeStackParamList } from "../navigation/stacks/HomeNav/HomeStack";
 import { styles } from "./VotePopupStyle";
-import type { HomeStackParamList } from "../navigation/stacks/HomeStack";
 
 type VotePopupNavigationProp = NativeStackNavigationProp<
   HomeStackParamList,

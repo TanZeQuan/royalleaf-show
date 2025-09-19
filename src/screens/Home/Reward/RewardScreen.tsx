@@ -1,24 +1,24 @@
 // RewardScreen.tsx
-import React, { useState, useLayoutEffect, useCallback } from "react";
+import { Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import React, { useLayoutEffect, useState } from "react";
 import {
-  View,
+  Image,
+  ImageBackground,
+  Modal,
+  Platform,
+  ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
-  ScrollView,
-  Image,
-  Platform,
-  Modal,
   TouchableWithoutFeedback,
-  ImageBackground,
+  View,
 } from "react-native";
-import { useNavigation } from "@react-navigation/native";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { Ionicons } from "@expo/vector-icons";
 import { colors } from "styles";
-import { styles } from "../../Home/Reward/RewardStyle";
+import { HomeStackParamList } from "../../../navigation/stacks/HomeNav/HomeStack";
 import { Voucher } from "../../Home/Reward/RewardSlice";
-import { HomeStackParamList } from "../../../navigation/stacks/HomeStack";
+import { styles } from "../../Home/Reward/RewardStyle";
 
 type RewardScreenNavProp = NativeStackNavigationProp<HomeStackParamList, "Reward">;
 export default function RewardScreen() {

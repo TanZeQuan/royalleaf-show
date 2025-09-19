@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
-import { verifyOtp } from "../../services/userApi";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { verifyOtp } from "../../services/UserService/userApi";
 
 export default function OtpVerificationScreen({ route, navigation }: any) {
   const { email } = route.params; // 从 ForgotPassword 页面传过来的

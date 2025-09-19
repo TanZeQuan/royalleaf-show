@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
-import React, { useState, useCallback } from "react";
+import React, { useCallback, useState } from "react";
 import {
   Alert,
   Dimensions,
@@ -17,11 +17,10 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { registerUser } from "../../services/userApi";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { registerUser } from "../../services/UserService/userApi";
 import {
   formatDateForApi,
-  formatDateForDisplay,
   getDateFromBirthday,
   parseBirthdayInput
 } from "../../utils/dateUtils";

@@ -1,7 +1,7 @@
-import React from "react";
-import { View, Text, StyleSheet } from "react-native";
 import { RouteProp, useRoute } from "@react-navigation/native";
-import { SettingStackParamList } from "../../../navigation/stacks/SettingStack";
+import React from "react";
+import { StyleSheet, Text, View } from "react-native";
+import { SettingStackParamList } from "../../../../navigation/stacks/ProfileNav/SettingStack";
 
 type LanguageScreenRouteProp = RouteProp<SettingStackParamList, "SettingLanguage">;
 

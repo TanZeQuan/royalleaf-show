@@ -1,10 +1,10 @@
-import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import React from "react";
 import MenuScreen from "screens/Menu/MenuScreen";
-import OrderScreen from "../../screens/Menu/OrderScreen";
-import { Product } from "../../services/menuApi";
-import PaymentScreen from "../../screens/Menu/PaymentScreen";
-import ConfirmPaymentScreen from "../../screens/Menu/ConfirmPaymentScreen";
+import ConfirmPaymentScreen from "../../../screens/Menu/ConfirmPaymentScreen";
+import OrderScreen from "../../../screens/Menu/OrderScreen";
+import PaymentScreen from "../../../screens/Menu/PaymentScreen";
+import { Product } from "../../../services/MenuService/menuApi";
 
 export type MenuStackParamList = {
   Menu: undefined;

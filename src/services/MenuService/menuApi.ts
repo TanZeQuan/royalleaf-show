@@ -1,4 +1,4 @@
-import api from "./api";
+import api from "../apiClient";
 
 const API_BASE_URL = "http://192.168.0.122:8080/royal/api";
 

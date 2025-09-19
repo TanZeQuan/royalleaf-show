@@ -1,4 +1,4 @@
-import api from "./api";
+import api from "../apiClient";
 
 // ✅ 注册
 export const registerUser = async (data: {

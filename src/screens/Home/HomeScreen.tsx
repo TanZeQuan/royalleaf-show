@@ -1,22 +1,22 @@
-import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  Image,
-  TouchableOpacity,
-  StyleSheet,
-  StatusBar,
-  Platform,
-  Dimensions,
-  ScrollView,
-  ImageBackground,
-} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { typography, colors } from "styles"; // ✅ 用统一字体 & 颜色
+import { HomeStackParamList } from "@navigation/stacks/HomeNav/HomeStack";
+import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import ButtonAnimation from "components/AppButton";
-import { useNavigation } from "@react-navigation/native";
-import { HomeStackParamList } from "navigation/stacks/HomeStack";
+import React, { useEffect, useState } from "react";
+import {
+  Dimensions,
+  Image,
+  ImageBackground,
+  Platform,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { colors, typography } from "styles"; // ✅ 用统一字体 & 颜色
 import VotePopup from "../../components/VotePopup";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
@@ -306,7 +306,7 @@ const styles = StyleSheet.create({
     }),
   },
   navIcon: { width: 50, height: 50, resizeMode: "contain", marginBottom: 5 },
-  navCardText: { ...typography.caption, color: colors.black, marginTop: 8 },
+  navCardText: { ...typography.caption, color: colors.black, marginTop: 8, fontFamily: "FuturaPT-Bold" },
 
   salesSection: { width: "100%", alignItems: "center", marginVertical: 10 },
   banner: {
