@@ -13,7 +13,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { theme } from "styles";
 import { MenuStackParamList } from "../../navigation/stacks/MenuNav/MenuStack";
-import { fetchProductOptions, IceLevel, SizeOption, SugarLevel } from "../../services/MenuService/orderApi";
+import { fetchProductOptions, IceLevel, SizeOption, SugarLevel } from "services/MenuService/orderApi";
 
 type OrderRouteProp = RouteProp<MenuStackParamList, "Order">;
 

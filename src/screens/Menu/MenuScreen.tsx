@@ -20,7 +20,7 @@ import {
   fetchCategories,
   fetchProductsByCategory,
   ProductWithLists,
-} from "../../services/MenuService/menuApi";
+} from "services/MenuService/menuApi";
 
 type MenuScreenNavigationProp = NativeStackNavigationProp<
   MenuStackParamList,
