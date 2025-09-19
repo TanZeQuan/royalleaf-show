@@ -1,0 +1,142 @@
+import { StyleSheet } from "react-native";
+import { colors } from "styles";
+
+export const styles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.6)",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+  },
+  container: {
+    backgroundColor: colors.primary_bg,
+    borderRadius: 20,
+    width: "100%",
+    maxWidth: 400,
+    height: "85%",
+    position: "relative",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 5,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 10,
+  },
+  closeButton: {
+    position: "absolute",
+    top: 15,
+    right: 20,
+    zIndex: 10,
+    width: 30,
+    height: 30,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: colors.gray_light,
+    borderRadius: 15,
+  },
+  closeButtonText: {
+    fontSize: 20,
+    color: colors.gray_text,
+    fontWeight: "bold",
+  },
+  header: {
+    alignItems: "center",
+    paddingTop: 30,
+    paddingBottom: 20,
+    paddingHorizontal: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.gold_light,
+  },
+  crownIcon: {
+    width: 40,
+    height: 40,
+    resizeMode: "contain",
+    marginBottom: 10,
+  },
+  title: {
+    fontSize: 22,
+    fontWeight: "bold",
+    color: colors.black,
+    textAlign: "center",
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: 20,
+  },
+  section: {
+    marginVertical: 15,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: colors.black,
+    marginBottom: 10,
+  },
+  description: {
+    fontSize: 14,
+    color: colors.gray_deep,
+    lineHeight: 20,
+    marginBottom: 15,
+  },
+  detailItem: {
+    flexDirection: "row",
+    marginBottom: 8,
+    alignItems: "flex-start",
+  },
+  detailLabel: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: colors.black,
+    minWidth: 80,
+  },
+  detailText: {
+    fontSize: 14,
+    color: colors.gray_deep,
+    flex: 1,
+  },
+  ruleItem: {
+    flexDirection: "row",
+    marginBottom: 12,
+    alignItems: "flex-start",
+  },
+  ruleNumber: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: colors.black,
+    minWidth: 20,
+    marginRight: 8,
+  },
+  ruleText: {
+    fontSize: 14,
+    color: colors.gray_deep,
+    lineHeight: 20,
+    flex: 1,
+  },
+  footer: {
+    padding: 20,
+    borderTopWidth: 1,
+    borderTopColor: colors.gold_light,
+  },
+  startButton: {
+    backgroundColor: colors.gold_deep,
+    borderRadius: 12,
+    paddingVertical: 15,
+    alignItems: "center",
+    shadowColor: colors.gold_deep,
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  startButtonText: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: colors.black,
+  },
+});

@@ -1,7 +1,6 @@
 import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import ProfileScreen from "screens/Profile/ProfileScreen";
-import SettingScreen from "screens/Profile/Setting/SettingScreen";
 import ScanScreen from "screens/Profile/QRScan/ScanScreen";
 import BenefitScreen from "screens/Profile/Benefit/BenefitScreen";
 import SettingStack from "navigation/stacks/SettingStack"

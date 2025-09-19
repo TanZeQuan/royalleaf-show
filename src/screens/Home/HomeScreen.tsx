@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -17,14 +17,30 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import ButtonAnimation from "components/AppButton";
 import { useNavigation } from "@react-navigation/native";
 import { HomeStackParamList } from "navigation/stacks/HomeStack";
+import VotePopup from "../../components/VotePopup";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
-type HomeScreenNavProp = NativeStackNavigationProp<HomeStackParamList, "Home">;
+type HomeScreenNavigationProp = NativeStackNavigationProp<HomeStackParamList>;
 
 export default function BubbleTeaHomepage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const navigation = useNavigation();
+  const [showVotePopup, setShowVotePopup] = useState(false);
+  const navigation = useNavigation<HomeScreenNavigationProp>();
   const [showTaskModal, setShowTaskModal] = useState(false);
+
+  // 模拟登录成功后显示投票弹窗
+  useEffect(() => {
+    // 延迟1秒显示弹窗，模拟登录成功进入主页的效果
+    const timer = setTimeout(() => {
+      setShowVotePopup(true);
+    }, 1500);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  const handleCloseVotePopup = () => {
+    setShowVotePopup(false);
+  };
 
   return (
     <View style={styles.container}>
@@ -110,7 +126,7 @@ export default function BubbleTeaHomepage() {
 
             <TouchableOpacity
               style={styles.recommendationItem}
-              onPress={() => navigation.navigate("CreatorStack" as never)}
+              onPress={() => navigation.navigate("CreatorStack")}
             >
               <View style={styles.recommendationIcon}>
                 <Ionicons name="create-outline" size={28} color={colors.black} />
@@ -168,6 +184,9 @@ export default function BubbleTeaHomepage() {
 
       {/* Floating Gift Button */}
       <ButtonAnimation />
+
+      {/* Vote Popup */}
+      <VotePopup visible={showVotePopup} onClose={handleCloseVotePopup} />
     </View>
   );
 }

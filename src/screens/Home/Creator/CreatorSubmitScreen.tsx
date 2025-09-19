@@ -27,6 +27,7 @@ import { typography, colors } from "styles";
 import styles from "../../Home/Creator/CreatorStyles";
 import { ContestEntry, RouteParams } from "../Creator/CreatorSlice";
 import { CreatorStackParamList } from "../../../navigation/stacks/CreatorStack";
+import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 
 type MySubmissionsNavigationProp =
@@ -64,13 +65,36 @@ const MySubmissionsScreen = () => {
         { value: "rejected", label: "拒绝" },
     ];
 
+    // Request permissions when component mounts
     useEffect(() => {
+        requestPermissions();
         loadEntries();
     }, []);
 
     useEffect(() => {
         filterEntries();
     }, [entries, filterStatus, params?.selectedCategory]);
+
+    // Request camera and media library permissions
+    const requestPermissions = async () => {
+        try {
+            // Request camera permissions
+            const cameraPermission = await ImagePicker.requestCameraPermissionsAsync();
+            
+            // Request media library permissions
+            const mediaLibraryPermission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+            
+            if (cameraPermission.status !== 'granted') {
+                console.warn('Camera permission not granted');
+            }
+            
+            if (mediaLibraryPermission.status !== 'granted') {
+                console.warn('Media library permission not granted');
+            }
+        } catch (error) {
+            console.error('Error requesting permissions:', error);
+        }
+    };
 
     const loadEntries = async () => {
         setIsLoading(true);
@@ -192,12 +216,44 @@ const MySubmissionsScreen = () => {
         setImageSourceModalVisible(false);
 
         try {
-            // 直接打开相册，不检查权限
+            // Check permission first
+            const permission = await ImagePicker.getMediaLibraryPermissionsAsync();
+            
+            if (permission.status !== 'granted') {
+                const requestPermission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+                
+                if (requestPermission.status !== 'granted') {
+                    Alert.alert(
+                        "权限需要",
+                        "请在设置中允许访问相册权限以选择图片",
+                        [
+                            { text: "取消", style: "cancel" },
+                            { 
+                                text: "去设置", 
+                                onPress: () => {
+                                    if (Platform.OS === 'ios') {
+                                        // For iOS, we can't directly open settings, but we can show instructions
+                                        Alert.alert(
+                                            "开启相册权限",
+                                            "请前往 设置 > 隐私与安全性 > 照片 > 找到此应用并开启权限",
+                                            [{ text: "知道了" }]
+                                        );
+                                    }
+                                }
+                            }
+                        ]
+                    );
+                    return;
+                }
+            }
+
             const result = await ImagePicker.launchImageLibraryAsync({
                 mediaTypes: ImagePicker.MediaTypeOptions.Images,
                 allowsEditing: true,
                 aspect: [1, 1],
                 quality: 0.8,
+                allowsMultipleSelection: false,
+                selectionLimit: 1,
             });
 
             if (!result.canceled && result.assets && result.assets.length > 0) {
@@ -214,11 +270,41 @@ const MySubmissionsScreen = () => {
         setImageSourceModalVisible(false);
 
         try {
-            // 直接打开相机，不检查权限
+            // Check permission first
+            const permission = await ImagePicker.getCameraPermissionsAsync();
+            
+            if (permission.status !== 'granted') {
+                const requestPermission = await ImagePicker.requestCameraPermissionsAsync();
+                
+                if (requestPermission.status !== 'granted') {
+                    Alert.alert(
+                        "权限需要",
+                        "请在设置中允许相机权限以拍照",
+                        [
+                            { text: "取消", style: "cancel" },
+                            { 
+                                text: "去设置", 
+                                onPress: () => {
+                                    if (Platform.OS === 'ios') {
+                                        Alert.alert(
+                                            "开启相机权限",
+                                            "请前往 设置 > 隐私与安全性 > 相机 > 找到此应用并开启权限",
+                                            [{ text: "知道了" }]
+                                        );
+                                    }
+                                }
+                            }
+                        ]
+                    );
+                    return;
+                }
+            }
+
             const result = await ImagePicker.launchCameraAsync({
                 allowsEditing: true,
                 aspect: [1, 1],
                 quality: 0.8,
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
             });
 
             if (!result.canceled && result.assets && result.assets.length > 0) {
@@ -392,8 +478,12 @@ const MySubmissionsScreen = () => {
 
             {/* Header */}
             <View style={styles.header}>
-                <TouchableOpacity style={styles.backButton} onPress={handleGoBack}>
-                    <Text style={styles.backIcon}>←</Text>
+                <TouchableOpacity
+                    style={styles.backButton}
+                    onPress={() => navigation.goBack()}
+                    activeOpacity={0.7}
+                >
+                    <Ionicons name="arrow-back" size={24} color="#333" />
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>
                     {params?.categoryName

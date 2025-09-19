@@ -2,19 +2,22 @@ import React, { useState, useEffect } from "react";
 import { StyleSheet, Text, View, TouchableOpacity, Image, StatusBar, BackHandler } from "react-native";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import QRCode from "react-native-qrcode-svg";
+import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from '@expo/vector-icons';
-
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { ProfileStackParamList } from "../../../navigation/stacks/ProfileStack";
+type ProfileScreenNavigationProp = NativeStackNavigationProp<
+  ProfileStackParamList,
+  "Profile"
+>;
 export default function App() {
   const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = useState(false);
   const [activeTab, setActiveTab] = useState<"scan" | "myqr">("scan");
+  const navigation = useNavigation<ProfileScreenNavigationProp>();
 
   const handleGoBack = () => {
-    // If using React Navigation, you would use:
-    // navigation.goBack();
-    
-    // For now, we'll use BackHandler to exit the app or handle back action
-    BackHandler.exitApp();
+    navigation.goBack();
   };
 
   useEffect(() => {
@@ -38,10 +41,10 @@ export default function App() {
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#1a1a1a" />
-      
+
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.headerBtn} onPress={handleGoBack}>
+        <TouchableOpacity style={styles.headerBtn} onPress={() => navigation.goBack()}>
           <Ionicons name="chevron-back" size={24} color="#fff" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>
@@ -79,9 +82,9 @@ export default function App() {
               </View>
             </View>
           </View>
-          
+
           <Text style={styles.scanInstruction}>将二维码放入框内即可自动扫描</Text>
-          
+
           {scanned && (
             <TouchableOpacity
               style={styles.rescanBtn}
@@ -116,38 +119,38 @@ export default function App() {
 
       {/* 底部导航 */}
       <View style={styles.bottomNav}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={[styles.navItem, activeTab === "scan" && styles.activeNavItem]}
           onPress={() => setActiveTab("scan")}
         >
           <View style={styles.navIcon}>
-            <Ionicons 
-              name="qr-code-outline" 
-              size={24} 
-              color={activeTab === "scan" ? "#4CAF50" : "#888"} 
+            <Ionicons
+              name="qr-code-outline"
+              size={24}
+              color={activeTab === "scan" ? "#4CAF50" : "#888"}
             />
           </View>
           <Text style={[styles.navText, activeTab === "scan" && styles.activeNavText]}>
             扫一扫
           </Text>
         </TouchableOpacity>
-        
-        <TouchableOpacity 
+
+        <TouchableOpacity
           style={[styles.navItem, activeTab === "myqr" && styles.activeNavItem]}
           onPress={() => setActiveTab("myqr")}
         >
           <View style={styles.navIcon}>
-            <Ionicons 
-              name="person-circle-outline" 
-              size={24} 
-              color={activeTab === "myqr" ? "#4CAF50" : "#888"} 
+            <Ionicons
+              name="person-circle-outline"
+              size={24}
+              color={activeTab === "myqr" ? "#4CAF50" : "#888"}
             />
           </View>
           <Text style={[styles.navText, activeTab === "myqr" && styles.activeNavText]}>
             我的码
           </Text>
         </TouchableOpacity>
-        
+
         <TouchableOpacity style={styles.navItem}>
           <View style={styles.navIcon}>
             <Ionicons name="grid-outline" size={24} color="#888" />

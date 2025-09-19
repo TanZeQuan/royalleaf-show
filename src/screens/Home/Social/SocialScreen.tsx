@@ -21,6 +21,7 @@ import {
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { HomeStackParamList } from "../../../navigation/stacks/HomeStack";
+import { Ionicons } from "@expo/vector-icons";
 import {
   styles,
   shareStyles,
@@ -108,15 +109,23 @@ export default function SocialScreen() {
   const [showPhotoRequired, setShowPhotoRequired] = useState(false);
 
   useLayoutEffect(() => {
-    const parent = navigation.getParent();
-    if (parent) {
-      parent.setOptions({ tabBarStyle: { display: "none" } });
-    }
+    navigation.getParent()?.setOptions({
+      tabBarStyle: { display: "none" },
+    });
 
     return () => {
-      if (parent) {
-        parent.setOptions({ tabBarStyle: { display: "flex" } });
-      }
+      navigation.getParent()?.setOptions({
+        tabBarStyle: {
+          backgroundColor: "#F9F5EC",
+          height: 80, // 从 70 ➝ 90 或更大
+          paddingBottom: Platform.OS === "ios" ? 25 : 15, // 底部留白
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: -2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 4,
+          elevation: 5,
+        },
+      });
     };
   }, [navigation]);
 
@@ -341,8 +350,12 @@ export default function SocialScreen() {
       <StatusBar barStyle="dark-content" backgroundColor="#f7fafc" />
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={handleGoBack}>
-          <Text style={styles.backIcon}>←</Text>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+          activeOpacity={0.7}
+        >
+          <Ionicons name="arrow-back" size={24} color="#333" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>茶会</Text>
         <TouchableOpacity onPress={handleCameraClick}>

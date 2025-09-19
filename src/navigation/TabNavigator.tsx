@@ -1,6 +1,5 @@
 import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { getFocusedRouteNameFromRoute } from "@react-navigation/native";
 import { ViewStyle } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -19,35 +18,48 @@ const Tab = createBottomTabNavigator<TabParamList>();
 export default function AppTabs() {
   const handleLogout = () => {
     console.log("User logged out");
-    // 清除 token / 跳转登录页等
   };
 
+  const BASE_TAB_STYLE: ViewStyle = {
+    backgroundColor: "#fff",
+    borderTopWidth: 0.5,
+    borderTopColor: "#ddd",
+    height: 60,
+  };
+
+  // 需要隐藏 Tab Bar 的路由名
   const HIDE_TAB_ROUTES = [
-    "VoteDetail",
-    "Comment",
-    "VoteSubmit",
-    "Payment",
-    "ConfirmPayment",
-    "Wallet",
-    "VipLevel",
-    "OurStory",
-    "Points",
-    "Voucher",
-    "Settings",
+    "Reward",
+    "Social",
+    "CreatorStack",
+    "WalletStack",
+    "VoteStack",
+    "CrownHistory",
+    "ExchangeHistory",
   ];
 
-  const getTabBarStyle = (route: any): ViewStyle => {
-    const routeName = getFocusedRouteNameFromRoute(route);
-    if (routeName && HIDE_TAB_ROUTES.includes(routeName)) {
-      return { display: "none" };
+  // 🔥 递归获取最深层路由名
+  const getDeepestRouteName = (route: any): string => {
+    if (!route) return "";
+    if (route.state && route.state.routes && route.state.index != null) {
+      return getDeepestRouteName(route.state.routes[route.state.index]);
     }
-    return {};
+    return route.name ?? "";
+  };
+
+  const getTabBarStyle = (route: any): ViewStyle => {
+    const routeName = getDeepestRouteName(route);
+    if (HIDE_TAB_ROUTES.includes(routeName)) {
+      return { height: 0, opacity: 0 }; // 隐藏 Tab Bar
+    }
+    return BASE_TAB_STYLE;
   };
 
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
+        tabBarStyle: BASE_TAB_STYLE,
         tabBarIcon: ({ color, size }) => {
           let iconName: keyof typeof Ionicons.glyphMap = "home";
           if (route.name === "HomeStack") iconName = "home";
@@ -73,10 +85,7 @@ export default function AppTabs() {
           tabBarStyle: getTabBarStyle(route),
         })}
       />
-      <Tab.Screen
-        name="ProfileStack"
-        options={{ title: "我的" }}
-      >
+      <Tab.Screen name="ProfileStack">
         {() => <ProfileStack onLogout={handleLogout} />}
       </Tab.Screen>
     </Tab.Navigator>

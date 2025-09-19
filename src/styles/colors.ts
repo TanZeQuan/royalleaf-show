@@ -1,5 +1,5 @@
 const colors = {
- // 基础色
+  // 基础色
   black: "#232323",
   white: "#FFFFFF",
   primary_bg: "#F9F5EC",

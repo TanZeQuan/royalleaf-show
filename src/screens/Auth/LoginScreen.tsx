@@ -97,18 +97,18 @@ export default function LoginScreen({ navigation, onLogin }: LoginScreenProps) {
           {/* Logo Section */}
           <View style={styles.logoContainer}>
             <Image
-              source={require('assets/icons/login-logo.png')}
+              source={require('assets/icons/New-Login-logo.png')}
               style={styles.logo}
               resizeMode="contain"
             />
           </View>
 
-          {/* Welcome Section */}
+          {/* Welcome Section
           <View style={styles.welcomeSection}>
             <Text style={styles.welcomeText}>Welcome to</Text>
             <Text style={styles.appName}>Royal Leaf</Text>
             <Text style={styles.subtitle}>Sign in to continue to your account</Text>
-          </View>
+          </View> */}
 
           {/* Input Fields */}
           <View style={styles.inputContainer}>
@@ -120,7 +120,7 @@ export default function LoginScreen({ navigation, onLogin }: LoginScreenProps) {
               />
               <TextInput
                 style={styles.input}
-                placeholder="Enter your Username"
+                placeholder="输入您的电子邮件或电话号码"
                 placeholderTextColor="#999"
                 value={username}
                 onChangeText={setUsername}
@@ -138,7 +138,7 @@ export default function LoginScreen({ navigation, onLogin }: LoginScreenProps) {
               />
               <TextInput
                 style={styles.input}
-                placeholder="Enter your password"
+                placeholder="输入您的密码"
                 placeholderTextColor="#999"
                 secureTextEntry={!showPassword}
                 value={password}
@@ -160,7 +160,7 @@ export default function LoginScreen({ navigation, onLogin }: LoginScreenProps) {
 
           {/* Forgot Password */}
           <TouchableOpacity style={styles.forgotPassword} onPress={navigateToForgotPassword}>
-            <Text style={styles.forgotPasswordText}>Forgot password?</Text>
+            <Text style={styles.forgotPasswordText}>忘记密码?</Text>
           </TouchableOpacity>
 
           {/* Login Button */}
@@ -171,7 +171,7 @@ export default function LoginScreen({ navigation, onLogin }: LoginScreenProps) {
             testID="login-button"
           >
             <Text style={styles.loginButtonText}>
-              {loading ? "Logging in..." : "Login"}
+              {loading ? "登录中..." : "登录"}
             </Text>
           </TouchableOpacity>
 
@@ -179,7 +179,7 @@ export default function LoginScreen({ navigation, onLogin }: LoginScreenProps) {
           <View style={styles.socialSection}>
             <View style={styles.dividerContainer}>
               <View style={styles.divider} />
-              <Text style={styles.dividerText}>Or login with</Text>
+              <Text style={styles.dividerText}>或登录</Text>
               <View style={styles.divider} />
             </View>
 
@@ -240,9 +240,9 @@ export default function LoginScreen({ navigation, onLogin }: LoginScreenProps) {
 
           {/* Register */}
           <View style={styles.registerSection}>
-            <Text style={styles.registerText}>Don't have an account?</Text>
+            <Text style={styles.registerText}>还没有账户?</Text>
             <TouchableOpacity onPress={navigateToRegister}>
-              <Text style={styles.registerLink}>Sign up</Text>
+              <Text style={styles.registerLink}>注册</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -270,51 +270,51 @@ const styles = StyleSheet.create({
     top: -80,
     left: -22,
     right: 0,
-    height: height * 0.4,
+    height: height * 0.3,
     width: width,
-    opacity: 0.08,
+    opacity: 0.2,
     alignSelf: 'center',
   },
   logoContainer: {
     alignItems: 'center',
   },
   logo: {
-    width: height * 0.20,
-    height: height * 0.20,
+    width: height * 0.22,
+    height: height * 0.22,
     alignSelf: "center",
   },
 
-  brandName: {
-    fontSize: height * 0.02,
-    fontWeight: 'bold',
-    color: '#8B4513',
-  },
-  brandSubtitle: {
-    fontSize: height * 0.012,
-    color: '#8B4513',
-    letterSpacing: 1,
-  },
-  welcomeSection: {
-    alignItems: 'center',
-  },
-  welcomeText: {
-    fontSize: height * 0.03,
-    color: '#000000ff',
-    fontWeight: 'bold',
-    marginBottom: height * 0.005,
-  },
-  appName: {
-    fontSize: height * 0.04,
-    fontWeight: 'bold',
-    color: '#2c2c2c',
-    marginBottom: height * 0.01,
-  },
-  subtitle: {
-    fontSize: height * 0.018,
-    color: '#626B73',
-    textAlign: 'center',
-    marginBottom: height * 0.03,
-  },
+  // brandName: {
+  //   fontSize: height * 0.02,
+  //   fontWeight: 'bold',
+  //   color: '#8B4513',
+  // },
+  // brandSubtitle: {
+  //   fontSize: height * 0.012,
+  //   color: '#8B4513',
+  //   letterSpacing: 1,
+  // },
+  // welcomeSection: {
+  //   alignItems: 'center',
+  // },
+  // welcomeText: {
+  //   fontSize: height * 0.03,
+  //   color: '#000000ff',
+  //   fontWeight: 'bold',
+  //   marginBottom: height * 0.005,
+  // },
+  // appName: {
+  //   fontSize: height * 0.04,
+  //   fontWeight: 'bold',
+  //   color: '#2c2c2c',
+  //   marginBottom: height * 0.01,
+  // },
+  // subtitle: {
+  //   fontSize: height * 0.018,
+  //   color: '#626B73',
+  //   textAlign: 'center',
+  //   marginBottom: height * 0.03,
+  // },
   inputContainer: {
     marginBottom: height * 0.020,
   },

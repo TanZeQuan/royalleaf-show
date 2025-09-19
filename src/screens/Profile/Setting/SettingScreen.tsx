@@ -16,7 +16,8 @@ import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { removeItem } from "../../../utils/storage";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { SettingStackParamList } from "../../../navigation/stacks/SettingStack"; 
+import { SettingStackParamList } from "../../../navigation/stacks/SettingStack";
+import { useHideTabBar } from "hooks/useHideTabBar";
 
 const { height: screenHeight } = Dimensions.get('window');
 
@@ -39,7 +40,8 @@ const languages: Language[] = [
 export default function SettingScreen({ onLogout }: SettingScreenProps) {
   const navigation =
     useNavigation<NativeStackNavigationProp<SettingStackParamList>>();
-  
+  // ✅ 自动隐藏底部导航栏
+  useHideTabBar(true);
   const [languageModalVisible, setLanguageModalVisible] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState<Language>(languages[0]);
   const slideAnim = useRef(new Animated.Value(screenHeight)).current;
@@ -113,7 +115,7 @@ export default function SettingScreen({ onLogout }: SettingScreenProps) {
           onPress={() => navigation.goBack()}
           activeOpacity={0.7}
         >
-          <Ionicons name="chevron-back" size={24} color="#333" />
+          <Ionicons name="arrow-back" size={24} color="#333" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>设置</Text>
         <View style={styles.headerRight} />

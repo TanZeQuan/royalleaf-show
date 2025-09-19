@@ -147,7 +147,17 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   backButton: {
-    padding: 5,
+     width: 35,
+    height: 35,
+    borderRadius: 20,
+    backgroundColor: "#fff",
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   headerTitle: {
     fontSize: 18,

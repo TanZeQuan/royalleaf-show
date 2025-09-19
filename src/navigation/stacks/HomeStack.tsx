@@ -1,23 +1,24 @@
 import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
-// Home 主页面
 import HomeScreen from "screens/Home/HomeScreen";
-
-// 子页面
 import RewardScreen from "screens/Home/Reward/RewardScreen";
 import SocialScreen from "screens/Home/Social/SocialScreen";
-import VoteStack from "navigation/stacks/VoteStack"; 
 import CreatorStack from "navigation/stacks/CreatorStack";
-import WalletStack from "navigation/stacks/WalletStack"
+import WalletStack from "navigation/stacks/WalletStack";
+import VoteStack from "navigation/stacks/VoteStack";
+import ExchangeHistory from "screens/Home/Reward/ExchangeHistory";
+import CrownHistory from "screens/Home/Reward/CrownHistory";
 
 export type HomeStackParamList = {
   Home: undefined;
   Reward: undefined;
-  CreatorStack: undefined;
   Social: undefined;
-  VoteStack: undefined; 
+  CreatorStack: undefined;
   WalletStack: undefined;
+  VoteStack: undefined;
+  CrownHistory: undefined;
+  ExchangeHistory: undefined;
 };
 
 const Stack = createNativeStackNavigator<HomeStackParamList>();
@@ -25,17 +26,14 @@ const Stack = createNativeStackNavigator<HomeStackParamList>();
 export default function HomeStack() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      {/* 主页面 */}
       <Stack.Screen name="Home" component={HomeScreen} />
-
-      {/* 子页面 */}
       <Stack.Screen name="Reward" component={RewardScreen} />
-      <Stack.Screen name="CreatorStack" component={CreatorStack} />
       <Stack.Screen name="Social" component={SocialScreen} />
+      <Stack.Screen name="CreatorStack" component={CreatorStack} />
       <Stack.Screen name="WalletStack" component={WalletStack} />
-
-      {/* 投票流程 Stack */}
       <Stack.Screen name="VoteStack" component={VoteStack} />
+      <Stack.Screen name="CrownHistory" component={CrownHistory} />
+      <Stack.Screen name="ExchangeHistory" component={ExchangeHistory} />
     </Stack.Navigator>
   );
 }

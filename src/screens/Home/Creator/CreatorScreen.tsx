@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useLayoutEffect } from "react";
 import {
   View,
   Text,
@@ -13,25 +13,29 @@ import {
 } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { Ionicons } from "@expo/vector-icons";
 import { typography, colors } from "styles";
+import { useHideTabBar } from "hooks/useHideTabBar";
 
 // 导入导航类型
 import { CreatorStackParamList } from "navigation/stacks/CreatorStack";
-import CreatorSubmitScreen from "./CreatorSubmitScreen";
+import CreatorSubmitScreen from "../Creator/CreatorSubmitScreen";
 
-type ContestNavigationProp = NativeStackNavigationProp<CreatorStackParamList>;
+type CreatorNavigationProp = NativeStackNavigationProp<CreatorStackParamList>;
 
-interface ContestCategory {
+interface CreatorCategory {
   id: string;
   title: string;
   description: string;
 }
 
-const ContestScreen = () => {
+const CreatorStack = () => {
   const insets = useSafeAreaInsets();
-  const navigation = useNavigation<ContestNavigationProp>();
+  const navigation = useNavigation<CreatorNavigationProp>();
+  // ✅ 自动隐藏底部导航栏
+  useHideTabBar(true);
 
-  const categories: ContestCategory[] = [
+  const categories: CreatorCategory[] = [
     {
       id: "drinks",
       title: "饮料专场",
@@ -57,14 +61,14 @@ const ContestScreen = () => {
   const handleGoBack = () => navigation.goBack();
 
   const handleCategorySelect = (categoryId: string) => {
-  // 找到选中的分类对象
-  const category = categories.find(cat => cat.id === categoryId);
+    // 找到选中的分类对象
+    const category = categories.find(cat => cat.id === categoryId);
 
-  navigation.navigate("CreatorSubmit", {
-    entries: [], // 如果还没数据，先传空数组
-    selectedCategory: categoryId,
-    categoryName: category?.title || '通用',
-  });
+    navigation.navigate("CreatorSubmit", {
+      entries: [], // 如果还没数据，先传空数组
+      selectedCategory: categoryId,
+      categoryName: category?.title || '通用',
+    });
 
 
   };
@@ -75,8 +79,12 @@ const ContestScreen = () => {
 
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={handleGoBack}>
-          <Text style={styles.backIcon}>←</Text>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+          activeOpacity={0.7}
+        >
+          <Ionicons name="arrow-back" size={24} color="#333" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>创意竞赛</Text>
         <View style={styles.placeholder} />
@@ -117,13 +125,19 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: "#f0f0f0",
-    backgroundColor: colors.gold_light,
   },
   backButton: {
-    width: 32,
-    height: 32,
-    justifyContent: "center",
+    width: 35,
+    height: 35,
+    borderRadius: 20,
+    backgroundColor: "#fff",
     alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   backIcon: {
     fontSize: 20,
@@ -184,4 +198,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ContestScreen;
+export default CreatorStack;

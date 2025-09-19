@@ -3,7 +3,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import WalletScreen from "../../screens/Home/Wallet/WalletScreen";
 
 export type WalletStackParamList = {
-    WalletMain: undefined;
+    WalletScreen: undefined;
     TransactionHistory: undefined;
     TopUp: undefined;
     Withdraw: undefined;
@@ -14,7 +14,7 @@ const Stack = createNativeStackNavigator<WalletStackParamList>();
 export default function WalletStack() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="WalletMain" component={WalletScreen} />
+      <Stack.Screen name="WalletScreen" component={WalletScreen} />
     </Stack.Navigator>
   );
 }

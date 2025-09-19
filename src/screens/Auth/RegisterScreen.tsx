@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import {
   Alert,
   Dimensions,
@@ -17,8 +17,8 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { registerUser } from "../../services/userApi";
+import { SafeAreaView } from "react-native-safe-area-context";
 import {
   formatDateForApi,
   formatDateForDisplay,
@@ -28,31 +28,60 @@ import {
 
 const { width, height } = Dimensions.get("window");
 
-// Standardized sizing function
+// Constants
+const COLORS = {
+  primary: "#E1C16E",
+  primaryDark: "#D4AF37",
+  secondary: "#5F6734",
+  background: "#f8f6f0",
+  white: "#fff",
+  text: "#333",
+  textLight: "#666",
+  textMuted: "#999",
+  placeholder: "#999",
+  border: "#e0e0e0",
+  error: "#FF6B6B",
+  success: "#4ECDC4",
+  warning: "#FFE66D",
+  shadow: "#000",
+};
+
+const SIZES = {
+  base: 16,
+  small: 12,
+  medium: 14,
+  large: 18,
+  xl: 20,
+  radius: 25,
+  avatarSize: 100,
+  iconSize: 20,
+};
+
+// Utility functions
 const normalize = (size: number) => {
-  const scale = width / 375; // Base width
+  const scale = width / 330;
   const newSize = size * scale;
-  if (Platform.OS === "ios") {
-    return Math.round(PixelRatio.roundToNearestPixel(newSize));
-  } else {
-    return Math.round(PixelRatio.roundToNearestPixel(newSize)) - 2;
-  }
+  return Platform.OS === "ios"
+    ? Math.round(PixelRatio.roundToNearestPixel(newSize))
+    : Math.round(PixelRatio.roundToNearestPixel(newSize)) - 2;
 };
 
 const hp = (percentage: number) => (height * percentage) / 100;
 const wp = (percentage: number) => (width * percentage) / 100;
 
-type RegisterScreenProps = {
+// Types
+interface RegisterScreenProps {
   navigation: any;
-  onRegister?: (username: string) => void; // 可传 username
-};
+  onRegister?: (username: string) => void;
+}
 
 interface LocationData {
   id: string;
   name: string;
 }
 
-const locations: LocationData[] = [
+// Mock data
+const LOCATIONS: LocationData[] = [
   { id: "1", name: "Kuala Lumpur" },
   { id: "2", name: "Selangor" },
   { id: "3", name: "Penang" },
@@ -63,156 +92,187 @@ const locations: LocationData[] = [
 ];
 
 export default function RegisterScreen({ navigation, onRegister }: RegisterScreenProps) {
-  const [name, setName] = useState("");
-  const [username, setUsername] = useState("");
-  const [phone, setPhone] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [birthday, setBirthday] = useState("");
-  const [location, setLocation] = useState("");
-  const [referralCode, setReferralCode] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [agreeToTerms, setAgreeToTerms] = useState(false);
+  // Form state
+  const [formData, setFormData] = useState({
+    name: "",
+    username: "",
+    phone: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    birthday: "",
+    location: "",
+    referralCode: "",
+  });
 
-  // Additional
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [showLocationModal, setShowLocationModal] = useState(false);
-  const [passwordStrength, setPasswordStrength] = useState(0);
-  const [emailValid, setEmailValid] = useState(true);
-  const [avatarUri, setAvatarUri] = useState<string | null>(null);
+  // UI state
+  const [uiState, setUiState] = useState({
+    loading: false,
+    showPassword: false,
+    showConfirmPassword: false,
+    agreeToTerms: false,
+    showDatePicker: false,
+    showLocationModal: false,
+    selectedDate: null as Date | null,
+    avatarUri: null as string | null,
+  });
 
+  // Validation state
+  const [validation, setValidation] = useState({
+    passwordStrength: 0,
+    emailValid: true,
+  });
 
-  const handlePhoneChange = (text: string) => {
-    const digitsOnly = text.replace(/\D/g, ""); // remove non-digit
-    setPhone(digitsOnly.slice(0, 10)); // max 10 digits
-  };
+  // Handlers
+  const updateFormData = useCallback((field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  }, []);
 
-  // Display formatted phone but without interfering with typing
-  const formatPhoneForDisplay = (value: string) => {
-    if (!value) return ""; // empty when nothing typed
+  const updateUiState = useCallback((field: string, value: any) => {
+    setUiState(prev => ({ ...prev, [field]: value }));
+  }, []);
+
+  const handlePhoneChange = useCallback((text: string) => {
+    const digitsOnly = text.replace(/\D/g, "");
+    updateFormData("phone", digitsOnly.slice(0, 10));
+  }, [updateFormData]);
+
+  const formatPhoneForDisplay = useCallback((value: string) => {
+    if (!value) return "";
     const len = value.length;
-
     if (len <= 3) return value;
     if (len <= 6) return `${value.slice(0, 3)}-${value.slice(3)}`;
     return `${value.slice(0, 3)}-${value.slice(3, 6)}${value.slice(6)}`;
-  };
+  }, []);
 
-  // --- Email ---
-  const validateEmail = (email: string) => {
+  const validateEmail = useCallback((email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const isValid = emailRegex.test(email);
-    setEmailValid(isValid);
+    setValidation(prev => ({ ...prev, emailValid: isValid }));
     return isValid;
-  };
+  }, []);
 
-  const handleEmailChange = (text: string) => {
-    setEmail(text);
+  const handleEmailChange = useCallback((text: string) => {
+    updateFormData("email", text);
     if (text.length > 0) validateEmail(text);
-    else setEmailValid(true);
-  };
+    else setValidation(prev => ({ ...prev, emailValid: true }));
+  }, [updateFormData, validateEmail]);
 
-  const pickImageFromGallery = async () => {
-    // Ask for permission
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert("Permission denied", "We need access to your photo library to select an image.");
-      return;
-    }
-
-    // Open image picker
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images, // Correct usage for expo-image-picker
-      allowsEditing: true,
-      quality: 1,
-    });
-
-
-    if (!result.canceled) {
-      // Save the selected image URI
-      setAvatarUri(result.assets[0].uri);
-    }
-  };
-
-  // --- Password ---
-  const calculatePasswordStrength = (password: string) => {
+  const calculatePasswordStrength = useCallback((password: string) => {
     let strength = 0;
     if (password.length >= 8) strength += 25;
     if (/[A-Z]/.test(password)) strength += 25;
     if (/[0-9]/.test(password)) strength += 25;
     if (/[^A-Za-z0-9]/.test(password)) strength += 25;
-    setPasswordStrength(strength);
+    setValidation(prev => ({ ...prev, passwordStrength: strength }));
     return strength;
-  };
+  }, []);
 
-  const handlePasswordChange = (text: string) => {
-    setPassword(text);
+  const handlePasswordChange = useCallback((text: string) => {
+    updateFormData("password", text);
     calculatePasswordStrength(text);
-  };
+  }, [updateFormData, calculatePasswordStrength]);
 
-  const getPasswordStrengthColor = () => {
-    if (passwordStrength < 50) return "#FF6B6B";
-    if (passwordStrength < 75) return "#FFE66D";
-    return "#4ECDC4";
-  };
+  const getPasswordStrengthColor = useCallback(() => {
+    const { passwordStrength } = validation;
+    if (passwordStrength < 50) return COLORS.error;
+    if (passwordStrength < 75) return COLORS.warning;
+    return COLORS.success;
+  }, [validation.passwordStrength]);
 
-  const getPasswordStrengthText = () => {
+  const getPasswordStrengthText = useCallback(() => {
+    const { passwordStrength } = validation;
     if (passwordStrength < 25) return "Weak";
     if (passwordStrength < 50) return "Fair";
     if (passwordStrength < 75) return "Good";
     return "Strong";
-  };
+  }, [validation.passwordStrength]);
 
-  // --- Input typing ---
-  const handleBirthdayChange = (text: string) => {
+  const handleBirthdayChange = useCallback((text: string) => {
     const formatted = parseBirthdayInput(text);
-    setBirthday(formatted);
+    updateFormData("birthday", formatted);
 
     if (formatted.length === 10) {
       const date = getDateFromBirthday(formatted);
-      if (date) setSelectedDate(date);
+      if (date) updateUiState("selectedDate", date);
     }
-  };
+  }, [updateFormData, updateUiState]);
 
-  // --- Date picker ---
-  const handleDateSelect = (event: any, date?: Date) => {
-    if (date && !isNaN(date.getTime())) {
-      setSelectedDate(date);
-      setBirthday(formatDateForDisplay(date));
-    }
-    if (Platform.OS === "android") setShowDatePicker(false);
-  };
-
-  // --- When submitting ---
-  const dobFormatted = selectedDate ? selectedDate.toISOString().split("T")[0] : "";
-
-  // --- Location ---
-  const handleLocationSelect = (locationName: string) => {
-    setLocation(locationName);
-    setShowLocationModal(false);
-  };
-
-  // --- Register ---
-  const handleRegister = async () => {
-    if (!username.trim()) return Alert.alert("Error", "Username is required.");
-    if (!name.trim()) return Alert.alert("Error", "Name is required.");
-    if (!phone || phone.length < 9) return Alert.alert("Error", "Please enter a valid phone number.");
-    if (!email || !validateEmail(email)) return Alert.alert("Error", "Please enter a valid email address.");
-    if (!password || passwordStrength < 50) return Alert.alert("Error", "Please create a stronger password.");
-    if (password !== confirmPassword) return Alert.alert("Error", "Passwords do not match.");
-    if (!agreeToTerms) return Alert.alert("Error", "Please agree to terms and conditions.");
-
-    // Convert DD/MM/YYYY -> yyyy-MM-dd
-    let dobForBackend = "";
-    const dob = formatDateForApi(selectedDate, birthday);
-
-    setLoading(true);
+  const pickImageFromGallery = useCallback(async () => {
     try {
-      const res = await registerUser({
-        username: username.trim(),  // ✅ use the username state
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert("Permission denied", "We need access to your photo library to select an image.");
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        quality: 1,
+      });
+
+      if (!result.canceled) {
+        updateUiState("avatarUri", result.assets[0].uri);
+      }
+    } catch (error) {
+      Alert.alert("Error", "Failed to select image. Please try again.");
+    }
+  }, [updateUiState]);
+
+  const handleLocationSelect = useCallback((locationName: string) => {
+    updateFormData("location", locationName);
+    updateUiState("showLocationModal", false);
+  }, [updateFormData, updateUiState]);
+
+  const validateForm = useCallback(() => {
+    const { username, name, phone, email, password, confirmPassword } = formData;
+    const { agreeToTerms } = uiState;
+    const { passwordStrength, emailValid } = validation;
+
+    if (!username.trim()) {
+      Alert.alert("Error", "Username is required.");
+      return false;
+    }
+    if (!name.trim()) {
+      Alert.alert("Error", "Name is required.");
+      return false;
+    }
+    if (!phone || phone.length < 9) {
+      Alert.alert("Error", "Please enter a valid phone number.");
+      return false;
+    }
+    if (!email || !emailValid) {
+      Alert.alert("Error", "Please enter a valid email address.");
+      return false;
+    }
+    if (!password || passwordStrength < 50) {
+      Alert.alert("Error", "Please create a stronger password.");
+      return false;
+    }
+    if (password !== confirmPassword) {
+      Alert.alert("Error", "Passwords do not match.");
+      return false;
+    }
+    if (!agreeToTerms) {
+      Alert.alert("Error", "Please agree to terms and conditions.");
+      return false;
+    }
+    return true;
+  }, [formData, uiState, validation]);
+
+  const handleRegister = useCallback(async () => {
+    if (!validateForm()) return;
+
+    const { username, name, phone, email, password, location, referralCode } = formData;
+    const { selectedDate } = uiState;
+
+    updateUiState("loading", true);
+
+    try {
+      const dob = formatDateForApi(selectedDate, formData.birthday);
+      const response = await registerUser({
+        username: username.trim(),
         passcode: password,
         name: name.trim(),
         phone: `+60${phone}`,
@@ -222,26 +282,182 @@ export default function RegisterScreen({ navigation, onRegister }: RegisterScree
         referral: referralCode.trim(),
       });
 
-      if (res.success) {
-        Alert.alert("Success", res.message || "Registration successful!");
-        navigation.navigate("Login"); // <-- navigate back to Login screen
+      if (response.success) {
+        Alert.alert("Success", response.message || "Registration successful!");
+        navigation.navigate("Login");
       } else {
-        Alert.alert("Failed", res.message || "Registration failed.");
+        Alert.alert("Failed", response.message || "Registration failed.");
       }
-
     } catch (error) {
       Alert.alert("Error", "Unable to register. Please try again.");
     } finally {
-      setLoading(false);
+      updateUiState("loading", false);
     }
+  }, [formData, uiState, validateForm, updateUiState, navigation]);
+
+  // Render components
+  const renderHeader = () => (
+    <View style={styles.header}>
+      <TouchableOpacity
+        style={styles.backButton}
+        onPress={() => navigation.goBack()}
+        activeOpacity={0.6}
+      >
+        <Ionicons name="arrow-back" size={normalize(SIZES.iconSize)} color={COLORS.text} />
+      </TouchableOpacity>
+      <Text style={styles.headerTitle}>创建账号</Text>
+    </View>
+  );
+
+  const renderAvatar = () => (
+    <View style={styles.avatarSection}>
+      <View style={styles.avatarContainer}>
+        <View style={styles.avatarPlaceholder}>
+          {uiState.avatarUri ? (
+            <Image
+              source={{ uri: uiState.avatarUri }}
+              style={styles.avatarImage}
+            />
+          ) : (
+            <Ionicons name="person" size={normalize(40)} color={COLORS.textMuted} />
+          )}
+        </View>
+        <TouchableOpacity
+          style={styles.cameraButton}
+          onPress={pickImageFromGallery}
+          activeOpacity={0.8}
+        >
+          <Ionicons name="camera" size={normalize(16)} color={COLORS.white} />
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+
+  const renderInputField = (
+    iconName: string,
+    placeholder: string,
+    value: string,
+    onChangeText: (text: string) => void,
+    options: {
+      secureTextEntry?: boolean;
+      keyboardType?: any;
+      autoCapitalize?: any;
+      maxLength?: number;
+      showToggle?: boolean;
+      onToggle?: () => void;
+      validation?: React.ReactNode;
+      isValid?: boolean;
+      iconSource?: any;
+    } = {}
+  ) => (
+    <View style={styles.inputGroup}>
+      <View style={[styles.inputContainer, options.isValid === false && styles.inputError]}>
+        {options.iconSource ? (
+          <Image
+            source={options.iconSource}
+            style={[styles.inputIcon, styles.imageIcon]}
+            resizeMode="contain"
+          />
+        ) : (
+          <Ionicons
+            name={iconName as any}
+            size={normalize(SIZES.iconSize)}
+            color={COLORS.textMuted}
+            style={styles.inputIcon}
+          />
+        )}
+        <TextInput
+          style={styles.input}
+          placeholder={placeholder}
+          placeholderTextColor={COLORS.placeholder}
+          value={value}
+          onChangeText={onChangeText}
+          secureTextEntry={options.secureTextEntry}
+          keyboardType={options.keyboardType}
+          autoCapitalize={options.autoCapitalize}
+          maxLength={options.maxLength}
+        />
+        {options.showToggle && (
+          <TouchableOpacity
+            onPress={options.onToggle}
+            style={styles.eyeButton}
+            activeOpacity={0.6}
+          >
+            <Ionicons
+              name={options.secureTextEntry ? "eye-outline" : "eye-off-outline"}
+              size={normalize(SIZES.iconSize)}
+              color={COLORS.textLight}
+            />
+          </TouchableOpacity>
+        )}
+      </View>
+      {options.validation}
+    </View>
+  );
+
+  const renderPasswordStrength = () => {
+    if (formData.password.length === 0) return null;
+
+    return (
+      <View style={styles.passwordStrengthContainer}>
+        <View style={styles.passwordStrengthBar}>
+          <View
+            style={[
+              styles.passwordStrengthFill,
+              {
+                width: `${validation.passwordStrength}%`,
+                backgroundColor: getPasswordStrengthColor()
+              }
+            ]}
+          />
+        </View>
+        <Text style={[styles.passwordStrengthText, { color: getPasswordStrengthColor() }]}>
+          {getPasswordStrengthText()}
+        </Text>
+      </View>
+    );
   };
+
+  const renderLocationModal = () => (
+    <Modal
+      visible={uiState.showLocationModal}
+      transparent={true}
+      animationType="slide"
+      onRequestClose={() => updateUiState("showLocationModal", false)}
+    >
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContent}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>Select Location</Text>
+            <TouchableOpacity
+              onPress={() => updateUiState("showLocationModal", false)}
+              style={styles.modalCloseButton}
+            >
+              <Ionicons name="close" size={normalize(24)} color={COLORS.text} />
+            </TouchableOpacity>
+          </View>
+          <ScrollView style={styles.modalScroll}>
+            {LOCATIONS.map((loc) => (
+              <TouchableOpacity
+                key={loc.id}
+                style={styles.locationItem}
+                onPress={() => handleLocationSelect(loc.name)}
+              >
+                <Text style={styles.locationText}>{loc.name}</Text>
+                <Ionicons name="chevron-forward" size={normalize(SIZES.iconSize)} color={COLORS.textMuted} />
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+      </View>
+    </Modal>
+  );
 
   return (
     <View style={styles.fullScreenContainer}>
-      {/* Status Bar */}
       <StatusBar
         barStyle="dark-content"
-        backgroundColor="#f8f6f0"
+        backgroundColor={COLORS.background}
         translucent={false}
       />
 
@@ -256,300 +472,141 @@ export default function RegisterScreen({ navigation, onRegister }: RegisterScree
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
           >
-            {/* Header */}
-            <View style={styles.header}>
-              <TouchableOpacity
-                style={styles.backButton}
-                onPress={() => navigation.goBack()}
-                activeOpacity={0.6}
-              >
-                <Ionicons name="arrow-back" size={normalize(20)} color="#333" />
-              </TouchableOpacity>
-              <Text style={styles.headerTitle}>Create an Account</Text>
-            </View>
+            {renderHeader()}
 
-            {/* Background */}
             <Image
               source={require("assets/icons/login-bg.png")}
               style={styles.backgroundPattern}
               resizeMode="cover"
             />
 
-            {/* Avatar */}
-            <View style={styles.avatarSection}>
-              <View style={styles.avatarContainer}>
-                <View style={styles.avatarPlaceholder}>
-                  {avatarUri ? (
-                    <Image
-                      source={{ uri: avatarUri }}
-                      style={{ width: '100%', height: '100%', borderRadius: normalize(50) }}
-                    />
-                  ) : (
-                    <Ionicons name="person" size={normalize(40)} color="#999" />
-                  )}
-                </View>
-                <TouchableOpacity
-                  style={styles.cameraButton}
-                  onPress={pickImageFromGallery}
-                  activeOpacity={0.8}
-                >
-                  <Ionicons name="camera" size={normalize(16)} color="#fff" />
-                </TouchableOpacity>
-              </View>
-            </View>
+            {renderAvatar()}
 
-            {/* Form */}
             <View style={styles.form}>
-              {/* Usename */}
-              <View style={styles.inputGroup}>
-                <View style={styles.inputContainer}>
-                  <Ionicons
-                    name="person-outline"
-                    size={normalize(20)}
-                    color="#999"
-                    style={styles.inputIcon}
-                  />
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Enter your Username"
-                    placeholderTextColor="#999"
-                    value={username}
-                    onChangeText={setUsername}
-                    autoCapitalize="words"
-                  />
-                </View>
-              </View>
+              {/* Username */}
+              {renderInputField(
+                "person-outline",
+                "输入您的用户名",
+                formData.username,
+                (text) => updateFormData("username", text),
+                { autoCapitalize: "words" }
+              )}
 
               {/* Name */}
-              <View style={styles.inputGroup}>
-                <View style={styles.inputContainer}>
-                  <Ionicons
-                    name="person-outline"
-                    size={normalize(20)}
-                    color="#999"
-                    style={styles.inputIcon}
-                  />
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Enter your full name"
-                    placeholderTextColor="#999"
-                    value={name}
-                    onChangeText={setName}
-                    autoCapitalize="words"
-                  />
-                </View>
-              </View>
+              {renderInputField(
+                "person-outline",
+                "输入您的姓名",
+                formData.name,
+                (text) => updateFormData("name", text),
+                { autoCapitalize: "words" }
+              )}
 
               {/* Phone */}
-              <View style={styles.inputGroup}>
-                <View style={styles.inputContainer}>
-                  <Ionicons
-                    name="call-outline"
-                    size={normalize(20)}
-                    color="#999"
-                    style={styles.inputIcon}
-                  />
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Enter phone number"
-                    keyboardType="phone-pad"
-                    placeholderTextColor="#999"
-                    value={formatPhoneForDisplay(phone)} // only formatted display
-                    onChangeText={handlePhoneChange}
-                  />
-
-                </View>
-              </View>
+              {renderInputField(
+                "call-outline",
+                "输入您的电话号码",
+                formatPhoneForDisplay(formData.phone),
+                handlePhoneChange,
+                { keyboardType: "phone-pad" }
+              )}
 
               {/* Email */}
-              <View style={styles.inputGroup}>
-                <View style={[styles.inputContainer, !emailValid && styles.inputError]}>
-                  <Ionicons
-                    name="mail-outline"
-                    size={normalize(20)}
-                    color="#999"
-                    style={styles.inputIcon}
-                  />
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Enter your email address"
-                    placeholderTextColor="#999"
-                    keyboardType="email-address"
-                    autoCapitalize="none"
-                    value={email}
-                    onChangeText={handleEmailChange}
-                  />
-                  {email.length > 0 && (
-                    <Ionicons
-                      name={emailValid ? "checkmark-circle" : "close-circle"}
-                      size={normalize(20)}
-                      color={emailValid ? "#4ECDC4" : "#FF6B6B"}
-                    />
-                  )}
-                </View>
-                {!emailValid && email.length > 0 && (
-                  <Text style={styles.errorText}>Please enter a valid email</Text>
-                )}
-              </View>
+              {renderInputField(
+                "mail-outline",
+                "输入您的电子邮件",
+                formData.email,
+                handleEmailChange,
+                {
+                  keyboardType: "email-address",
+                  autoCapitalize: "none",
+                  isValid: validation.emailValid,
+                  validation: !validation.emailValid && formData.email.length > 0 && (
+                    <Text style={styles.errorText}>Please enter a valid email</Text>
+                  )
+                }
+              )}
 
               {/* Password */}
-              <View style={styles.inputGroup}>
-                <View style={styles.inputContainer}>
-                  <Ionicons
-                    name="lock-closed-outline"
-                    size={normalize(20)}
-                    color="#999"
-                    style={styles.inputIcon}
-                  />
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Create a password"
-                    placeholderTextColor="#999"
-                    secureTextEntry={!showPassword}
-                    value={password}
-                    onChangeText={handlePasswordChange}
-                  />
-                  <TouchableOpacity
-                    onPress={() => setShowPassword(!showPassword)}
-                    style={styles.eyeButton}
-                    activeOpacity={0.6}
-                  >
-                    <Ionicons
-                      name={showPassword ? "eye-off-outline" : "eye-outline"}
-                      size={normalize(20)}
-                      color="#5c5c5cff"
-                    />
-                  </TouchableOpacity>
-                </View>
-                {password.length > 0 && (
-                  <View style={styles.passwordStrengthContainer}>
-                    <View style={styles.passwordStrengthBar}>
-                      <View
-                        style={[
-                          styles.passwordStrengthFill,
-                          {
-                            width: `${passwordStrength}%`,
-                            backgroundColor: getPasswordStrengthColor()
-                          }
-                        ]}
-                      />
-                    </View>
-                    <Text style={[styles.passwordStrengthText, { color: getPasswordStrengthColor() }]}>
-                      {getPasswordStrengthText()}
-                    </Text>
-                  </View>
-                )}
-              </View>
+              {renderInputField(
+                "lock-closed-outline",
+                "创建密码",
+                formData.password,
+                handlePasswordChange,
+                {
+                  secureTextEntry: !uiState.showPassword,
+                  showToggle: true,
+                  onToggle: () => updateUiState("showPassword", !uiState.showPassword),
+                  validation: renderPasswordStrength()
+                }
+              )}
 
               {/* Confirm Password */}
-              <View style={styles.inputGroup}>
-                <View style={styles.inputContainer}>
-                  <Ionicons
-                    name="lock-closed-outline"
-                    size={normalize(20)}
-                    color="#999"
-                    style={styles.inputIcon}
-                  />
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Confirm your password"
-                    placeholderTextColor="#999"
-                    secureTextEntry={!showConfirmPassword}
-                    value={confirmPassword}
-                    onChangeText={setConfirmPassword}
-                  />
-                  <TouchableOpacity
-                    onPress={() => setShowConfirmPassword(!showConfirmPassword)}
-                    style={styles.eyeButton}
-                    activeOpacity={0.6}
-                  >
-                    <Ionicons
-                      name={showConfirmPassword ? "eye-off-outline" : "eye-outline"}
-                      size={normalize(20)}
-                      color="#5c5c5cff"
-                    />
-                  </TouchableOpacity>
-                  {confirmPassword.length > 0 && (
-                    <Ionicons
-                      name={password === confirmPassword ? "checkmark-circle" : "close-circle"}
-                      size={normalize(20)}
-                      color={password === confirmPassword ? "#4ECDC4" : "#FF6B6B"}
-                    />
-                  )}
-                </View>
-              </View>
+              {renderInputField(
+                "lock-closed-outline",
+                "确认密码",
+                formData.confirmPassword,
+                (text) => updateFormData("confirmPassword", text),
+                {
+                  secureTextEntry: !uiState.showConfirmPassword,
+                  showToggle: true,
+                  onToggle: () => updateUiState("showConfirmPassword", !uiState.showConfirmPassword)
+                }
+              )}
 
               {/* Birthday */}
-              <View style={styles.inputGroup}>
-                <View style={styles.inputContainer}>
-                  <Image
-                    source={require("assets/icons/reg-birth.png")}
-                    style={[styles.inputIcon, { width: normalize(18), height: normalize(18), tintColor: "#999" }]}
-                    resizeMode="contain"
-                  />
-                  <TextInput
-                    style={styles.input}
-                    placeholder="DD/MM/YYYY"
-                    placeholderTextColor="#999"
-                    keyboardType="numeric"
-                    value={birthday}
-                    onChangeText={handleBirthdayChange}
-                    maxLength={10}
-                  />
-                </View>
-              </View>
+              {renderInputField(
+                "",
+                "输入生日日期 DD/MM/YYYY",
+                formData.birthday,
+                handleBirthdayChange,
+                {
+                  keyboardType: "numeric",
+                  maxLength: 10,
+                  iconSource: require("assets/icons/reg-birth.png")
+                }
+              )}
 
               {/* Location */}
               <View style={styles.inputGroup}>
                 <TouchableOpacity
                   style={styles.inputContainer}
-                  onPress={() => setShowLocationModal(true)}
+                  onPress={() => updateUiState("showLocationModal", true)}
                   activeOpacity={0.7}
                 >
                   <Ionicons
                     name="location-outline"
-                    size={normalize(20)}
-                    color="#999"
+                    size={normalize(SIZES.iconSize)}
+                    color={COLORS.textMuted}
                     style={styles.inputIcon}
                   />
-                  <Text style={[styles.input, !location && styles.placeholderText]}>
-                    {location || "Choose your location"}
+                  <Text style={[styles.input, !formData.location && styles.placeholderText]}>
+                    {formData.location || "选择您的地点"}
                   </Text>
-                  <Ionicons name="chevron-down" size={normalize(20)} color="#5c5c5cff" />
+                  <Ionicons name="chevron-down" size={normalize(SIZES.iconSize)} color={COLORS.textLight} />
                 </TouchableOpacity>
               </View>
 
               {/* Referral Code */}
-              <View style={styles.inputGroup}>
-                <View style={styles.inputContainer}>
-                  <Image
-                    source={require("assets/icons/reg-referral.png")}
-                    style={[styles.inputIcon, { width: normalize(20), height: normalize(20), tintColor: "#999" }]}
-                    resizeMode="contain"
-                  />
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Referral Code (Optional)"
-                    placeholderTextColor="#999"
-                    value={referralCode}
-                    onChangeText={setReferralCode}
-                    autoCapitalize="characters"
-                  />
-                  <TouchableOpacity style={styles.actionButton} activeOpacity={0.6}>
-                    <Ionicons name="qr-code-outline" size={normalize(20)} color="#5c5c5cff" />
-                  </TouchableOpacity>
-                </View>
-              </View>
+              {renderInputField(
+                "",
+                "推荐码 (如有)",
+                formData.referralCode,
+                (text) => updateFormData("referralCode", text),
+                {
+                  autoCapitalize: "characters",
+                  iconSource: require("assets/icons/reg-referral.png")
+                }
+              )}
 
               {/* Terms */}
               <View style={styles.termsContainer}>
                 <TouchableOpacity
-                  style={[styles.checkbox, agreeToTerms && styles.checkboxChecked]}
-                  onPress={() => setAgreeToTerms(!agreeToTerms)}
+                  style={[styles.checkbox, uiState.agreeToTerms && styles.checkboxChecked]}
+                  onPress={() => updateUiState("agreeToTerms", !uiState.agreeToTerms)}
                   activeOpacity={0.8}
                 >
-                  {agreeToTerms && (
-                    <Ionicons name="checkmark" size={normalize(12)} color="#fff" />
+                  {uiState.agreeToTerms && (
+                    <Ionicons name="checkmark" size={normalize(12)} color={COLORS.white} />
                   )}
                 </TouchableOpacity>
                 <View style={styles.termsTextContainer}>
@@ -561,14 +618,15 @@ export default function RegisterScreen({ navigation, onRegister }: RegisterScree
                 </View>
               </View>
 
-              {/* Register */}
+              {/* Register Button */}
               <TouchableOpacity
-                style={styles.registerButton}  // removed [styles.registerButton, loading && styles.registerButtonDisabled]
+                style={[styles.registerButton, uiState.loading && styles.registerButtonDisabled]}
                 onPress={handleRegister}
-                activeOpacity={0.8} // optional for click effect
+                activeOpacity={0.8}
+                disabled={uiState.loading}
               >
                 <Text style={styles.registerButtonText}>
-                  {loading ? "Registering..." : "Register"}
+                  {uiState.loading ? "Registering..." : "Register"}
                 </Text>
               </TouchableOpacity>
 
@@ -579,7 +637,7 @@ export default function RegisterScreen({ navigation, onRegister }: RegisterScree
                 <View style={styles.dividerLine} />
               </View>
 
-              {/* Social */}
+              {/* Social Buttons */}
               <View style={styles.socialContainer}>
                 <TouchableOpacity style={styles.socialButton}>
                   <Image
@@ -620,7 +678,7 @@ export default function RegisterScreen({ navigation, onRegister }: RegisterScree
                 </TouchableOpacity>
               </View>
 
-              {/* Login */}
+              {/* Login Link */}
               <View style={styles.loginContainer}>
                 <Text style={styles.loginText}>Already have an account?</Text>
                 <TouchableOpacity onPress={() => navigation.goBack()}>
@@ -630,39 +688,7 @@ export default function RegisterScreen({ navigation, onRegister }: RegisterScree
             </View>
           </ScrollView>
 
-          {/* Location Modal */}
-          <Modal
-            visible={showLocationModal}
-            transparent={true}
-            animationType="slide"
-            onRequestClose={() => setShowLocationModal(false)}
-          >
-            <View style={styles.modalOverlay}>
-              <View style={styles.modalContent}>
-                <View style={styles.modalHeader}>
-                  <Text style={styles.modalTitle}>Select Location</Text>
-                  <TouchableOpacity
-                    onPress={() => setShowLocationModal(false)}
-                    style={styles.modalCloseButton}
-                  >
-                    <Ionicons name="close" size={normalize(24)} color="#333" />
-                  </TouchableOpacity>
-                </View>
-                <ScrollView style={styles.modalScroll}>
-                  {locations.map((loc) => (
-                    <TouchableOpacity
-                      key={loc.id}
-                      style={styles.locationItem}
-                      onPress={() => handleLocationSelect(loc.name)}
-                    >
-                      <Text style={styles.locationText}>{loc.name}</Text>
-                      <Ionicons name="chevron-forward" size={normalize(20)} color="#999" />
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
-              </View>
-            </View>
-          </Modal>
+          {renderLocationModal()}
         </KeyboardAvoidingView>
       </SafeAreaView>
     </View>
@@ -672,7 +698,7 @@ export default function RegisterScreen({ navigation, onRegister }: RegisterScree
 const styles = StyleSheet.create({
   fullScreenContainer: {
     flex: 1,
-    backgroundColor: "#f8f6f0",
+    backgroundColor: COLORS.background,
     width: width,
     height: height,
   },
@@ -694,59 +720,68 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: wp(5),
-    paddingVertical: hp(2),
+    justifyContent: "space-between", // 确保左右元素分布一致
+    paddingHorizontal: wp(2),
+    paddingVertical: Platform.OS === "ios" ? hp(1.5) : hp(2.0), // 适当微调 iOS 顶部间距
     zIndex: 10,
   },
   backButton: {
     width: normalize(36),
     height: normalize(36),
     borderRadius: normalize(18),
-    backgroundColor: "#fff",
+    backgroundColor: COLORS.white,
+    marginLeft:10,
     justifyContent: "center",
     alignItems: "center",
-    shadowColor: "#000",
+    shadowColor: COLORS.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
   },
   headerTitle: {
-    fontSize: normalize(20),
-    fontWeight: "500",
-    color: "#333",
-    marginLeft: wp(4)
+    fontSize: normalize(SIZES.xl),
+    fontWeight: "600",
+    color: COLORS.text,
+    flex: 1,
+    textAlign: "center",
+    marginRight: normalize(45), // Offset for back button
   },
   backgroundPattern: {
     position: "absolute",
-    top: -hp(15),
+    top: -hp(5),
     left: 0,
     right: 0,
     width,
-    height: hp(40),
+    height: hp(30),
     opacity: 0.08,
   },
   avatarSection: {
     alignItems: "center",
-    paddingVertical: hp(2.5)
+    paddingVertical: hp(2),
   },
   avatarContainer: {
-    position: "relative"
+    position: "relative",
   },
   avatarPlaceholder: {
-    width: normalize(100),
-    height: normalize(100),
-    borderRadius: normalize(50),
-    backgroundColor: "#fff",
+    width: normalize(SIZES.avatarSize),
+    height: normalize(SIZES.avatarSize),
+    borderRadius: normalize(SIZES.avatarSize / 2),
+    backgroundColor: COLORS.white,
     borderWidth: 3,
-    borderColor: "#e0e0e0",
+    borderColor: COLORS.border,
     justifyContent: "center",
     alignItems: "center",
-    shadowColor: "#000",
+    shadowColor: COLORS.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 3,
+  },
+  avatarImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: normalize(SIZES.avatarSize / 2),
   },
   cameraButton: {
     position: "absolute",
@@ -755,12 +790,12 @@ const styles = StyleSheet.create({
     width: normalize(32),
     height: normalize(32),
     borderRadius: normalize(16),
-    backgroundColor: "#333",
+    backgroundColor: COLORS.text,
     justifyContent: "center",
     alignItems: "center",
     borderWidth: 3,
-    borderColor: "#fff",
-    shadowColor: "#000",
+    borderColor: COLORS.white,
+    shadowColor: COLORS.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
@@ -772,61 +807,63 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   inputGroup: {
-    marginBottom: hp(2)
+    marginBottom: hp(2),
   },
   inputContainer: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#fff",
-    borderRadius: normalize(25),
-    paddingHorizontal: wp(5),
-    paddingVertical: hp(2.0),
+    backgroundColor: COLORS.white,
+    borderRadius: normalize(SIZES.radius),
+    paddingHorizontal: wp(4),
+    paddingVertical: hp(1.8),
     borderWidth: 1,
-    borderColor: "#e0e0e0",
-    shadowColor: "#000",
-    shadowOffset: { width: 3, height: 5 },
-    shadowOpacity: 0.30,
+    borderColor: COLORS.border,
+    shadowColor: COLORS.shadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
     shadowRadius: 4,
-    elevation: Platform.OS === "android" ? 5 : 0,
+    elevation: Platform.OS === "android" ? 3 : 0,
   },
   inputError: {
-    borderColor: "#FF6B6B",
+    borderColor: COLORS.error,
     borderWidth: 1.5,
   },
   inputIcon: {
-    marginRight: wp(4)
+    marginRight: wp(3),
+  },
+  imageIcon: {
+    width: normalize(18),
+    height: normalize(18),
+    tintColor: COLORS.textMuted,
   },
   input: {
     flex: 1,
-    fontSize: normalize(16),
-    color: "#333",
+    fontSize: normalize(SIZES.base),
+    color: COLORS.text,
     paddingVertical: 0,
   },
   placeholderText: {
-    color: "#999",
+    color: COLORS.placeholder,
   },
   eyeButton: {
-    padding: normalize(4)
-  },
-  actionButton: {
-    padding: normalize(4)
+    padding: normalize(4),
   },
   errorText: {
-    fontSize: normalize(12),
-    color: "#FF6B6B",
+    fontSize: normalize(SIZES.small),
+    color: COLORS.error,
     marginTop: hp(0.5),
-    marginLeft: wp(5),
+    marginLeft: wp(4),
   },
   passwordStrengthContainer: {
     flexDirection: "row",
     alignItems: "center",
     marginTop: hp(0.8),
-    marginLeft: wp(5),
+    marginLeft: wp(4),
   },
   passwordStrengthBar: {
     flex: 1,
     height: normalize(4),
-    backgroundColor: "#e0e0e0",
+    backgroundColor: COLORS.border,
     borderRadius: normalize(2),
     marginRight: wp(3),
   },
@@ -835,7 +872,7 @@ const styles = StyleSheet.create({
     borderRadius: normalize(2),
   },
   passwordStrengthText: {
-    fontSize: normalize(12),
+    fontSize: normalize(SIZES.small),
     fontWeight: "500",
   },
   termsContainer: {
@@ -849,66 +886,68 @@ const styles = StyleSheet.create({
     height: normalize(20),
     borderRadius: normalize(4),
     borderWidth: 2,
-    borderColor: "#ddd",
-    backgroundColor: "#fff",
+    borderColor: COLORS.border,
+    backgroundColor: COLORS.white,
     justifyContent: "center",
     alignItems: "center",
     marginRight: wp(3),
-    marginLeft: wp(1),
-    marginTop: hp(0.3),
+    marginTop: hp(0.2),
   },
   checkboxChecked: {
-    backgroundColor: "#D4AF37",
-    borderColor: "#D4AF37"
+    backgroundColor: COLORS.primaryDark,
+    borderColor: COLORS.primaryDark,
   },
   termsTextContainer: {
-    flex: 1
+    flex: 1,
   },
   termsText: {
-    fontSize: normalize(12),
-    color: "#666",
-    lineHeight: hp(2.2)
+    fontSize: normalize(SIZES.small),
+    color: COLORS.textLight,
+    lineHeight: normalize(18),
   },
   linkText: {
-    color: "#D4AF37",
-    fontWeight: "500"
+    color: COLORS.primaryDark,
+    fontWeight: "500",
   },
   registerButton: {
-    backgroundColor: "#E1C16E",
-    borderRadius: normalize(25),
+    backgroundColor: COLORS.primary,
+    borderRadius: normalize(SIZES.radius),
     paddingVertical: hp(1.8),
     alignItems: "center",
     marginBottom: hp(3),
-    shadowColor: '#000',
-    shadowOffset: { width: 3, height: 3 },
-    shadowOpacity: 0.35,
+    shadowColor: COLORS.shadow,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
     shadowRadius: 4,
     elevation: 5,
   },
+  registerButtonDisabled: {
+    opacity: 0.6,
+  },
   registerButtonText: {
-    fontSize: normalize(16),
+    fontSize: normalize(SIZES.base),
     fontWeight: "600",
-    color: "#232323"
+    color: COLORS.text,
   },
   divider: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: hp(2.5)
+    marginBottom: hp(2.5),
   },
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: "#ddd"
+    backgroundColor: COLORS.border,
   },
   dividerText: {
-    fontSize: normalize(12),
-    color: "#666",
-    paddingHorizontal: wp(3)
+    fontSize: normalize(SIZES.small),
+    color: COLORS.textLight,
+    paddingHorizontal: wp(3),
   },
   socialContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
-    paddingHorizontal: wp(5),
+    paddingHorizontal: wp(2),
     marginBottom: hp(1.5),
   },
   socialButton: {
@@ -916,41 +955,41 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#fff",
+    backgroundColor: COLORS.white,
     paddingVertical: hp(1.5),
     borderRadius: normalize(20),
-    marginHorizontal: wp(1.2),
-    shadowColor: "#000",
-    shadowOffset: { width: 3, height: 5 },
-    shadowOpacity: 0.30,
-    shadowRadius: 2,
+    marginHorizontal: wp(1),
+    shadowColor: COLORS.shadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
     elevation: 2,
   },
   socialIconImg: {
     width: normalize(20),
     height: normalize(20),
-    marginRight: wp(2)
+    marginRight: wp(2),
   },
   socialText: {
-    fontSize: normalize(14),
-    color: "#7C838A"
+    fontSize: normalize(SIZES.medium),
+    color: COLORS.textLight,
+    fontWeight: "500",
   },
   loginContainer: {
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    paddingVertical: hp(2.2),
-    marginBottom: hp(3),
+    marginTop: 20,
   },
   loginText: {
-    color: "#666",
-    fontSize: normalize(14)
+    color: COLORS.textLight,
+    fontSize: normalize(SIZES.medium),
   },
   loginLink: {
-    color: "#5F6734",
-    fontSize: normalize(14),
+    color: COLORS.secondary,
+    fontSize: normalize(SIZES.medium),
     fontWeight: "600",
-    marginLeft: wp(1.3)
+    marginLeft: wp(1),
   },
   modalOverlay: {
     flex: 1,
@@ -958,7 +997,7 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
   },
   modalContent: {
-    backgroundColor: "#fff",
+    backgroundColor: COLORS.white,
     borderTopLeftRadius: normalize(20),
     borderTopRightRadius: normalize(20),
     paddingTop: hp(2),
@@ -971,12 +1010,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: wp(5),
     paddingBottom: hp(1.5),
     borderBottomWidth: 1,
-    borderBottomColor: "#e0e0e0",
+    borderBottomColor: COLORS.border,
   },
   modalTitle: {
-    fontSize: normalize(18),
+    fontSize: normalize(SIZES.large),
     fontWeight: "600",
-    color: "#333",
+    color: COLORS.text,
   },
   modalCloseButton: {
     padding: normalize(5),
@@ -993,22 +1032,7 @@ const styles = StyleSheet.create({
     borderBottomColor: "#f0f0f0",
   },
   locationText: {
-    fontSize: normalize(16),
-    color: "#333",
-  },
-  imagePickerOptions: {
-    padding: wp(5),
-  },
-  imagePickerOption: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: hp(2),
-    borderBottomWidth: 0.5,
-    borderBottomColor: "#f0f0f0",
-  },
-  imagePickerText: {
-    fontSize: normalize(16),
-    color: "#333",
-    marginLeft: wp(4),
+    fontSize: normalize(SIZES.base),
+    color: COLORS.text,
   },
 });

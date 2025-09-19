@@ -1,6 +1,6 @@
 import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { TouchableOpacity, Text, Platform, View, StyleSheet } from "react-native";
+import { Platform } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 import HomeStack from "./stacks/HomeStack";
@@ -22,10 +22,11 @@ export default function RootNavigator({ onLogout }: RootNavigatorProps) {
         tabBarInactiveTintColor: "#999",
         tabBarStyle: {
           backgroundColor: "#F9F5EC",
-          height: 80, // 从 70 ➝ 90 或更大
-          paddingBottom: Platform.OS === "ios" ? 25 : 15, // 底部留白
+          height: 80,
+          paddingTop:8,
+          paddingBottom: Platform.OS === "ios" ? 10 : 8, // 调小底部间距
           shadowColor: "#000",
-          shadowOffset: { width: 0, height: -2 },
+          shadowOffset: { width: 0, height: -1 },
           shadowOpacity: 0.1,
           shadowRadius: 4,
           elevation: 5,
@@ -49,7 +50,7 @@ export default function RootNavigator({ onLogout }: RootNavigatorProps) {
               break;
           }
 
-          return <Ionicons name={iconName} size={30} color={color} />;
+          return <Ionicons name={iconName} size={30} color={color}/>;
         },
       })}
     >
@@ -66,8 +67,8 @@ export default function RootNavigator({ onLogout }: RootNavigatorProps) {
       <Tab.Screen
         name="ProfileStack"
         options={{ title: "我的" }}
-        children={() => <ProfileStack onLogout={onLogout} />}
       >
+        {() => <ProfileStack onLogout={onLogout} />}
       </Tab.Screen>
     </Tab.Navigator>
   );

@@ -15,6 +15,7 @@ import {
 } from "react-native-safe-area-context";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { Ionicons } from "@expo/vector-icons";
 import { typography, colors } from "styles";
 
 const { width } = Dimensions.get("window");
@@ -162,8 +163,12 @@ const VoteImagesScreen = () => {
 
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={handleGoBack}>
-          <Text style={styles.backIcon}>←</Text>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+          activeOpacity={0.7}
+        >
+          <Ionicons name="arrow-back" size={24} color="#333" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{categoryTitle}</Text>
         <View style={styles.placeholder} />
@@ -215,10 +220,17 @@ const styles = StyleSheet.create({
     borderBottomColor: "rgba(215, 167, 64, 0.1)",
   },
   backButton: {
-    width: 32,
-    height: 32,
-    justifyContent: "center",
+    width: 35,
+    height: 35,
+    borderRadius: 20,
+    backgroundColor: "#fff",
     alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   backIcon: {
     fontSize: 20,

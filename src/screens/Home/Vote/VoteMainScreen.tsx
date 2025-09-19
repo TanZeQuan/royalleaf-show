@@ -14,8 +14,10 @@ import {
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
+import { Ionicons } from "@expo/vector-icons";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { colors } from "styles";
+import { useHideTabBar } from "hooks/useHideTabBar";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 
@@ -30,7 +32,9 @@ type VoteNavigationProp = NativeStackNavigationProp<any>;
 const VoteMainScreen = () => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<VoteNavigationProp>();
-
+  // ✅ 自动隐藏底部导航栏
+  useHideTabBar(true);
+  
   const categories = [
     {
       id: "drinks",
@@ -74,19 +78,19 @@ const VoteMainScreen = () => {
 
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity 
-          style={styles.backButton} 
-          onPress={handleGoBack}
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
           activeOpacity={0.7}
         >
-          <Text style={styles.backIcon}>←</Text>
+          <Ionicons name="arrow-back" size={24} color="#333" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>投票</Text>
         <View style={styles.placeholder} />
       </View>
 
-      <ScrollView 
-        style={styles.content} 
+      <ScrollView
+        style={styles.content}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
@@ -98,8 +102,8 @@ const VoteMainScreen = () => {
               key={category.id}
               style={[
                 styles.categoryWrapper,
-                { 
-                  marginBottom: index === categories.length - 1 ? 0 : verticalScale(16) 
+                {
+                  marginBottom: index === categories.length - 1 ? 0 : verticalScale(16)
                 }
               ]}
               onPress={() => handleCategoryPress(category.id)}
@@ -146,11 +150,17 @@ const styles = StyleSheet.create({
     borderBottomColor: "rgba(215, 167, 64, 0.1)",
   },
   backButton: {
-    width: scale(32),
-    height: scale(32),
-    justifyContent: "center",
+    width: 35,
+    height: 35,
+    borderRadius: 20,
+    backgroundColor: "#fff",
     alignItems: "center",
-    borderRadius: scale(16),
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   backIcon: {
     fontSize: moderateScale(20),

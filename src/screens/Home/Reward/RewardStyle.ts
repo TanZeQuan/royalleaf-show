@@ -1,6 +1,4 @@
-import {
-  StyleSheet,
-} from "react-native";
+import { StyleSheet } from "react-native";
 import { colors } from "styles";
 
 export const styles = StyleSheet.create({
@@ -11,7 +9,7 @@ export const styles = StyleSheet.create({
   header: {
     paddingTop: 50,
     paddingBottom: 15,
-    backgroundColor: colors.primary_bg,
+    backgroundColor: colors.gold_light,
     alignItems: "center",
     borderBottomWidth: 1,
     borderBottomColor: colors.gold_light,
@@ -25,8 +23,19 @@ export const styles = StyleSheet.create({
     position: "absolute",
     left: 15,
     top: 50, // 跟 header paddingTop 对齐
-    padding: 8,
+    padding: 3,
     zIndex: 2,
+     width: 35,
+    height: 35,
+    borderRadius: 20,
+    backgroundColor: "#fff",
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   backButtonText: {
     fontSize: 20,
@@ -143,7 +152,7 @@ export const styles = StyleSheet.create({
   divider: {
     width: 1,
     backgroundColor: colors.gold_deep,
-    marginHorizontal: 10,
+    marginHorizontal: 5,
     alignSelf: "center", // 在父容器垂直居中
     height: "80%", // 给个相对高度
   },
@@ -159,13 +168,13 @@ export const styles = StyleSheet.create({
     opacity: 0.7,
   },
   voucherCode: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "semibold",
     marginBottom: 5,
     color: colors.black,
   },
   voucherValue: {
-    fontSize: 30,
+    fontSize: 25,
     fontWeight: "bold",
     marginBottom: 5,
     color: colors.black,
@@ -177,17 +186,17 @@ export const styles = StyleSheet.create({
     fontWeight: "500",
   },
   pointsNeeded: {
-  fontSize: 12,
-  color: colors.gold_deep, // 金色，突出皇冠
-  fontWeight: "600",
-},
+    fontSize: 14,
+    color: colors.gold_deep, // 金色，突出皇冠
+    fontWeight: "600",
+  },
   voucherDate: {
-    fontSize: 12,
+    fontSize: 10,
     color: colors.gray_text,
     marginBottom: 10,
   },
   terms: {
-    fontSize: 12,
+    fontSize: 10,
     color: colors.gray_text,
     marginTop: 5,
   },
@@ -204,33 +213,76 @@ export const styles = StyleSheet.create({
     zIndex: 1,
   },
 
-  // crownSection: {
-  //   backgroundColor: colors.white,
-  //   padding: 15,
-  //   borderRadius: 12,
-  //   marginBottom: 20,
-  //   shadowColor: colors.black,
-  //   shadowOffset: { width: 0, height: 2 },
-  //   shadowOpacity: 0.1,
-  //   shadowRadius: 4,
-  //   elevation: 3,
-  // },
-  // crownTitle: {
-  //   fontSize: 18,
-  //   fontWeight: "bold",
-  //   marginBottom: 10,
-  //   color: colors.black,
-  // },
-  // crownPoints: {
-  //   fontSize: 16,
-  //   marginBottom: 15,
-  //   color: colors.gray_deep,
-  // },
-  // crownButtons: {
-  //   flexDirection: "row",
-  //   justifyContent: "space-between",
-  //   gap: 10,
-  // },
+  crownSection: {
+    backgroundColor: colors.white,
+    padding: 15,
+    borderRadius: 12,
+    marginBottom: 20,
+    shadowColor: colors.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  crownContainer: {
+    flexDirection: "row",
+    height: 60,
+    marginBottom: 15,
+    alignItems: "center",
+    paddingHorizontal: 20,
+  },
+  crownLeft: {
+    width: 60,
+    justifyContent: "center",
+    alignItems: "center",
+    marginLeft: 60,
+  },
+  crownRight: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    marginLeft: 0,
+    marginRight: 30,
+  },
+  crownMainIcon: {
+    width: 50,
+    height: 50,
+    resizeMode: "contain",
+  },
+  crownTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    marginBottom: 5,
+    color: "#232323",
+    textAlign: "center",
+  },
+  crownPoints: {
+    fontSize: 14,
+    color: "#4a5568",
+    textAlign: "center",
+  },
+  crownIcon: {
+    width: 20,
+    height: 20,
+    resizeMode: "contain",
+    marginLeft: 8,
+  },
+  crownButtons: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    gap: 10,
+  },
+  crown: {
+    width: 16,
+    height: 16,
+    resizeMode: "contain",
+  },
+  crownInline: {
+    width: 16,
+    height: 16,
+    resizeMode: "contain",
+    marginLeft: 2,
+  },
   historyButton: {
     backgroundColor: colors.gray_button,
     padding: 12,
@@ -301,72 +353,113 @@ export const styles = StyleSheet.create({
     textAlign: "center",
   },
 
-//   确认是否使用
-confirmOverlay: {
-  flex: 1,
-  justifyContent: "center",
-  alignItems: "center",
-  backgroundColor: "rgba(0,0,0,0.5)",
-},
-confirmContainer: {
-  backgroundColor: colors.white,
-  padding: 30,
-  borderRadius: 16,
-  alignItems: "center",
-  width: "85%",
-  maxWidth: 400,
-},
-confirmTitle: {
-  fontSize: 20,
-  fontWeight: "bold",
-  color: colors.black,
-  marginBottom: 25,
-  textAlign: "center",
-},
-confirmMessage: {
-  fontSize: 15,
-  fontWeight: "600",
-  color: colors.gray_deep,
-  textAlign: "center",
-  marginBottom: 30,
-},
-confirmNote: {
-  fontSize: 15,
-  color: colors.gray_text,
-  textAlign: "center",
-  marginBottom: 40,
-  borderRadius: 10,
-},
-confirmButtons: {
-  flexDirection: "row",
-  justifyContent: "space-between",
-  width: "100%",
-  gap: 12,
-},
-cancelButton: {
-  paddingVertical: 12,
-  paddingHorizontal: 53,
-  borderRadius: 10,
-  backgroundColor: colors.gray_light,
-  alignItems: "center",
-},
-confirmButton: {
-  paddingVertical: 12,
-  paddingHorizontal: 53,
-  borderRadius: 10,
-  backgroundColor: colors.gold_deep,
-  alignItems: "center",
-},
-cancelButtonText: {
-  fontSize: 15,
-  fontWeight: "bold",
-  color: colors.black,
-},
-confirmButtonText: {
-  fontSize: 15,
-  color: colors.black,
-  fontWeight: "bold",
-},
+  //   确认是否使用
+  confirmOverlay: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.5)",
+  },
+  confirmContainer: {
+    backgroundColor: colors.white,
+    padding: 30,
+    borderRadius: 16,
+    alignItems: "center",
+    width: "85%",
+    maxWidth: 400,
+  },
+  confirmTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: colors.black,
+    marginBottom: 25,
+    textAlign: "center",
+  },
+  confirmMessage: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: colors.gray_deep,
+    textAlign: "center",
+    marginBottom: 30,
+  },
+  confirmNote: {
+    fontSize: 15,
+    color: colors.gray_text,
+    textAlign: "center",
+    marginBottom: 40,
+    borderRadius: 10,
+  },
+  confirmButtons: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
+    gap: 12,
+  },
+  cancelButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 53,
+    borderRadius: 10,
+    backgroundColor: colors.gray_light,
+    alignItems: "center",
+  },
+  confirmButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 53,
+    borderRadius: 10,
+    backgroundColor: colors.gold_deep,
+    alignItems: "center",
+  },
+  cancelButtonText: {
+    fontSize: 15,
+    fontWeight: "bold",
+    color: colors.black,
+  },
+  confirmButtonText: {
+    fontSize: 15,
+    color: colors.black,
+    fontWeight: "bold",
+  },
 
-
+  // 历史记录相关样式
+  historyCard: {
+    backgroundColor: colors.white,
+    borderRadius: 12,
+    marginBottom: 15,
+    shadowColor: colors.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  historyContent: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 15,
+  },
+  historyLeft: {
+    flex: 1,
+  },
+  historyRight: {
+    alignItems: "flex-end",
+  },
+  historyAction: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: colors.black,
+    marginBottom: 5,
+  },
+  historyDate: {
+    fontSize: 12,
+    color: colors.gray_text,
+  },
+  historyPoints: {
+    fontSize: 16,
+    fontWeight: "bold",
+    marginBottom: 5,
+  },
+  historyBalance: {
+    fontSize: 12,
+    color: colors.gray_text,
+  },
 });

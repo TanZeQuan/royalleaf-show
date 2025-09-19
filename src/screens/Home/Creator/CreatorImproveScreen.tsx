@@ -16,6 +16,7 @@ import {
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Ionicons } from "@expo/vector-icons";
 import { typography, colors } from "styles";
 import { ContestEntry } from "../Creator/CreatorSlice";
 import { CreatorStackParamList } from "../../../navigation/stacks/CreatorStack";
@@ -134,8 +135,12 @@ const MySubmissionsScreen = () => {
 
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={handleGoBack}>
-          <Text style={styles.backIcon}>←</Text>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+          activeOpacity={0.7}
+        >
+          <Ionicons name="arrow-back" size={24} color="#333" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>我的创意</Text>
         <Text style={styles.countText}>{entries.length}份</Text>
@@ -188,10 +193,17 @@ const styles = StyleSheet.create({
     backgroundColor: colors.gold_light,
   },
   backButton: {
-    width: 32,
-    height: 32,
+      width: 35,
+    height: 35,
+    borderRadius: 20,
+    backgroundColor: "#fff",
+    alignItems: "center",
     justifyContent: "center",
-    alignItems: "center"
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   backIcon: {
     fontSize: 20,

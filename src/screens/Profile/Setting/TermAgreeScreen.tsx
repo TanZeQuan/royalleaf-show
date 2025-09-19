@@ -34,7 +34,7 @@ export default function TermAgreeScreen() {
           <Ionicons name="arrow-back" size={24} color="#2C2C2C" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>协议条款</Text>
-        <View style={{ width: 24 }} /> 
+        <View style={{ width: 24 }} />
       </View>
 
       {/* Content */}
@@ -73,7 +73,17 @@ const styles = StyleSheet.create({
     backgroundColor: "#F9F5EC",
   },
   backButton: {
-    padding: 5,
+    width: 35,
+    height: 35,
+    borderRadius: 20,
+    backgroundColor: "#fff",
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   headerTitle: {
     fontSize: 16,
