@@ -62,7 +62,7 @@ export default function AppNavigation() {
           <Stack.Screen name="Login">
             {props => <LoginScreen {...props} onLogin={handleLogin} />}
           </Stack.Screen>
-          <Stack.Screen name="Register" component={RegisterScreen} />
+          <Stack.Screen name="Register" component={RegisterScreen}/>
           <Stack.Screen name="ForgetPassword" component={ForgetPasswordScreen} />
           <Stack.Screen name="OtpVerify" component={OtpVerifyScreen} />
           <Stack.Screen name="ResetPassword" component={ResetPasswordScreen} />

@@ -117,13 +117,18 @@ export default function SocialScreen() {
       navigation.getParent()?.setOptions({
         tabBarStyle: {
           backgroundColor: "#F9F5EC",
-          height: 80, // 从 70 ➝ 90 或更大
-          paddingBottom: Platform.OS === "ios" ? 25 : 15, // 底部留白
+          height: 80,
+          paddingTop: 8,
+          paddingBottom: Platform.OS === "ios" ? 10 : 8, // 调小底部间距
           shadowColor: "#000",
-          shadowOffset: { width: 0, height: -2 },
+          shadowOffset: { width: 0, height: -1 },
           shadowOpacity: 0.1,
           shadowRadius: 4,
           elevation: 5,
+        },
+        tabBarLabelStyle: {
+          fontSize: 13,
+          marginTop: 5,
         },
       });
     };

@@ -268,19 +268,20 @@ const styles = StyleSheet.create({
   backgroundPattern: {
     position: 'absolute',
     top: -80,
-    left: -22,
+    left: -20,
     right: 0,
-    height: height * 0.3,
+    height: height * 0.35,
     width: width,
-    opacity: 0.2,
+    opacity: 0.12,
     alignSelf: 'center',
   },
   logoContainer: {
     alignItems: 'center',
   },
   logo: {
-    width: height * 0.22,
-    height: height * 0.22,
+    width: height * 0.25,
+    height: height * 0.25,
+    marginTop:30,
     alignSelf: "center",
   },
 
@@ -316,7 +317,7 @@ const styles = StyleSheet.create({
   //   marginBottom: height * 0.03,
   // },
   inputContainer: {
-    marginBottom: height * 0.020,
+    marginBottom: height * 0.001,
   },
   inputWrapper: {
     flexDirection: 'row',
