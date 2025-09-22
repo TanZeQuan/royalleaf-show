@@ -1,23 +1,25 @@
+// 首页分类页面
+
+import { Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { useHideTabBar } from "hooks/useHideTabBar";
 import React from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
+  Dimensions,
+  ImageBackground,
   ScrollView,
   StatusBar,
-  ImageBackground,
-  Dimensions,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import {
   SafeAreaView,
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
-import { useNavigation } from "@react-navigation/native";
-import { Ionicons } from "@expo/vector-icons";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { colors } from "styles";
-import { useHideTabBar } from "hooks/useHideTabBar";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 
