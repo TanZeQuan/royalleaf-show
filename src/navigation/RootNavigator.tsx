@@ -23,7 +23,7 @@ export default function RootNavigator({ onLogout }: RootNavigatorProps) {
         tabBarStyle: {
           backgroundColor: "#F9F5EC",
           height: 80,
-          paddingTop:8,
+          paddingTop:2,
           paddingBottom: Platform.OS === "ios" ? 10 : 8, // 调小底部间距
           shadowColor: "#000",
           shadowOffset: { width: 0, height: -1 },

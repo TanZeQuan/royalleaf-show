@@ -424,7 +424,7 @@ const styles = StyleSheet.create({
     ...typography.caption,
     textAlign: "center",
     fontSize: scale(15),
-    lineHeight: scale(14),
+    lineHeight: scale(25),
     fontFamily: "Inter-Bold",
   },
   cardGreen: {
