@@ -9,11 +9,17 @@ import CrownHistory from "screens/Home/Reward/CrownHistory";
 import ExchangeHistory from "screens/Home/Reward/ExchangeHistory";
 import RewardScreen from "screens/Home/Reward/RewardScreen";
 import SocialScreen from "screens/Home/Social/SocialScreen";
+import TopicDetailScreen from "screens/Home/Social/TopicDetailScreen";
 
 export type HomeStackParamList = {
   Home: undefined;
   Reward: undefined;
   Social: undefined;
+  TopicDetail: {
+    topicId: string;
+    topicTitle: string;
+    topicDescription: string;
+  };
   CreatorStack: undefined;
   WalletStack: undefined;
   VoteStack: undefined;
@@ -29,6 +35,7 @@ export default function HomeStack() {
       <Stack.Screen name="Home" component={HomeScreen} />
       <Stack.Screen name="Reward" component={RewardScreen} />
       <Stack.Screen name="Social" component={SocialScreen} />
+      <Stack.Screen name="TopicDetail" component={TopicDetailScreen} />
       <Stack.Screen name="CreatorStack" component={CreatorStack} />
       <Stack.Screen name="WalletStack" component={WalletStack} />
       <Stack.Screen name="VoteStack" component={VoteStack} />
