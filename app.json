@@ -7,11 +7,6 @@
     "icon": "src/assets/icons/login-logo.png",
     "scheme": "royalleafapp",
     "userInterfaceStyle": "automatic",
-    "splash": {
-      "image": "src/assets/images/splashScreen.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
-    },
     "plugins": [
       [
         "expo-image-picker",

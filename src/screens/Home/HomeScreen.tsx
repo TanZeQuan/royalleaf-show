@@ -17,6 +17,7 @@ import {
   View,
 } from "react-native";
 import { colors, typography } from "styles"; // ✅ 用统一字体 & 颜色
+import Carousel from "react-native-reanimated-carousel";
 import VotePopup from "../../components/VotePopup";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
@@ -27,6 +28,12 @@ export default function BubbleTeaHomepage() {
   const [showVotePopup, setShowVotePopup] = useState(false);
   const navigation = useNavigation<HomeScreenNavigationProp>();
   const [showTaskModal, setShowTaskModal] = useState(false);
+
+  const heroImages = [
+    require("assets/images/home-bg1.jpg"),
+    require("assets/images/home-bg2.jpg"),
+    require("assets/images/home-bg3.jpg"),
+  ];
 
   // 模拟登录成功后显示投票弹窗
   useEffect(() => {
@@ -52,10 +59,21 @@ export default function BubbleTeaHomepage() {
         showsVerticalScrollIndicator={false}
       >
         {/* Hero Section */}
-        <Image
-          source={require("assets/images/home-bg.jpg")}
-          style={styles.heroBackground}
-          resizeMode="cover"
+        <Carousel
+          width={screenWidth}
+          height={screenHeight * 0.4}
+          loop
+          autoPlay
+          autoPlayInterval={3000}
+          scrollAnimationDuration={1000} // smooth duration
+          data={heroImages}
+          renderItem={({ item }) => (
+            <Image
+              source={item}
+              style={{ width: screenWidth, height: screenHeight * 0.4 }}
+              resizeMode="cover"
+            />
+          )}
         />
 
         {/* Wallet Section */}
