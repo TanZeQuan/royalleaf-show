@@ -7,11 +7,11 @@ import { useHideTabBar } from "hooks/useHideTabBar";
 import React from "react";
 import {
   Dimensions,
+  Image,
   ImageBackground,
   ScrollView,
   StatusBar,
   StyleSheet,
-  Image,
   Text,
   TouchableOpacity,
   View,
@@ -43,28 +43,24 @@ const VoteMainScreen = () => {
       id: "drinks",
       title: "饮料专场",
       description: "为您最爱的饮料投票",
-      icon: "🧋",
       image: require("assets/images/votebg.png"),
     },
     {
       id: "packaging",
       title: "包装专场",
       description: "选出最佳包装设计",
-      icon: "📦",
       image: require("assets/images/votebg.png"),
     },
     {
       id: "logo",
       title: "Logo专场",
       description: "投票选择最佳Logo",
-      icon: "🎨",
       image: require("assets/images/votebg.png"),
     },
     {
       id: "decoration",
       title: "装修专场",
       description: "选择您喜爱的装修风格",
-      icon: "🏪",
       image: require("assets/images/votebg.png"),
     },
   ];
@@ -93,9 +89,10 @@ const VoteMainScreen = () => {
         <TouchableOpacity
           style={styles.rankBtn}
           activeOpacity={0.7}
+          onPress={() => navigation.navigate("Ranking")} // 👈 跳转
         >
           <Image
-            source={require("assets/icons/ranking-i.png")} // 替换成你的返回图标路径
+            source={require("assets/icons/ranking-i.png")}
             style={{ width: 20, height: 20, resizeMode: "contain" }}
           />
         </TouchableOpacity>
@@ -115,8 +112,9 @@ const VoteMainScreen = () => {
               style={[
                 styles.categoryWrapper,
                 {
-                  marginBottom: index === categories.length - 1 ? 0 : verticalScale(16)
-                }
+                  marginBottom:
+                    index === categories.length - 1 ? 0 : verticalScale(16),
+                },
               ]}
               onPress={() => handleCategoryPress(category.id)}
               activeOpacity={0.8}

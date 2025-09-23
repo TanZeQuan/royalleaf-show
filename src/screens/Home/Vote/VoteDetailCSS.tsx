@@ -87,7 +87,12 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 20,
     marginBottom: 24,
-    backgroundColor: theme.colors.gold_light,
+    borderWidth:1,
+    borderTopWidth:3,
+    borderColor: theme.colors.gold_light,
+    borderTopLeftRadius:30,
+    borderTopRightRadius:30,
+    backgroundColor: theme.colors.primary_bg,
   },
   sectionTitle: {
     fontSize: 18,
@@ -133,7 +138,7 @@ export const styles = StyleSheet.create({
     textAlign: "right",
     marginBottom: 10,
   },
-  commentsSection: { paddingHorizontal: 20, marginBottom: 24 },
+  commentsSection: { paddingHorizontal: 20, marginBottom: 24, },
   commentItem: {
     backgroundColor: theme.colors.white,
     padding: 16,
