@@ -23,13 +23,14 @@ import {
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
 import { HomeStackParamList } from "../../../navigation/stacks/HomeNav/HomeStack";
+import { mockPosts, mockTopics } from "./data/mockData";
 import {
-  newStyles,
+  buttonStyles,
   newStylesdropdown,
   shareStyles,
   styles,
-  topicStyles,
-} from "../Social/SocialStyles";
+} from "./styles/SocialCSS";
+import { topicStyles } from "./styles/TopicMainCSS";
 
 const { width: screenWidth } = Dimensions.get("window");
 
@@ -37,117 +38,6 @@ type SocialScreenNavigationProp = NativeStackNavigationProp<
   HomeStackParamList,
   "Social"
 >;
-
-const mockTopics = [
-  {
-    id: "t1",
-    title: "#你最爱的共创饮品理由",
-    description: "分享你对创意茶饮的独特见解",
-    posts: 42,
-    participants: 28,
-    isHot: true,
-    color: "#FF6B6B", // 热门话题特有颜色
-    icon: "🧋",
-    trending: true
-  },
-  {
-    id: "t2",
-    title: "#双文化元素怎么融合才好看",
-    description: "探讨传统与现代的完美结合",
-    posts: 38,
-    participants: 22,
-    isHot: true,
-    color: "#4ECDC4",
-    icon: "🎨",
-    trending: true
-  },
-  {
-    id: "t3",
-    title: "#茶艺美学分享",
-    description: "展示茶文化的艺术之美",
-    posts: 24,
-    participants: 16,
-    isHot: false,
-    color: "#45B7D1",
-    icon: "🍵",
-    trending: false
-  },
-  {
-    id: "t4",
-    title: "#创意包装设计",
-    description: "分享包装设计的创新想法",
-    posts: 31,
-    participants: 19,
-    isHot: false,
-    color: "#F9A826",
-    icon: "📦",
-    trending: true
-  },
-  {
-    id: "t5",
-    title: "#茶饮DIY创意",
-    description: "分享自制茶饮的创意配方",
-    posts: 19,
-    participants: 12,
-    isHot: false,
-    color: "#6C5CE7",
-    icon: "✨",
-    trending: false
-  }
-];
-
-const mockPosts = [
-  {
-    id: "1",
-    username: "Coffee_Lover_88",
-    avatar: "👩‍💼",
-    image: require("assets/images/mock.jpg"),
-    caption:
-      "Just tried the new Royal Leaf bubble tea! Amazing flavor combination 🧋✨ #RoyalLeaf #BubbleTea",
-    likes: 42,
-    comments: 2,
-    timeAgo: "2h ago",
-    isLiked: false,
-    isSaved: false,
-    commentsList: [
-      { id: "c1", user: "TeaFan", text: "我也超爱这款！😍", isDesigner: false, replyTo: null },
-      { id: "c2", user: "BobaKing", text: "下次一起去喝！🧋", isDesigner: false, replyTo: null },
-      { id: "c4", user: "RoyalLeaf_Designer", text: "谢谢大家的支持！这款的灵感来自传统茶艺与现代包装的融合 🍃", isDesigner: true, replyTo: null },
-    ],
-  },
-  {
-    id: "2",
-    username: "TeaEnthusiast",
-    avatar: "👨‍🎓",
-    image: require("assets/images/mock.jpg"),
-    caption:
-      "Afternoon tea break with friends! Royal Leaf never disappoints 🍃💚",
-    likes: 28,
-    comments: 1,
-    timeAgo: "4h ago",
-    isLiked: true,
-    isSaved: false,
-    commentsList: [{ id: "c3", user: "FriendA", text: "好羡慕！🥹", isDesigner: false, replyTo: null }],
-  },
-  {
-    id: "3",
-    username: "FoodieBlogger",
-    avatar: "👩‍🍳",
-    image: require("assets/images/mock.jpg"),
-    caption:
-      "Reviewing the top 5 bubble tea spots in town. Royal Leaf definitely makes the list! 📱🎬",
-    likes: 156,
-    comments: 0,
-    timeAgo: "1d ago",
-    isLiked: false,
-    isSaved: false,
-    commentsList: [
-      { id: "c1", user: "TeaFan", text: "我也超爱这款！😍", isDesigner: false, replyTo: null },
-      { id: "c2", user: "BobaKing", text: "下次一起去喝！🧋", isDesigner: false, replyTo: null },
-      { id: "c4", user: "RoyalLeaf_Designer", text: "谢谢大家的支持！这款的灵感来自传统茶艺与现代包装的融合 🍃", isDesigner: true, replyTo: null },
-    ],
-  },
-];
 
 export default function SocialScreen() {
   const insets = useSafeAreaInsets();
@@ -159,6 +49,11 @@ export default function SocialScreen() {
     null
   );
   const [commentText, setCommentText] = useState("");
+  const [replyingTo, setReplyingTo] = useState<{
+    commentId: string;
+    username: string;
+  } | null>(null);
+  const [replyText, setReplyText] = useState("");
   const [showShareOverlay, setShowShareOverlay] = useState(false);
   const [currentSharePostId, setCurrentSharePostId] = useState<string | null>(
     null
@@ -175,7 +70,7 @@ export default function SocialScreen() {
   const [newPostImage, setNewPostImage] = useState<string | null>(null);
   const [showPhotoRequired, setShowPhotoRequired] = useState(false);
   const [savedPosts, setSavedPosts] = useState<Set<string>>(new Set());
-  const [activeTab, setActiveTab] = useState<'posts' | 'topics'>('posts');
+  const [activeTab, setActiveTab] = useState<"posts" | "topics">("posts");
 
   useLayoutEffect(() => {
     navigation.getParent()?.setOptions({
@@ -222,32 +117,236 @@ export default function SocialScreen() {
     setCommentText("");
   };
 
+  const handleReply = (commentId: string, username: string) => {
+    setReplyingTo({ commentId, username });
+    setReplyText(`@${username} `);
+  };
+
+  const handleCancelReply = () => {
+    setReplyingTo(null);
+    setReplyText("");
+  };
+
+  const handleAddReply = (postId: string) => {
+    if (!replyText.trim() || !replyingTo) return;
+
+    setPosts((prev) =>
+      prev.map((p) =>
+        p.id === postId
+          ? {
+              ...p,
+              commentsList: p.commentsList.map((comment) =>
+                comment.id === replyingTo.commentId
+                  ? {
+                      ...comment,
+                      replies: [
+                        ...comment.replies,
+                        {
+                          id: Date.now().toString(),
+                          user: "Me", // 当前用户
+                          text: replyText.replace(
+                            `@${replyingTo.username} `,
+                            ""
+                          ), // 移除@用户名
+                          isDesigner: false,
+                          replyTo: replyingTo.username,
+                          timestamp: new Date().toISOString(),
+                          replies: [],
+                          likes: 0,
+                          isLiked: false,
+                        },
+                      ],
+                    }
+                  : comment
+              ),
+            }
+          : p
+      )
+    );
+
+    setReplyText("");
+    setReplyingTo(null);
+  };
+
+  // 支持回复
   const handleAddComment = (postId: string) => {
+    // 如果是回复模式
+    if (replyingTo) {
+      handleAddReply(postId);
+      return;
+    }
+
+    // 原有的添加评论逻辑
     if (!commentText.trim()) return;
 
     setPosts((prev) =>
-  prev.map((p) =>
-    p.id === postId
-      ? {
-          ...p,
-          comments: p.comments + 1,
-          commentsList: [
-            ...p.commentsList,
-            {
-              id: Date.now().toString(),
-              user: "Me",
-              text: commentText,
-              isDesigner: false, // 默认值
-              replyTo: null,     // 默认值
-            },
-          ],
-        }
-      : p
-  )
-);
-
+      prev.map((p) =>
+        p.id === postId
+          ? {
+              ...p,
+              comments: p.comments + 1,
+              commentsList: [
+                ...p.commentsList,
+                {
+                  id: Date.now().toString(),
+                  user: "Me",
+                  text: commentText,
+                  isDesigner: false,
+                  replyTo: null,
+                  replies: [],
+                  likes: 0,
+                  isLiked: false,
+                },
+              ],
+            }
+          : p
+      )
+    );
 
     setCommentText("");
+  };
+
+  const renderComments = (comments: any[]) => {
+    return comments.map((comment) => (
+      <View key={comment.id}>
+        {/* 主评论 - 小红书风格 */}
+        <View style={styles.commentRow}>
+          <View style={styles.commentAvatar}>
+            <Text style={styles.commentAvatarText}>
+              {comment.user.charAt(0)}
+            </Text>
+          </View>
+
+          <View style={styles.commentContent}>
+            <View style={styles.commentUserInfo}>
+              <Text style={styles.commentUser}>{comment.user}</Text>
+              {comment.isDesigner && (
+                <View style={styles.designerBadge}>
+                  <Text style={styles.designerBadgeText}>设计师</Text>
+                </View>
+              )}
+              <Text style={styles.commentTime}>
+                {formatTimeAgo(comment.timestamp)}
+              </Text>
+            </View>
+
+            <Text style={styles.commentText}>{comment.text}</Text>
+
+            <View style={styles.commentActions}>
+              <TouchableOpacity
+                style={styles.commentLikeButton}
+                onPress={() => handleCommentLike(comment.id)}
+              >
+                <Ionicons
+                  name={comment.isLiked ? "heart" : "heart-outline"}
+                  size={14}
+                  style={[
+                    styles.commentLikeIcon,
+                    comment.isLiked && styles.likedComment,
+                  ]}
+                />
+                <Text
+                  style={[
+                    styles.commentLikeCount,
+                    comment.isLiked && styles.likedCommentText,
+                  ]}
+                >
+                  {comment.likes > 0 ? comment.likes : ""}
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.commentLikeButton}
+                onPress={() => handleReply(comment.id, comment.user)}
+              >
+                <Text style={styles.commentLikeCount}>回复</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+
+        {/* 回复列表 */}
+        {comment.replies && comment.replies.length > 0 && (
+          <View style={styles.repliesContainer}>
+            {comment.replies.map((reply: any) => (
+              <View key={reply.id} style={styles.replyRow}>
+                <Text style={styles.replyUser}>{reply.user}</Text>
+                <Text style={styles.replyText}>
+                  回复 <Text style={styles.replyTo}>@{reply.replyTo}</Text>：
+                  {reply.text}
+                </Text>
+              </View>
+            ))}
+          </View>
+        )}
+      </View>
+    ));
+  };
+
+  // 时间格式化函数
+  const formatTimeAgo = (timestamp: string) => {
+    const now = new Date();
+    const time = new Date(timestamp);
+    const diffInMinutes = Math.floor(
+      (now.getTime() - time.getTime()) / (1000 * 60)
+    );
+
+    if (diffInMinutes < 1) return "刚刚";
+    if (diffInMinutes < 60) return `${diffInMinutes}分钟前`;
+    if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}小时前`;
+    return `${Math.floor(diffInMinutes / 1440)}天前`;
+  };
+
+  // 评论点赞功能
+  const handleCommentLike = (commentId: string) => {
+    setPosts((prev) =>
+      prev.map((post) => ({
+        ...post,
+        commentsList: post.commentsList.map((comment) =>
+          comment.id === commentId
+            ? {
+                ...comment,
+                isLiked: !comment.isLiked,
+                likes: comment.isLiked ? comment.likes - 1 : comment.likes + 1,
+              }
+            : comment
+        ),
+      }))
+    );
+  };
+
+  // 评论输入框组件
+  const renderCommentInput = (postId: string) => {
+    const inputText = replyingTo ? replyText : commentText;
+    const setInputText = replyingTo ? setReplyText : setCommentText;
+    const placeholder = replyingTo
+      ? `回复 ${replyingTo.username}...`
+      : "说点什么...";
+
+    return (
+      <View style={styles.commentInputContainer}>
+        <TextInput
+          style={styles.commentTextInput}
+          placeholder={placeholder}
+          placeholderTextColor="#999"
+          value={inputText}
+          onChangeText={setInputText}
+          multiline
+          maxLength={200}
+        />
+
+        <TouchableOpacity
+          style={[
+            styles.sendButton,
+            !inputText.trim() && { backgroundColor: "#ccc" },
+          ]}
+          onPress={() => handleAddComment(postId)}
+          disabled={!inputText.trim()}
+        >
+          <Text style={styles.sendButtonText}>发送</Text>
+        </TouchableOpacity>
+      </View>
+    );
   };
 
   const handleCreatePost = () => {
@@ -343,10 +442,12 @@ export default function SocialScreen() {
 
   const handleShareToPlatform = (platform: string) => {
     if (currentSharePostId) {
-      const post = posts.find(p => p.id === currentSharePostId);
+      const post = posts.find((p) => p.id === currentSharePostId);
       const shareText = getShareText(platform, post);
 
-      console.log(`Shared to ${platform} (post ${currentSharePostId}): ${shareText}`);
+      console.log(
+        `Shared to ${platform} (post ${currentSharePostId}): ${shareText}`
+      );
 
       setShowShareSuccess(true);
       setSharePlatform(platform);
@@ -360,7 +461,7 @@ export default function SocialScreen() {
 
   // 话题相关功能
   const handleTopicSelect = (topicId: string) => {
-    const selectedTopicData = mockTopics.find(t => t.id === topicId);
+    const selectedTopicData = mockTopics.find((t) => t.id === topicId);
     if (selectedTopicData) {
       navigation.navigate("TopicDetail", {
         topicId: topicId,
@@ -372,17 +473,16 @@ export default function SocialScreen() {
 
   // 生成专属分享语
   const getShareText = (platform: string, post: any) => {
-  const baseText = post?.caption || "";
-  const platformTexts: Record<string, string> = {
-    Instagram: `${baseText} \n\n✨ 来自Royal Leaf茶饮创意分享 \n#RoyalLeaf #茶文化创意 #BubbleTea #共创`,
-    Facebook: `${baseText} \n\n🍃 在Royal Leaf发现了这个精彩的茶文化创意！\n大家一起来分享你的茶饮灵感吧~ \n#RoyalLeaf #茶饮创意`,
-    WhatsApp: `看看这个超棒的茶饮创意！${baseText} \n\n🧋 Royal Leaf - 传统与现代的完美融合`,
-    WeChat: `${baseText} \n\n🌿 来自Royal Leaf茶会的精彩分享\n一起探索茶文化的无限可能！`,
-    链接: `${baseText} \n\n📱 Royal Leaf茶会 - 发现更多茶文化创意`
+    const baseText = post?.caption || "";
+    const platformTexts: Record<string, string> = {
+      Instagram: `${baseText} \n\n✨ 来自Royal Leaf茶饮创意分享 \n#RoyalLeaf #茶文化创意 #BubbleTea #共创`,
+      Facebook: `${baseText} \n\n🍃 在Royal Leaf发现了这个精彩的茶文化创意！\n大家一起来分享你的茶饮灵感吧~ \n#RoyalLeaf #茶饮创意`,
+      WhatsApp: `看看这个超棒的茶饮创意！${baseText} \n\n🧋 Royal Leaf - 传统与现代的完美融合`,
+      WeChat: `${baseText} \n\n🌿 来自Royal Leaf茶会的精彩分享\n一起探索茶文化的无限可能！`,
+      链接: `${baseText} \n\n📱 Royal Leaf茶会 - 发现更多茶文化创意`,
+    };
+    return platformTexts[platform] || baseText;
   };
-  return platformTexts[platform] || baseText;
-};
-
 
   // More Menu - Fixed the event handling
   const handleMore = (postId: string, event: any) => {
@@ -495,18 +595,34 @@ export default function SocialScreen() {
       {/* Tab Navigation */}
       <View style={topicStyles.tabContainer}>
         <TouchableOpacity
-          style={[topicStyles.tab, activeTab === 'posts' && topicStyles.activeTab]}
-          onPress={() => setActiveTab('posts')}
+          style={[
+            topicStyles.tab,
+            activeTab === "posts" && topicStyles.activeTab,
+          ]}
+          onPress={() => setActiveTab("posts")}
         >
-          <Text style={[topicStyles.tabText, activeTab === 'posts' && topicStyles.activeTabText]}>
+          <Text
+            style={[
+              topicStyles.tabText,
+              activeTab === "posts" && topicStyles.activeTabText,
+            ]}
+          >
             动态分享
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[topicStyles.tab, activeTab === 'topics' && topicStyles.activeTab]}
-          onPress={() => setActiveTab('topics')}
+          style={[
+            topicStyles.tab,
+            activeTab === "topics" && topicStyles.activeTab,
+          ]}
+          onPress={() => setActiveTab("topics")}
         >
-          <Text style={[topicStyles.tabText, activeTab === 'topics' && topicStyles.activeTabText]}>
+          <Text
+            style={[
+              topicStyles.tabText,
+              activeTab === "topics" && topicStyles.activeTabText,
+            ]}
+          >
             话题讨论
           </Text>
         </TouchableOpacity>
@@ -515,7 +631,7 @@ export default function SocialScreen() {
       {/* Create Post Modal */}
       {showCreatePost && (
         <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-          <View style={newStyles.overlay}>
+          <View style={buttonStyles.overlay}>
             <KeyboardAvoidingView
               behavior={Platform.OS === "ios" ? "padding" : undefined}
               style={{
@@ -639,9 +755,14 @@ export default function SocialScreen() {
                 {/* 分享预览文本 */}
                 {currentSharePostId && (
                   <View>
-                    <Text style={shareStyles.sharePreviewTitle}>分享内容预览：</Text>
-                    <Text style={shareStyles.sharePreviewText} numberOfLines={3}>
-                      {posts.find(p => p.id === currentSharePostId)?.caption}
+                    <Text style={shareStyles.sharePreviewTitle}>
+                      分享内容预览：
+                    </Text>
+                    <Text
+                      style={shareStyles.sharePreviewText}
+                      numberOfLines={3}
+                    >
+                      {posts.find((p) => p.id === currentSharePostId)?.caption}
                     </Text>
                   </View>
                 )}
@@ -701,7 +822,7 @@ export default function SocialScreen() {
 
       {showShareSuccess && (
         <TouchableWithoutFeedback onPress={() => setShowShareSuccess(false)}>
-          <View style={newStyles.overlay}>
+          <View style={buttonStyles.overlay}>
             <TouchableWithoutFeedback>
               <View style={shareStyles.shareSuccessModal}>
                 <Text style={shareStyles.shareSuccessText}>
@@ -714,7 +835,7 @@ export default function SocialScreen() {
       )}
 
       {/* Feed */}
-      {activeTab === 'posts' ? (
+      {activeTab === "posts" ? (
         <ScrollView
           style={styles.feedContainer}
           showsVerticalScrollIndicator={false}
@@ -796,18 +917,18 @@ export default function SocialScreen() {
                   </TouchableOpacity>
                 </View>
                 <TouchableOpacity
-                    style={styles.saveButton}
-                    onPress={() => handleSave(post.id)}
-                  >
-                    <Image
-                      source={
-                        savedPosts.has(post.id)
-                          ? require("assets/icons/savefilled.png") // 已收藏图标
-                          : require("assets/icons/saveoutline.png") // 未收藏图标
-                      }
-                      style={styles.actionButtonIcons}
-                    />
-                  </TouchableOpacity>
+                  style={styles.saveButton}
+                  onPress={() => handleSave(post.id)}
+                >
+                  <Image
+                    source={
+                      savedPosts.has(post.id)
+                        ? require("assets/icons/savefilled.png") // 已收藏图标
+                        : require("assets/icons/saveoutline.png") // 未收藏图标
+                    }
+                    style={styles.actionButtonIcons}
+                  />
+                </TouchableOpacity>
               </View>
 
               {/* Comment Section */}
@@ -815,47 +936,27 @@ export default function SocialScreen() {
                 <View style={styles.commentSection}>
                   {/* 评论列表 */}
                   {post.commentsList.length > 0 ? (
-                    post.commentsList.map((c) => (
-                      <View key={c.id} style={styles.commentRow}>
-                        <Text style={styles.commentUser}>{c.user}：</Text>
-                        <Text style={styles.commentText}>{c.text}</Text>
-                      </View>
-                    ))
+                    renderComments(post.commentsList)
                   ) : (
                     <Text style={styles.noCommentText}>
                       还没有评论，快来抢沙发吧~ 🛋️
                     </Text>
                   )}
 
-                  {/* 评论输入框 */}
-                  <View style={styles.commentBox}>
-                    <TextInput
-                      style={styles.commentInput}
-                      placeholder="写下你的评论..."
-                      value={commentText}
-                      onChangeText={setCommentText}
-                    />
-                    <TouchableOpacity
-                      style={[
-                        styles.commentPostButton,
-                        commentText.trim()
-                          ? styles.commentPostButtonActive
-                          : null,
-                      ]}
-                      onPress={() => handleAddComment(post.id)}
-                    >
-                      <Text
-                        style={[
-                          styles.commentPostButtonText,
-                          commentText.trim()
-                            ? styles.commentPostButtonTextActive
-                            : null,
-                        ]}
-                      >
-                        发表
+                  {/* 回复提示 */}
+                  {replyingTo && (
+                    <View style={styles.replyIndicator}>
+                      <Text style={styles.replyIndicatorText}>
+                        回复 @{replyingTo.username}
                       </Text>
-                    </TouchableOpacity>
-                  </View>
+                      <TouchableOpacity onPress={handleCancelReply}>
+                        <Text style={styles.cancelReplyText}>取消</Text>
+                      </TouchableOpacity>
+                    </View>
+                  )}
+
+                  {/* 评论输入框 */}
+                  {renderCommentInput(post.id)}
                 </View>
               )}
             </View>
@@ -871,99 +972,143 @@ export default function SocialScreen() {
         >
           <View style={topicStyles.topicsContainer}>
             <Text style={topicStyles.sectionTitle}>🔥 热门话题</Text>
-            {mockTopics.filter(t => t.isHot).map((topic) => (
-              <TouchableOpacity
-                key={topic.id}
-                style={topicStyles.hotTopicCard}
-                onPress={() => handleTopicSelect(topic.id)}
-                activeOpacity={0.9}
-              >
-                {/* 参与度指示器 */}
-                <View style={topicStyles.participationIndicator} />
+            {mockTopics
+              .filter((t) => t.isHot)
+              .map((topic) => (
+                <TouchableOpacity
+                  key={topic.id}
+                  style={topicStyles.hotTopicCard}
+                  onPress={() => handleTopicSelect(topic.id)}
+                  activeOpacity={0.9}
+                >
+                  {/* 参与度指示器 */}
+                  <View style={topicStyles.participationIndicator} />
 
-                <View style={topicStyles.topicHeader}>
-                  <Text style={topicStyles.topicTitle}>{topic.title}</Text>
-                  <View style={topicStyles.hotBadge}>
-                    <Text style={topicStyles.hotBadgeText}>热门</Text>
+                  <View style={topicStyles.topicHeader}>
+                    <Text style={topicStyles.topicTitle}>{topic.title}</Text>
+                    <View style={topicStyles.hotBadge}>
+                      <Text style={topicStyles.hotBadgeText}>热门</Text>
+                    </View>
                   </View>
-                </View>
 
-                <Text style={topicStyles.topicDescription}>{topic.description}</Text>
+                  <Text style={topicStyles.topicDescription}>
+                    {topic.description}
+                  </Text>
 
-                {/* 活跃度指示器 */}
-                <View style={topicStyles.activityIndicator}>
-                  <View style={[topicStyles.activityDot, topicStyles.activityHigh]} />
-                  <View style={[topicStyles.activityDot, topicStyles.activityHigh]} />
-                  <View style={[topicStyles.activityDot, topicStyles.activityMedium]} />
-                  <Text style={topicStyles.activityText}>活跃度很高</Text>
-                </View>
-
-                <View style={topicStyles.topicStats}>
-                  <View style={topicStyles.statContainer}>
-                    <Text style={topicStyles.statIcon}>💬</Text>
-                    <Text style={topicStyles.statText}>{topic.posts} 帖子</Text>
+                  {/* 活跃度指示器 */}
+                  <View style={topicStyles.activityIndicator}>
+                    <View
+                      style={[
+                        topicStyles.activityDot,
+                        topicStyles.activityHigh,
+                      ]}
+                    />
+                    <View
+                      style={[
+                        topicStyles.activityDot,
+                        topicStyles.activityHigh,
+                      ]}
+                    />
+                    <View
+                      style={[
+                        topicStyles.activityDot,
+                        topicStyles.activityMedium,
+                      ]}
+                    />
+                    <Text style={topicStyles.activityText}>活跃度很高</Text>
                   </View>
-                  <View style={topicStyles.statContainer}>
-                    <Text style={topicStyles.statIcon}>👥</Text>
-                    <Text style={topicStyles.statText}>{topic.participants} 参与者</Text>
-                  </View>
-                  <View style={topicStyles.trendingIndicator}>
-                    <Text style={topicStyles.statIcon}>📈</Text>
-                    <Text style={topicStyles.trendingText}>趋势上升</Text>
-                  </View>
-                </View>
 
-                {/* 互动预览 */}
-                <View style={topicStyles.interactionPreview}>
-                  <View style={topicStyles.previewAvatar} />
-                  <View style={topicStyles.previewAvatar} />
-                  <View style={topicStyles.previewAvatar} />
-                  <Text style={topicStyles.moreParticipants}>+{topic.participants - 3} 位用户正在讨论</Text>
-                </View>
-              </TouchableOpacity>
-            ))}
+                  <View style={topicStyles.topicStats}>
+                    <View style={topicStyles.statContainer}>
+                      <Text style={topicStyles.statIcon}>💬</Text>
+                      <Text style={topicStyles.statText}>
+                        {topic.posts} 帖子
+                      </Text>
+                    </View>
+                    <View style={topicStyles.statContainer}>
+                      <Text style={topicStyles.statIcon}>👥</Text>
+                      <Text style={topicStyles.statText}>
+                        {topic.participants} 参与者
+                      </Text>
+                    </View>
+                    <View style={topicStyles.trendingIndicator}>
+                      <Text style={topicStyles.statIcon}>📈</Text>
+                      <Text style={topicStyles.trendingText}>趋势上升</Text>
+                    </View>
+                  </View>
+
+                  {/* 互动预览 */}
+                  <View style={topicStyles.interactionPreview}>
+                    <View style={topicStyles.previewAvatar} />
+                    <View style={topicStyles.previewAvatar} />
+                    <View style={topicStyles.previewAvatar} />
+                    <Text style={topicStyles.moreParticipants}>
+                      +{topic.participants - 3} 位用户正在讨论
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              ))}
 
             <Text style={topicStyles.sectionTitle}>📝 全部话题</Text>
-            {mockTopics.filter(t => !t.isHot).map((topic) => (
-              <TouchableOpacity
-                key={topic.id}
-                style={topicStyles.topicCard}
-                onPress={() => handleTopicSelect(topic.id)}
-                activeOpacity={0.9}
-              >
-                <View style={topicStyles.topicHeader}>
-                  <Text style={topicStyles.topicTitle}>{topic.title}</Text>
-                </View>
-
-                <Text style={topicStyles.topicDescription}>{topic.description}</Text>
-
-                {/* 活跃度指示器 */}
-                <View style={topicStyles.activityIndicator}>
-                  <View style={[topicStyles.activityDot, topicStyles.activityMedium]} />
-                  <View style={[topicStyles.activityDot, topicStyles.activityLow]} />
-                  <View style={[topicStyles.activityDot, topicStyles.activityLow]} />
-                  <Text style={topicStyles.activityText}>活跃度中等</Text>
-                </View>
-
-                <View style={topicStyles.topicStats}>
-                  <View style={topicStyles.statContainer}>
-                    <Text style={topicStyles.statIcon}>💬</Text>
-                    <Text style={topicStyles.statText}>{topic.posts} 帖子</Text>
+            {mockTopics
+              .filter((t) => !t.isHot)
+              .map((topic) => (
+                <TouchableOpacity
+                  key={topic.id}
+                  style={topicStyles.topicCard}
+                  onPress={() => handleTopicSelect(topic.id)}
+                  activeOpacity={0.9}
+                >
+                  <View style={topicStyles.topicHeader}>
+                    <Text style={topicStyles.topicTitle}>{topic.title}</Text>
                   </View>
-                  <View style={topicStyles.statContainer}>
-                    <Text style={topicStyles.statIcon}>👥</Text>
-                    <Text style={topicStyles.statText}>{topic.participants} 参与者</Text>
-                  </View>
-                </View>
 
-                {/* 互动预览 */}
-                <View style={topicStyles.interactionPreview}>
-                  <View style={topicStyles.previewAvatar} />
-                  <View style={topicStyles.previewAvatar} />
-                  <Text style={topicStyles.moreParticipants}>+{topic.participants - 2} 位用户参与</Text>
-                </View>
-              </TouchableOpacity>
-            ))}
+                  <Text style={topicStyles.topicDescription}>
+                    {topic.description}
+                  </Text>
+
+                  {/* 活跃度指示器 */}
+                  <View style={topicStyles.activityIndicator}>
+                    <View
+                      style={[
+                        topicStyles.activityDot,
+                        topicStyles.activityMedium,
+                      ]}
+                    />
+                    <View
+                      style={[topicStyles.activityDot, topicStyles.activityLow]}
+                    />
+                    <View
+                      style={[topicStyles.activityDot, topicStyles.activityLow]}
+                    />
+                    <Text style={topicStyles.activityText}>活跃度中等</Text>
+                  </View>
+
+                  <View style={topicStyles.topicStats}>
+                    <View style={topicStyles.statContainer}>
+                      <Text style={topicStyles.statIcon}>💬</Text>
+                      <Text style={topicStyles.statText}>
+                        {topic.posts} 帖子
+                      </Text>
+                    </View>
+                    <View style={topicStyles.statContainer}>
+                      <Text style={topicStyles.statIcon}>👥</Text>
+                      <Text style={topicStyles.statText}>
+                        {topic.participants} 参与者
+                      </Text>
+                    </View>
+                  </View>
+
+                  {/* 互动预览 */}
+                  <View style={topicStyles.interactionPreview}>
+                    <View style={topicStyles.previewAvatar} />
+                    <View style={topicStyles.previewAvatar} />
+                    <Text style={topicStyles.moreParticipants}>
+                      +{topic.participants - 2} 位用户参与
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              ))}
           </View>
 
           <View style={styles.bottomSpacing} />
@@ -973,34 +1118,34 @@ export default function SocialScreen() {
       {/* Editing Post*/}
       {editingPostId && (
         <TouchableWithoutFeedback onPress={cancelEdit}>
-          <View style={newStyles.overlay}>
+          <View style={buttonStyles.overlay}>
             <TouchableWithoutFeedback>
-              <View style={newStyles.editModal}>
-                <Text style={newStyles.modalTitle}>编辑帖子</Text>
+              <View style={buttonStyles.editModal}>
+                <Text style={buttonStyles.modalTitle}>编辑帖子</Text>
                 <TextInput
-                  style={newStyles.editInput}
+                  style={buttonStyles.editInput}
                   multiline
                   value={editPostText}
                   onChangeText={setEditPostText}
                 />
-                <View style={newStyles.buttonsAll}>
+                <View style={buttonStyles.buttonsAll}>
                   <TouchableOpacity
-                    style={newStyles.buttonLeft}
+                    style={buttonStyles.buttonLeft}
                     onPress={cancelEdit}
                   >
-                    <Text style={newStyles.buttonText}>取消</Text>
+                    <Text style={buttonStyles.buttonText}>取消</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={[
-                      newStyles.buttonRight,
-                      editPostText.trim() ? newStyles.buttonRight : null,
+                      buttonStyles.buttonRight,
+                      editPostText.trim() ? buttonStyles.buttonRight : null,
                     ]}
                     onPress={confirmEdit}
                   >
                     <Text
                       style={[
-                        newStyles.buttonText,
-                        editPostText.trim() ? newStyles.buttonText : null,
+                        buttonStyles.buttonText,
+                        editPostText.trim() ? buttonStyles.buttonText : null,
                       ]}
                     >
                       确认
@@ -1016,7 +1161,7 @@ export default function SocialScreen() {
       {/* Dropdown */}
       {showDropdown && (
         <TouchableWithoutFeedback onPress={closeDropdown}>
-          <View style={newStyles.dropdownOverlay}>
+          <View style={buttonStyles.dropdownOverlay}>
             <TouchableWithoutFeedback>
               <View
                 style={[
@@ -1053,25 +1198,25 @@ export default function SocialScreen() {
 
       {showDeleteDropdown && (
         <TouchableWithoutFeedback onPress={cancelDelete}>
-          <View style={newStyles.overlay}>
+          <View style={buttonStyles.overlay}>
             <TouchableWithoutFeedback>
-              <View style={newStyles.deleteModal}>
-                <Text style={newStyles.modalTitle}>确认删除</Text>
-                <Text style={newStyles.buttonMessage}>
+              <View style={buttonStyles.deleteModal}>
+                <Text style={buttonStyles.modalTitle}>确认删除</Text>
+                <Text style={buttonStyles.buttonMessage}>
                   确定要删除这条帖子吗？
                 </Text>
-                <View style={newStyles.buttonsAll}>
+                <View style={buttonStyles.buttonsAll}>
                   <TouchableOpacity
-                    style={newStyles.buttonLeft}
+                    style={buttonStyles.buttonLeft}
                     onPress={confirmDelete}
                   >
-                    <Text style={newStyles.buttonText}>删除</Text>
+                    <Text style={buttonStyles.buttonText}>删除</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
-                    style={newStyles.buttonRight}
+                    style={buttonStyles.buttonRight}
                     onPress={cancelDelete}
                   >
-                    <Text style={newStyles.buttonText}>取消</Text>
+                    <Text style={buttonStyles.buttonText}>取消</Text>
                   </TouchableOpacity>
                 </View>
               </View>

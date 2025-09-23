@@ -1,6 +1,6 @@
 // TopicDetailCSS.ts
 import { StyleSheet } from "react-native";
-import colors from "../../../styles/colors";
+import colors from "../../../../styles/colors";
 
 export const topicDetailStyles = StyleSheet.create({
   container: {
@@ -135,7 +135,7 @@ export const topicDetailStyles = StyleSheet.create({
     color: colors.black,
     textAlignVertical: "top",
     borderWidth: 1,
-    borderColor: colors.gray_light,
+    borderColor: colors.green,
     borderRadius: 8,
     padding: 12,
     marginBottom: 12,
@@ -144,6 +144,25 @@ export const topicDetailStyles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "flex-end",
     gap: 12,
+  },
+  joinHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  closeButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.gray_button,
+  },
+  joinTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.black,
   },
   cancelButton: {
     paddingHorizontal: 16,
@@ -155,6 +174,15 @@ export const topicDetailStyles = StyleSheet.create({
     fontSize: 14,
     color: colors.gray_text,
     fontWeight: "500",
+  },
+   publishButtonHeader: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 16,
+    backgroundColor: colors.gray_light,
+  },
+  publishButtonHeaderActive: {
+    backgroundColor: colors.green_deep,
   },
   publishButton: {
     paddingHorizontal: 16,
@@ -250,6 +278,67 @@ export const topicDetailStyles = StyleSheet.create({
     color: colors.black,
     lineHeight: 20,
   },
+  imageUploadRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  imageUploadContainer: {
+    marginBottom: 12,
+  },
+  imageUploadLabel: {
+    fontSize: 14,
+    color: colors.gray_deep,
+    marginBottom: 8,
+    fontWeight: '500',
+  },
+  imageUploadButtons: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  uploadButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.gray_button,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    gap: 6,
+  },
+  uploadButtonText: {
+    fontSize: 14,
+    color: colors.green_deep,
+    fontWeight: '500',
+  },
+  selectedImageContainer: {
+    position: 'relative',
+    alignSelf: 'flex-start',
+    marginTop: 12,
+  },
+  selectedImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.gray_light,
+  },
+  removeImageButton: {
+    position: 'absolute',
+    top: -8,
+    right: -8,
+    backgroundColor: colors.white,
+    borderRadius: 12,
+  },
+   publishButtonRow: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 16,
+    backgroundColor: colors.gray_light,
+    marginLeft: 12,
+  },
+  publishButtonRowActive: {
+    backgroundColor: colors.green_deep,
+  },
 
   // Post Actions
   postActions: {
@@ -286,76 +375,198 @@ export const topicDetailStyles = StyleSheet.create({
     padding: 4,
   },
 
-  // Comments
+    // comment
+  commentInputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 8,
+    paddingVertical: 8,
+    borderTopWidth: 1,
+    borderTopColor: "#f0f0f0",
+    backgroundColor: colors.white,
+  },
+  commentTextInput: {
+    flex: 1,
+    fontSize: 14,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    backgroundColor: "#f8f9fa",
+    borderRadius: 20,
+    marginRight: 8,
+    color: colors.black,
+    maxHeight: 80,
+  },
   commentSection: {
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    // borderTopWidth: 1,
-    // borderTopColor: colors.gray_light,
+    paddingHorizontal: 12,
+    paddingTop: 20,
+    paddingBottom: 0,
+    backgroundColor: colors.white,
+    borderTopWidth: 1,
+    borderTopColor: "#f0f0f0",
   },
   commentRow: {
     flexDirection: "row",
-    marginBottom: 10,
-    flexWrap: "wrap",
+    marginBottom: 20,
+    paddingHorizontal: 0,
+    paddingVertical: 0,
+  },
+  commentAvatar: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: colors.gold_light,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 10,
+  },
+  commentAvatarText: {
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  commentContent: {
+    flex: 1,
+    backgroundColor: colors.primary_bg,
+    borderRadius: 18,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  commentUserInfo: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 2,
   },
   commentUser: {
     fontWeight: "600",
     color: colors.gray_deep,
-    marginRight: 4,
+    fontSize: 13,
+    marginRight: 6,
   },
-  designerUser: {
-    color: colors.green_deep,
+  commentTime: {
+    fontSize: 11,
+    color: colors.gray_text,
+    marginLeft: 8,
   },
   commentText: {
-    color: colors.gray_deep,
-    flex: 1,
+    color: colors.black,
     fontSize: 14,
-    lineHeight: 20,
+    lineHeight: 18,
+    marginBottom: 4,
+  },
+  commentActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 4,
+  },
+  commentLikeButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 2,
+    paddingHorizontal: 6,
+    marginRight: 10,
+  },
+  commentLikeIcon: {
+    fontSize: 15,
+    marginRight: 4,
+    color: colors.gray_deep,
+  },
+  commentLikeCount: {
+    fontSize: 11,
+    color: colors.gray_text,
   },
   noCommentText: {
     color: colors.gray_text,
-    marginVertical: 12,
+    fontStyle: "italic",
+    marginBottom: 8,
     textAlign: "center",
-    fontSize: 14,
-  },
-  commentBox: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingTop: 12,
-    marginTop: 12,
-    // borderTopWidth: 1,
-    // borderTopColor: colors.gray_light,
-  },
-  commentInput: {
-    flex: 1,
-    fontSize: 14,
-    paddingVertical: 10,
-    paddingHorizontal: 15,
-    borderWidth: 1,
-    borderColor: colors.gold_light,
-    borderRadius: 18,
-    marginRight: 10,
-    color: colors.black,
-    backgroundColor: colors.white,
-  },
-  commentPostButton: {
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 6,
-    backgroundColor: colors.gray_light,
-  },
-  commentPostButtonActive: {
-    backgroundColor: colors.gold_deep,
-  },
-  commentPostButtonText: {
-    fontSize: 14,
-    color: colors.gray_text,
-    fontWeight: "500",
-  },
-  commentPostButtonTextActive: {
-    color: colors.white,
+    paddingVertical: 20,
   },
 
+  // reply
+  replyIndicator: {
+    flexDirection: "row",
+    // justifyContent: 'space-between',
+    alignItems: "center",
+    backgroundColor: "#f7fafc",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    marginBottom: 8,
+  },
+  replyIndicatorText: {
+    fontSize: 12,
+    color: "#4a5568",
+    fontWeight: "500",
+  },
+  cancelReplyText: {
+    fontSize: 12,
+    color: "#e53e3e",
+    fontWeight: "light",
+  },
+  repliesContainer: {
+    marginLeft: 10,
+    marginTop: 0,
+    paddingLeft: 12,
+    borderLeftWidth: 2,
+    borderLeftColor: colors.gold_deep,
+    marginBottom: 15,
+  },
+  replyRow: {
+    flexDirection: "row",
+    marginBottom: 6,
+    flexWrap: "wrap",
+    marginLeft: 0,
+  },
+  replyUser: {
+    fontWeight: "600",
+    color: colors.gold_deep,
+    marginRight: 4,
+    fontSize: 13,
+  },
+  replyText: {
+    color: colors.black,
+    fontSize: 13,
+    lineHeight: 18,
+    flex: 1,
+  },
+  replyTo: {
+    color: colors.gold_deep,
+    fontWeight: "600",
+  },
+  sendButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 15,
+    backgroundColor: colors.gold_deep,
+  },
+  sendButtonText: {
+    fontSize: 14,
+    color: colors.white,
+    fontWeight: "600",
+  },
+
+  // 设计师标识
+  designerBadge: {
+    backgroundColor: colors.green_deep,
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    borderRadius: 104,
+    marginLeft: 3,
+  },
+  designerBadgeText: {
+    fontSize: 10,
+    color: colors.white,
+    fontWeight: "bold",
+  },
+
+  // 评论点赞高亮
+  likedComment: {
+    color: "#ff2442", // 小红书红
+  },
+  likedCommentText: {
+    color: "#ff2442",
+    fontWeight: "600",
+  },
+  
   // Empty State
   emptyContainer: {
     padding: 40,

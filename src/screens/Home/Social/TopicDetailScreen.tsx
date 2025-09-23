@@ -1,8 +1,10 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import * as ImagePicker from "expo-image-picker";
 import React, { useEffect, useState } from "react";
 import {
+  Alert,
   Dimensions,
   Image,
   ScrollView,
@@ -17,8 +19,13 @@ import {
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
 import { HomeStackParamList } from "../../../navigation/stacks/HomeNav/HomeStack";
-import { topicDetailStyles } from "./TopicDetailCSS";
-import { Topic, TopicDetailRouteParams } from "./TopicSlice";
+import colors from "../../../styles/colors";
+import { topicDetailStyles } from "./styles/TopicDetailCSS";
+import {
+  TopicData,
+  TopicDetailRouteParams,
+  mockTopicData,
+} from "./types/TopicTypes";
 
 const { width: screenWidth } = Dimensions.get("window");
 
@@ -27,104 +34,6 @@ type TopicDetailScreenNavigationProp = NativeStackNavigationProp<
   "TopicDetail"
 >;
 
-const mockTopicData: Record<string, Topic> = {
-  t1: {
-    id: "t1",
-    title: "#你最爱的共创饮品理由",
-    description: "分享你对创意茶饮的独特见解",
-    posts: 42,
-    participants: 28,
-    isHot: true,
-    posts_list: [
-      {
-        id: "p1",
-        username: "TeaMaster_Lin",
-        avatar: "👩‍🍳",
-        image: require("assets/images/mock.jpg"),
-        caption:
-          "我最爱的是抹茶奶盖！传统抹茶的苦涩和现代奶盖的甜腻完美融合，每一口都是东西方文化的碰撞 🍵✨ #共创饮品 #抹茶控",
-        likes: 15,
-        comments: 3,
-        timeAgo: "30分钟前",
-        isLiked: false,
-        isSaved: false,
-        topicTag: "#你最爱的共创饮品理由",
-        commentsList: [
-          {
-            id: "c1",
-            user: "MatcharLover",
-            text: "同款！抹茶奶盖真的绝了！",
-            isDesigner: false,
-            replyTo: null,
-          },
-          {
-            id: "c2",
-            user: "CreativeTea",
-            text: "这个搭配确实很有创意",
-            isDesigner: false,
-            replyTo: null,
-          },
-        ],
-      },
-      {
-        id: "p2",
-        username: "BubbleFan_88",
-        avatar: "🧑‍💼",
-        image: require("assets/images/mock.jpg"),
-        caption:
-          "芋泥波波茶是我的心头好！紫色的颜值加上Q弹的口感，还有浓郁的芋香，简直是视觉和味觉的双重享受 🟣🧋 #共创饮品",
-        likes: 23,
-        comments: 5,
-        timeAgo: "1小时前",
-        isLiked: true,
-        isSaved: false,
-        topicTag: "#你最爱的共创饮品理由",
-        commentsList: [
-          {
-            id: "c3",
-            user: "PurpleLover",
-            text: "芋泥控举手！💜",
-            isDesigner: false,
-            replyTo: null,
-          },
-          {
-            id: "c4",
-            user: "RoyalLeaf_Designer",
-            text: "感谢分享！我们会考虑推出更多芋泥系列",
-            isDesigner: true,
-            replyTo: null,
-          },
-        ],
-      },
-    ],
-  },
-  t2: {
-    id: "t2",
-    title: "#双文化元素怎么融合才好看",
-    description: "探讨传统与现代的完美结合",
-    posts: 38,
-    participants: 22,
-    isHot: true,
-    posts_list: [
-      {
-        id: "p3",
-        username: "DesignGuru",
-        avatar: "🎨",
-        image: require("assets/images/mock.jpg"),
-        caption:
-          "中式花纹 + 现代极简包装 = 完美！看看这个设计，既保留了传统美学又符合现代审美 🎋🎯 #文化融合",
-        likes: 31,
-        comments: 8,
-        timeAgo: "2小时前",
-        isLiked: false,
-        isSaved: true,
-        topicTag: "#双文化元素怎么融合才好看",
-        commentsList: [],
-      },
-    ],
-  },
-};
-
 export default function TopicDetailScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<TopicDetailScreenNavigationProp>();
@@ -132,7 +41,7 @@ export default function TopicDetailScreen() {
   const { topicId, topicTitle, topicDescription } =
     route.params as TopicDetailRouteParams;
 
-  const [topicData, setTopicData] = useState<Topic | null>(
+  const [topicData, setTopicData] = useState<TopicData | null>(
     mockTopicData[topicId] || null
   );
   const [posts, setPosts] = useState(topicData?.posts_list || []);
@@ -142,7 +51,14 @@ export default function TopicDetailScreen() {
     null
   );
   const [commentText, setCommentText] = useState("");
+  const [replyingTo, setReplyingTo] = useState<{
+    commentId: string;
+    username: string;
+  } | null>(null);
+  const [replyText, setReplyText] = useState("");
   const [savedPosts, setSavedPosts] = useState<Set<string>>(new Set());
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     if (topicData) {
@@ -169,9 +85,69 @@ export default function TopicDetailScreen() {
   const handleComment = (postId: string) => {
     setActiveCommentPostId((prev) => (prev === postId ? null : postId));
     setCommentText("");
+    setReplyingTo(null);
+    setReplyText("");
+  };
+
+  const handleReply = (commentId: string, username: string) => {
+    setReplyingTo({ commentId, username });
+    setReplyText(`@${username} `);
+  };
+
+  const handleCancelReply = () => {
+    setReplyingTo(null);
+    setReplyText("");
+  };
+
+  const handleAddReply = (postId: string) => {
+    if (!replyText.trim() || !replyingTo) return;
+
+    setPosts((prev) =>
+      prev.map((p) =>
+        p.id === postId
+          ? {
+              ...p,
+              commentsList: p.commentsList.map((comment) =>
+                comment.id === replyingTo.commentId
+                  ? {
+                      ...comment,
+                      replies: [
+                        ...comment.replies,
+                        {
+                          id: Date.now().toString(),
+                          user: "我",
+                          text: replyText.replace(
+                            `@${replyingTo.username} `,
+                            ""
+                          ),
+                          isDesigner: false,
+                          replyTo: replyingTo.username,
+                          timestamp: new Date().toISOString(),
+                          replies: [],
+                          likes: 0,
+                          isLiked: false,
+                        },
+                      ],
+                    }
+                  : comment
+              ),
+            }
+          : p
+      )
+    );
+
+    setReplyText("");
+    setReplyingTo(null);
   };
 
   const handleAddComment = (postId: string) => {
+    // 如果是回复模式
+    if (replyingTo) {
+      handleAddReply(postId);
+      return;
+    }
+
+    // 原有的添加评论逻辑
     if (!commentText.trim()) return;
 
     setPosts((prev) =>
@@ -188,6 +164,10 @@ export default function TopicDetailScreen() {
                   text: commentText,
                   isDesigner: false,
                   replyTo: null,
+                  replies: [],
+                  likes: 0,
+                  isLiked: false,
+                  timestamp: new Date().toISOString(),
                 },
               ],
             }
@@ -198,14 +178,220 @@ export default function TopicDetailScreen() {
     setCommentText("");
   };
 
+  // 评论点赞功能
+  const handleCommentLike = (postId: string, commentId: string) => {
+    setPosts((prev) =>
+      prev.map((post) =>
+        post.id === postId
+          ? {
+              ...post,
+              commentsList: post.commentsList.map((comment) =>
+                comment.id === commentId
+                  ? {
+                      ...comment,
+                      isLiked: !comment.isLiked,
+                      likes: comment.isLiked
+                        ? comment.likes - 1
+                        : comment.likes + 1,
+                    }
+                  : comment
+              ),
+            }
+          : post
+      )
+    );
+  };
+
+  // 时间格式化函数
+  const formatTimeAgo = (timestamp: string) => {
+    const now = new Date();
+    const time = new Date(timestamp);
+    const diffInMinutes = Math.floor(
+      (now.getTime() - time.getTime()) / (1000 * 60)
+    );
+
+    if (diffInMinutes < 1) return "刚刚";
+    if (diffInMinutes < 60) return `${diffInMinutes}分钟前`;
+    if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}小时前`;
+    return `${Math.floor(diffInMinutes / 1440)}天前`;
+  };
+
+  // 渲染评论 - 与 SocialScreen 保持一致
+  const renderComments = (postId: string, comments: any[]) => {
+    return comments.map((comment) => (
+      <View key={comment.id}>
+        {/* 主评论 */}
+        <View style={topicDetailStyles.commentRow}>
+          <View style={topicDetailStyles.commentAvatar}>
+            <Text style={topicDetailStyles.commentAvatarText}>
+              {comment.user.charAt(0)}
+            </Text>
+          </View>
+
+          <View style={topicDetailStyles.commentContent}>
+            <View style={topicDetailStyles.commentUserInfo}>
+              <Text style={topicDetailStyles.commentUser}>{comment.user}</Text>
+              {comment.isDesigner && (
+                <View style={topicDetailStyles.designerBadge}>
+                  <Text style={topicDetailStyles.designerBadgeText}>
+                    设计师
+                  </Text>
+                </View>
+              )}
+              <Text style={topicDetailStyles.commentTime}>
+                {formatTimeAgo(comment.timestamp)}
+              </Text>
+            </View>
+
+            <Text style={topicDetailStyles.commentText}>{comment.text}</Text>
+
+            <View style={topicDetailStyles.commentActions}>
+              <TouchableOpacity
+                style={topicDetailStyles.commentLikeButton}
+                onPress={() => handleCommentLike(postId, comment.id)}
+              >
+                <Ionicons
+                  name={comment.isLiked ? "heart" : "heart-outline"}
+                  size={14}
+                  style={[
+                    topicDetailStyles.commentLikeIcon,
+                    comment.isLiked && topicDetailStyles.likedComment,
+                  ]}
+                />
+                <Text
+                  style={[
+                    topicDetailStyles.commentLikeCount,
+                    comment.isLiked && topicDetailStyles.likedCommentText,
+                  ]}
+                >
+                  {comment.likes > 0 ? comment.likes : ""}
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={topicDetailStyles.commentLikeButton}
+                onPress={() => handleReply(comment.id, comment.user)}
+              >
+                <Text style={topicDetailStyles.commentLikeCount}>回复</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+
+        {/* 回复列表 */}
+        {comment.replies && comment.replies.length > 0 && (
+          <View style={topicDetailStyles.repliesContainer}>
+            {comment.replies.map((reply: any) => (
+              <View key={reply.id} style={topicDetailStyles.replyRow}>
+                <Text style={topicDetailStyles.replyUser}>{reply.user}</Text>
+                <Text style={topicDetailStyles.replyText}>
+                  回复{" "}
+                  <Text style={topicDetailStyles.replyTo}>
+                    @{reply.replyTo}
+                  </Text>
+                  ：{reply.text}
+                </Text>
+              </View>
+            ))}
+          </View>
+        )}
+      </View>
+    ));
+  };
+
+  // 评论输入框组件
+  const renderCommentInput = (postId: string) => {
+    const inputText = replyingTo ? replyText : commentText;
+    const setInputText = replyingTo ? setReplyText : setCommentText;
+    const placeholder = replyingTo
+      ? `回复 ${replyingTo.username}...`
+      : "说点什么...";
+
+    return (
+      <View style={topicDetailStyles.commentInputContainer}>
+        <TextInput
+          style={topicDetailStyles.commentTextInput}
+          placeholder={placeholder}
+          placeholderTextColor="#999"
+          value={inputText}
+          onChangeText={setInputText}
+          multiline
+          maxLength={200}
+        />
+
+        <TouchableOpacity
+          style={[
+            topicDetailStyles.sendButton,
+            !inputText.trim() && { backgroundColor: "#ccc" },
+          ]}
+          onPress={() => handleAddComment(postId)}
+          disabled={!inputText.trim()}
+        >
+          <Text style={topicDetailStyles.sendButtonText}>发送</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
+  // 选择图片
+  const pickImage = async (source: "camera" | "library") => {
+    try {
+      let result: ImagePicker.ImagePickerResult;
+
+      if (source === "camera") {
+        const { status } = await ImagePicker.requestCameraPermissionsAsync();
+        if (status !== "granted") {
+          Alert.alert("需要相机权限", "请允许应用访问相机以拍照");
+          return;
+        }
+
+        result = await ImagePicker.launchCameraAsync({
+          mediaTypes: ImagePicker.MediaTypeOptions.Images,
+          allowsEditing: true,
+          aspect: [1, 1],
+          quality: 0.8,
+        });
+      } else {
+        const { status } =
+          await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (status !== "granted") {
+          Alert.alert("需要相册权限", "请允许应用访问相册以选择图片");
+          return;
+        }
+
+        result = await ImagePicker.launchImageLibraryAsync({
+          mediaTypes: ImagePicker.MediaTypeOptions.Images,
+          allowsEditing: true,
+          aspect: [1, 1],
+          quality: 0.8,
+        });
+      }
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        setSelectedImage(result.assets[0].uri);
+      }
+    } catch (error) {
+      console.error("选择图片错误:", error);
+      Alert.alert("错误", "选择图片时出现错误");
+    }
+  };
+
+  // 移除已选图片
+  const removeImage = () => {
+    setSelectedImage(null);
+  };
+
+  // 发布 Post
   const handleJoinDiscussion = () => {
-    if (!newPostText.trim()) return;
+    if (!newPostText.trim() && !selectedImage) return;
 
     const newPost = {
       id: Date.now().toString(),
       username: "我",
       avatar: "🧑🏻",
-      image: require("assets/images/mock.jpg"),
+      image: selectedImage
+        ? { uri: selectedImage }
+        : require("assets/images/mock.jpg"), // 使用选择的图片或默认图片
       caption: newPostText + ` ${topicTitle}`,
       likes: 0,
       comments: 0,
@@ -218,9 +404,9 @@ export default function TopicDetailScreen() {
 
     setPosts((prev) => [newPost, ...prev]);
     setNewPostText("");
+    setSelectedImage(null); // 清空已选图片
     setShowJoinInput(false);
 
-    // Update topic data
     if (topicData) {
       setTopicData({
         ...topicData,
@@ -263,7 +449,7 @@ export default function TopicDetailScreen() {
     <SafeAreaView style={topicDetailStyles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#f7fafc" />
 
-      {/* Header - 保持不变 */}
+      {/* Header */}
       <View style={topicDetailStyles.header}>
         <TouchableOpacity
           style={topicDetailStyles.backButton}
@@ -288,12 +474,12 @@ export default function TopicDetailScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* 主 ScrollView - 包含所有内容 */}
+      {/* 主 ScrollView */}
       <ScrollView
         style={topicDetailStyles.feedContainer}
         showsVerticalScrollIndicator={false}
       >
-        {/* Topic Info Banner - 移动到 ScrollView 内部 */}
+        {/* Topic Info Banner */}
         <View style={topicDetailStyles.topicBanner}>
           <View style={topicDetailStyles.topicBannerContent}>
             <Text style={topicDetailStyles.topicTitle}>{topicData.title}</Text>
@@ -301,7 +487,6 @@ export default function TopicDetailScreen() {
               {topicData.description}
             </Text>
 
-            {/* Topic Stats */}
             <View style={topicDetailStyles.topicStats}>
               <View style={topicDetailStyles.statItem}>
                 <Text style={topicDetailStyles.statNumber}>
@@ -321,7 +506,6 @@ export default function TopicDetailScreen() {
               </View>
             </View>
 
-            {/* Trending Indicator */}
             {topicData.isHot && (
               <View style={topicDetailStyles.trendingBadge}>
                 <Text style={topicDetailStyles.trendingIcon}>🔥</Text>
@@ -334,6 +518,21 @@ export default function TopicDetailScreen() {
         {/* Join Discussion Input */}
         {showJoinInput && (
           <View style={topicDetailStyles.joinInputContainer}>
+            {/* 顶部标题栏 */}
+            <View style={topicDetailStyles.joinHeader}>
+              <Text style={topicDetailStyles.joinTitle}>发布帖子</Text>
+              <TouchableOpacity
+                style={topicDetailStyles.closeButton}
+                onPress={() => {
+                  setShowJoinInput(false);
+                  setNewPostText("");
+                  setSelectedImage(null);
+                }}
+              >
+                <Ionicons name="close" size={24} color={colors.gray_deep} />
+              </TouchableOpacity>
+            </View>
+
             <TextInput
               style={topicDetailStyles.joinInput}
               placeholder={`分享你对 ${topicData.title} 的看法...`}
@@ -342,37 +541,73 @@ export default function TopicDetailScreen() {
               onChangeText={setNewPostText}
               maxLength={300}
             />
-            <View style={topicDetailStyles.joinInputActions}>
-              <TouchableOpacity
-                style={topicDetailStyles.cancelButton}
-                onPress={() => {
-                  setShowJoinInput(false);
-                  setNewPostText("");
-                }}
-              >
-                <Text style={topicDetailStyles.cancelButtonText}>取消</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[
-                  topicDetailStyles.publishButton,
-                  newPostText.trim()
-                    ? topicDetailStyles.publishButtonActive
-                    : null,
-                ]}
-                onPress={handleJoinDiscussion}
-                disabled={!newPostText.trim()}
-              >
-                <Text
+
+            {/* 图片上传区域 */}
+            <View style={topicDetailStyles.imageUploadContainer}>
+              <View style={topicDetailStyles.imageUploadRow}>
+                <View style={topicDetailStyles.imageUploadButtons}>
+                  <TouchableOpacity
+                    style={topicDetailStyles.uploadButton}
+                    onPress={() => pickImage("camera")}
+                  >
+                    <Ionicons
+                      name="camera-outline"
+                      size={20}
+                      color={colors.green_deep}
+                    />
+                    <Text style={topicDetailStyles.uploadButtonText}>拍照</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={topicDetailStyles.uploadButton}
+                    onPress={() => pickImage("library")}
+                  >
+                    <Ionicons
+                      name="image-outline"
+                      size={20}
+                      color={colors.green_deep}
+                    />
+                    <Text style={topicDetailStyles.uploadButtonText}>相册</Text>
+                  </TouchableOpacity>
+                </View>
+
+                {/* 发布按钮放在最右边 */}
+                <TouchableOpacity
                   style={[
-                    topicDetailStyles.publishButtonText,
-                    newPostText.trim()
-                      ? topicDetailStyles.publishButtonTextActive
-                      : null,
+                    topicDetailStyles.publishButtonRow,
+                    (newPostText.trim() || selectedImage) &&
+                      topicDetailStyles.publishButtonRowActive,
                   ]}
+                  onPress={handleJoinDiscussion}
+                  disabled={!newPostText.trim() && !selectedImage}
                 >
-                  发布
-                </Text>
-              </TouchableOpacity>
+                  <Text
+                    style={[
+                      topicDetailStyles.publishButtonText,
+                      (newPostText.trim() || selectedImage) &&
+                        topicDetailStyles.publishButtonTextActive,
+                    ]}
+                  >
+                    发布
+                  </Text>
+                </TouchableOpacity>
+              </View>
+
+              {/* 预览已选图片 */}
+              {selectedImage && (
+                <View style={topicDetailStyles.selectedImageContainer}>
+                  <Image
+                    source={{ uri: selectedImage }}
+                    style={topicDetailStyles.selectedImage}
+                  />
+                  <TouchableOpacity
+                    style={topicDetailStyles.removeImageButton}
+                    onPress={removeImage}
+                  >
+                    <Ionicons name="close-circle" size={24} color="#ff4444" />
+                  </TouchableOpacity>
+                </View>
+              )}
             </View>
           </View>
         )}
@@ -398,7 +633,6 @@ export default function TopicDetailScreen() {
                     </Text>
                   </View>
                 </View>
-                {/* Topic Tag */}
                 <View style={topicDetailStyles.topicTag}>
                   <Text style={topicDetailStyles.topicTagText}>
                     {post.topicTag}
@@ -470,65 +704,34 @@ export default function TopicDetailScreen() {
                 </TouchableOpacity>
               </View>
 
-              {/* Comment Section */}
+              {/* Comment Section - 更新为与 SocialScreen 相同的样式 */}
               {activeCommentPostId === post.id && (
                 <View style={topicDetailStyles.commentSection}>
+                  {/* 评论列表 */}
                   {post.commentsList.length > 0 ? (
-                    post.commentsList.map((comment) => (
-                      <View
-                        key={comment.id}
-                        style={topicDetailStyles.commentRow}
-                      >
-                        <Text
-                          style={[
-                            topicDetailStyles.commentUser,
-                            comment.isDesigner &&
-                              topicDetailStyles.designerUser,
-                          ]}
-                        >
-                          {comment.user}
-                          {comment.isDesigner && " 🎨"}：
-                        </Text>
-                        <Text style={topicDetailStyles.commentText}>
-                          {comment.text}
-                        </Text>
-                      </View>
-                    ))
+                    renderComments(post.id, post.commentsList)
                   ) : (
                     <Text style={topicDetailStyles.noCommentText}>
                       还没有评论，快来抢沙发吧~ 🛋️
                     </Text>
                   )}
 
-                  {/* Comment Input */}
-                  <View style={topicDetailStyles.commentBox}>
-                    <TextInput
-                      style={topicDetailStyles.commentInput}
-                      placeholder="写下你的评论..."
-                      value={commentText}
-                      onChangeText={setCommentText}
-                    />
-                    <TouchableOpacity
-                      style={[
-                        topicDetailStyles.commentPostButton,
-                        commentText.trim()
-                          ? topicDetailStyles.commentPostButtonActive
-                          : null,
-                      ]}
-                      onPress={() => handleAddComment(post.id)}
-                    >
-                      <Text
-                        style={[
-                          topicDetailStyles.commentPostButtonText,
-                          commentText.trim()
-                            ? topicDetailStyles.commentPostButtonTextActive
-                            : null,
-                        ]}
-                      >
-                        发表
+                  {/* 回复提示 */}
+                  {replyingTo && (
+                    <View style={topicDetailStyles.replyIndicator}>
+                      <Text style={topicDetailStyles.replyIndicatorText}>
+                        回复 @{replyingTo.username}
                       </Text>
-                    </TouchableOpacity>
-                  </View>
+                      <TouchableOpacity onPress={handleCancelReply}>
+                        <Text style={topicDetailStyles.cancelReplyText}>
+                          取消
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                  )}
+
+                  {/* 评论输入框 */}
+                  {renderCommentInput(post.id)}
                 </View>
               )}
             </View>

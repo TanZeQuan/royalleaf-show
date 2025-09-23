@@ -42,28 +42,6 @@ export const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
-  backIcon: { fontSize: 24, color: colors.black },
-  floatingPostButton: {
-    position: "absolute",
-    bottom: 50,
-    right: 25,
-    zIndex: 25,
-  },
-  cameraIcon: {
-    width: 56,
-    height: 56,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: colors.green_deep,
-    borderRadius: 28,
-    elevation: 5,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.5,
-  },
-  cameraIconImage: { width: 28, height: 28, resizeMode: "contain" },
-
   createPostSection: {
     width: "90%",
     backgroundColor: colors.white,
@@ -176,7 +154,7 @@ export const styles = StyleSheet.create({
     resizeMode: "cover", // 图片超出部分裁切，保证正方形不拉伸
   },
 
-  postContent: { paddingHorizontal: 16, paddingVertical: 12 },
+  postContent: { paddingHorizontal: 16, paddingVertical: 15, marginBottom: 5 },
   caption: { fontSize: 14, color: colors.black, lineHeight: 20 },
 
   postActions: {
@@ -201,7 +179,6 @@ export const styles = StyleSheet.create({
     position: "absolute",
     top: 2,
     right: 20,
-
     padding: 5,
   },
   actionCount: {
@@ -210,68 +187,7 @@ export const styles = StyleSheet.create({
     fontWeight: "500",
     marginLeft: 4,
   },
-
-  commentBox: {
-    flexDirection: "row",
-    alignItems: "center",
-    // borderTopWidth: 1,
-    // borderTopColor: colors.gray_light,
-    paddingHorizontal: 5,
-    paddingVertical: 8,
-  },
-  commentInput: {
-    flex: 1,
-    fontSize: 14,
-    paddingVertical: 10,
-    paddingHorizontal: 15,
-    borderWidth: 1,
-    borderColor: colors.gold_light,
-    borderRadius: 18,
-    marginRight: 10,
-    color: colors.black,
-    backgroundColor: colors.white,
-  },
-  commentPostButton: {
-    marginLeft: 10,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 6,
-    backgroundColor: colors.gray_light,
-  },
-  commentPostButtonActive: {
-    backgroundColor: colors.gold_deep,
-  },
-  commentPostButtonText: {
-    fontSize: 14,
-    color: colors.gray_text,
-    fontWeight: "600",
-  },
-  commentPostButtonTextActive: { color: colors.white },
-
   bottomSpacing: { height: 20 },
-
-  commentSection: {
-    paddingHorizontal: 16,
-    paddingBottom: 12,
-  },
-  commentRow: {
-    flexDirection: "row",
-    marginBottom: 10,
-  },
-  commentUser: {
-    fontWeight: "600",
-    color: colors.gray_deep,
-    marginRight: 4,
-  },
-  commentText: {
-    color: colors.gray_deep,
-    flexShrink: 1,
-  },
-  noCommentText: {
-    color: colors.gray_text,
-    fontStyle: "italic",
-    marginBottom: 8,
-  },
   previewContainer: {
     marginTop: 10,
     marginBottom: 20,
@@ -299,10 +215,202 @@ export const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
   },
+
+  // comment
+  commentInputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 8,
+    paddingVertical: 8,
+    borderTopWidth: 1,
+    borderTopColor: "#f0f0f0",
+    backgroundColor: colors.white,
+  },
+  commentTextInput: {
+    flex: 1,
+    fontSize: 14,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    backgroundColor: "#f8f9fa",
+    borderRadius: 20,
+    marginRight: 8,
+    color: colors.black,
+    maxHeight: 80,
+  },
+  commentSection: {
+    paddingHorizontal: 12,
+    paddingTop: 20,
+    paddingBottom: 0,
+    backgroundColor: colors.white,
+    borderTopWidth: 1,
+    borderTopColor: "#f0f0f0",
+  },
+  commentRow: {
+    flexDirection: "row",
+    marginBottom: 20,
+    paddingHorizontal: 0,
+    paddingVertical: 0,
+  },
+  commentAvatar: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: colors.gold_light,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 10,
+  },
+  commentAvatarText: {
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  commentContent: {
+    flex: 1,
+    backgroundColor: colors.primary_bg,
+    borderRadius: 18,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  commentUserInfo: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 2,
+  },
+  commentUser: {
+    fontWeight: "600",
+    color: colors.gray_deep,
+    fontSize: 13,
+    marginRight: 6,
+  },
+  commentTime: {
+    fontSize: 11,
+    color: colors.gray_text,
+    marginLeft: 8,
+  },
+  commentText: {
+    color: colors.black,
+    fontSize: 14,
+    lineHeight: 18,
+    marginBottom: 4,
+  },
+  commentActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 4,
+  },
+  commentLikeButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 2,
+    paddingHorizontal: 6,
+    marginRight: 10,
+  },
+  commentLikeIcon: {
+    fontSize: 15,
+    marginRight: 4,
+    color: colors.gray_deep,
+  },
+  commentLikeCount: {
+    fontSize: 11,
+    color: colors.gray_text,
+  },
+  noCommentText: {
+    color: colors.gray_text,
+    fontStyle: "italic",
+    marginBottom: 8,
+    textAlign: "center",
+    paddingVertical: 20,
+  },
+
+  // reply
+  replyIndicator: {
+    flexDirection: "row",
+    // justifyContent: 'space-between',
+    alignItems: "center",
+    backgroundColor: "#f7fafc",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    marginBottom: 8,
+  },
+  replyIndicatorText: {
+    fontSize: 12,
+    color: "#4a5568",
+    fontWeight: "500",
+  },
+  cancelReplyText: {
+    fontSize: 12,
+    color: "#e53e3e",
+    fontWeight: "light",
+  },
+  repliesContainer: {
+    marginLeft: 10,
+    marginTop: 0,
+    paddingLeft: 12,
+    borderLeftWidth: 2,
+    borderLeftColor: colors.gold_deep,
+    marginBottom: 15,
+  },
+  replyRow: {
+    flexDirection: "row",
+    marginBottom: 6,
+    flexWrap: "wrap",
+    marginLeft: 0,
+  },
+  replyUser: {
+    fontWeight: "600",
+    color: colors.gold_deep,
+    marginRight: 4,
+    fontSize: 13,
+  },
+  replyText: {
+    color: colors.black,
+    fontSize: 13,
+    lineHeight: 18,
+    flex: 1,
+  },
+  replyTo: {
+    color: colors.gold_deep,
+    fontWeight: "600",
+  },
+  sendButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 15,
+    backgroundColor: colors.gold_deep,
+  },
+  sendButtonText: {
+    fontSize: 14,
+    color: colors.white,
+    fontWeight: "600",
+  },
+
+  // 设计师标识
+  designerBadge: {
+    backgroundColor: colors.green_deep,
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    borderRadius: 104,
+    marginLeft: 3,
+  },
+  designerBadgeText: {
+    fontSize: 10,
+    color: colors.white,
+    fontWeight: "bold",
+  },
+
+  // 评论点赞高亮
+  likedComment: {
+    color: "#ff2442", // 小红书红
+  },
+  likedCommentText: {
+    color: "#ff2442",
+    fontWeight: "600",
+  },
 });
 
 // 给 Button 用的
-export const newStyles = StyleSheet.create({
+export const buttonStyles = StyleSheet.create({
   deleteModal: {
     width: "80%",
     backgroundColor: colors.white,
@@ -325,13 +433,6 @@ export const newStyles = StyleSheet.create({
   buttonsAll: {
     flexDirection: "row",
     justifyContent: "space-between",
-  },
-  buttons: {
-    flex: 1,
-    paddingVertical: 12,
-    borderRadius: 8,
-    alignItems: "center",
-    marginHorizontal: 5,
   },
   buttonMessage: {
     fontSize: 16,
@@ -370,11 +471,6 @@ export const newStyles = StyleSheet.create({
     marginBottom: 20,
     textAlignVertical: "top",
   },
-  // closeIcon: {
-  //   fontSize: 24,
-  //   color: colors.black,
-  //   fontWeight: "bold",
-  // },
   overlay: {
     position: "absolute",
     top: 0,
@@ -531,257 +627,6 @@ export const shareStyles = StyleSheet.create({
   cancelButtonText: {
     fontSize: 16,
     color: "#2d3748",
-    fontWeight: "600",
-  },
-});
-
-// 给话题讨论用的
-export const topicStyles = StyleSheet.create({
-  tabContainer: {
-    flexDirection: "row",
-    backgroundColor: colors.white,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.gray_light,
-  },
-  tab: {
-    flex: 1,
-    paddingVertical: 15,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  activeTab: {
-    borderBottomWidth: 2,
-    borderBottomColor: colors.gold_deep,
-  },
-  tabText: {
-    fontSize: 15,
-    color: colors.gray_text,
-    fontWeight: "500",
-  },
-  activeTabText: {
-    color: colors.gold_deep,
-    fontWeight: "600",
-  },
-  topicsContainer: {
-    padding: 16,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: colors.black,
-    marginBottom: 16,
-    marginTop: 8,
-  },
-  topicCard: {
-    backgroundColor: colors.white,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: colors.gray_light,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  hotTopicCard: {
-    backgroundColor: colors.white,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    borderWidth: 2,
-    borderColor: colors.gold_light,
-    shadowColor: colors.gold_deep,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 3,
-    position: "relative",
-  },
-  participationIndicator: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 3,
-    backgroundColor: colors.gold_deep,
-    borderTopLeftRadius: 12,
-    borderTopRightRadius: 12,
-  },
-  topicHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    marginBottom: 8,
-  },
-  topicTitle: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: colors.black,
-    flex: 1,
-    marginRight: 8,
-  },
-  hotBadge: {
-    backgroundColor: "#ff6b6b",
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 10,
-  },
-  hotBadgeText: {
-    fontSize: 10,
-    color: colors.white,
-    fontWeight: "bold",
-  },
-  topicDescription: {
-    fontSize: 14,
-    color: colors.gray_text,
-    marginBottom: 12,
-    lineHeight: 20,
-  },
-  activityIndicator: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 10,
-  },
-  activityDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    marginRight: 4,
-  },
-  activityHigh: {
-    backgroundColor: "#10b981",
-  },
-  activityMedium: {
-    backgroundColor: "#f59e0b",
-  },
-  activityLow: {
-    backgroundColor: "#6b7280",
-  },
-  activityText: {
-    fontSize: 12,
-    color: colors.gray_text,
-    marginLeft: 4,
-  },
-  topicStats: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 10,
-  },
-  statContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  statIcon: {
-    fontSize: 14,
-    marginRight: 4,
-  },
-  statText: {
-    fontSize: 12,
-    color: colors.gray_text,
-    fontWeight: "500",
-  },
-  trendingIndicator: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#ecfdf5",
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 8,
-  },
-  trendingText: {
-    fontSize: 11,
-    color: "#059669",
-    fontWeight: "600",
-  },
-  interactionPreview: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  previewAvatar: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: colors.gold_light,
-    marginRight: -4,
-    borderWidth: 1,
-    borderColor: colors.white,
-  },
-  moreParticipants: {
-    fontSize: 11,
-    color: colors.gray_text,
-    marginLeft: 8,
-  },
-  selectedTopicHeader: {
-    padding: 16,
-    backgroundColor: colors.white,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.gray_light,
-  },
-  backToTopics: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 12,
-  },
-  backText: {
-    fontSize: 14,
-    color: "#666",
-    marginLeft: 6,
-  },
-  selectedTopicTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: colors.black,
-    marginBottom: 6,
-  },
-  selectedTopicDesc: {
-    fontSize: 14,
-    color: colors.gray_text,
-    lineHeight: 20,
-  },
-  emptyTopic: {
-    padding: 40,
-    alignItems: "center",
-    backgroundColor: colors.white,
-    margin: 16,
-    borderRadius: 12,
-  },
-  emptyIconContainer: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: colors.gray_light,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 16,
-  },
-  emptyIcon: {
-    fontSize: 24,
-  },
-  emptyText: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: colors.black,
-    marginBottom: 8,
-  },
-  emptySubtext: {
-    fontSize: 14,
-    color: colors.gray_text,
-    textAlign: "center",
-    lineHeight: 20,
-    marginBottom: 20,
-  },
-  createTopicButton: {
-    backgroundColor: colors.gold_deep,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 20,
-  },
-  createTopicButtonText: {
-    fontSize: 14,
-    color: colors.white,
     fontWeight: "600",
   },
 });
