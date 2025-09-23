@@ -44,7 +44,7 @@ export default function ProfileScreen() {
             activeOpacity={0.7}
           >
             <Image
-              source={require("../../assets/icons/profile-setting.png")}
+              source={require("assets/icons/profile-setting.png")}
               style={styles.settingsIcon}
             />
           </TouchableOpacity>
@@ -55,7 +55,7 @@ export default function ProfileScreen() {
           <View style={styles.profileRow}>
             <View style={styles.profileImageContainer}>
               <Image
-                source={require("../../assets/icons/profile-avatar.png")}
+                source={require("assets/icons/profile-avatar.png")}
                 style={styles.profileImage}
               />
             </View>
@@ -69,7 +69,7 @@ export default function ProfileScreen() {
               activeOpacity={0.7}
             >
               <Image
-                source={require("../../assets/icons/profile-scan.png")}
+                source={require("assets/icons/profile-scan.png")}
                 style={styles.scanIcon}
               />
             </TouchableOpacity>
@@ -91,7 +91,7 @@ export default function ProfileScreen() {
             <View style={styles.statDivider} />
             <View style={styles.statItem}>
               <Image
-                source={require("../../assets/icons/profile-delivery.png")}
+                source={require("assets/icons/profile-delivery.png")}
                 style={styles.walletIcon}
               />
               <Text style={styles.statLabel} numberOfLines={1}>物流</Text>
@@ -102,7 +102,7 @@ export default function ProfileScreen() {
         {/* Leaf Guest Section */}
         <View style={styles.leafSection}>
           <ImageBackground
-            source={require("../../assets/images/profile-leaf-bg.png")}
+            source={require("assets/images/profile-leaf-bg.png")}
             style={styles.leafBackground}
             imageStyle={styles.leafBackgroundImage}
             resizeMode="cover"
@@ -116,7 +116,7 @@ export default function ProfileScreen() {
               </View>
               <View style={styles.leafRightSection}>
                 <Image
-                  source={require("../../assets/icons/profile-leaf-logo.png")}
+                  source={require("assets/icons/profile-leaf-logo.png")}
                   style={styles.leafLogo}
                 />
                 <TouchableOpacity
@@ -137,13 +137,13 @@ export default function ProfileScreen() {
           <View style={styles.cardRow}>
             <TouchableOpacity style={styles.card} activeOpacity={0.8}>
               <ImageBackground
-                source={require("../../assets/images/profile-card-bg.png")}
+                source={require("assets/images/profile-card-bg.png")}
                 style={styles.cardBackground}
                 imageStyle={styles.cardBackgroundImage}
                 resizeMode="cover"
               >
                 <Image
-                  source={require("../../assets/icons/home-story.png")}
+                  source={require("assets/icons/home-story.png")}
                   style={styles.cardIcon}
                 />
                 <Text style={styles.cardTitle} numberOfLines={2}>我们的故事</Text>
@@ -152,7 +152,7 @@ export default function ProfileScreen() {
 
             <TouchableOpacity style={styles.card} activeOpacity={0.8}>
               <ImageBackground
-                source={require("../../assets/images/profile-card-bg.png")}
+                source={require("assets/images/profile-card-bg.png")}
                 style={styles.cardBackground}
                 imageStyle={styles.cardBackgroundImage}
                 resizeMode="cover"
@@ -169,13 +169,13 @@ export default function ProfileScreen() {
           <View style={styles.cardRow}>
             <TouchableOpacity style={styles.card} activeOpacity={0.8}>
               <ImageBackground
-                source={require("../../assets/images/profile-card-bg.png")}
+                source={require("assets/images/profile-card-bg.png")}
                 style={styles.cardBackground}
                 imageStyle={styles.cardBackgroundImage}
                 resizeMode="cover"
               >
                 <Image
-                  source={require("../../assets/images/profile-creator.png")}
+                  source={require("assets/images/profile-creator.png")}
                   style={styles.cardIcon}
                 />
                 <Text style={styles.cardTitle} numberOfLines={2}>创造者</Text>
@@ -184,13 +184,13 @@ export default function ProfileScreen() {
 
             <TouchableOpacity style={styles.card} activeOpacity={0.8}>
               <ImageBackground
-                source={require("../../assets/images/profile-card-bg.png")}
+                source={require("assets/images/profile-card-bg.png")}
                 style={styles.cardBackground}
                 imageStyle={styles.cardBackgroundImage}
                 resizeMode="cover"
               >
                 <Image
-                  source={require("../../assets/images/profile-leaf.png")}
+                  source={require("assets/images/profile-leaf.png")}
                   style={styles.cardIcon}
                 />
                 <Text style={styles.cardTitle} numberOfLines={2}>茶会</Text>

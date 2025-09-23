@@ -133,6 +133,28 @@ export default function RewardScreen() {
     const index = Math.round(event.nativeEvent.contentOffset.x / width);
     setCurrentLevel(index + 1);
   };
+  useLayoutEffect(() => {
+    navigation.getParent()?.setOptions({
+      tabBarStyle: { display: "none" },
+    });
+
+
+    return () => {
+      navigation.getParent()?.setOptions({
+        tabBarStyle: {
+          backgroundColor: "#F9F5EC",
+          height: 80, // 从 70 ➝ 90 或更大
+          paddingBottom: Platform.OS === "ios" ? 25 : 15, // 底部留白
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: -2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 4,
+          elevation: 5,
+        },
+      });
+    };
+  }, [navigation]);
+
 
   const renderLevelCard = ({ item }: { item: Level }) => (
     <View style={[styles.levelContainer, { width }]}>
@@ -251,7 +273,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   cardLeft: { flex: 1 },
-  levelIcon: { width: 80, height: 80 },
+  levelIcon: { width: 100, height: 100 },
   levelTitle: { fontSize: 22, fontWeight: "700", color: "#333", marginBottom: 5 },
   levelSubtitle: { fontSize: 14, color: "#777" },
 

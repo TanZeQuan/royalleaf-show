@@ -11,6 +11,7 @@ import {
   ScrollView,
   StatusBar,
   StyleSheet,
+  Image,
   Text,
   TouchableOpacity,
   View,
@@ -36,7 +37,7 @@ const VoteMainScreen = () => {
   const navigation = useNavigation<VoteNavigationProp>();
   // ✅ 自动隐藏底部导航栏
   useHideTabBar(true);
-  
+
   const categories = [
     {
       id: "drinks",
@@ -89,6 +90,15 @@ const VoteMainScreen = () => {
         </TouchableOpacity>
         <Text style={styles.headerTitle}>投票</Text>
         <View style={styles.placeholder} />
+        <TouchableOpacity
+          style={styles.rankBtn}
+          activeOpacity={0.7}
+        >
+          <Image
+            source={require("assets/icons/ranking-i.png")} // 替换成你的返回图标路径
+            style={{ width: 20, height: 20, resizeMode: "contain" }}
+          />
+        </TouchableOpacity>
       </View>
 
       <ScrollView
@@ -164,15 +174,24 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
-  backIcon: {
-    fontSize: moderateScale(20),
-    color: colors.black,
-    fontWeight: "bold",
+  rankBtn: {
+    width: 35,
+    height: 35,
+    backgroundColor: "#fff",
+    borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   headerTitle: {
     fontSize: moderateScale(20),
     fontWeight: "bold",
     color: colors.black,
+    marginLeft: 80,
   },
   placeholder: {
     width: scale(32),

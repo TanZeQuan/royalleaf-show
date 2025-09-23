@@ -66,16 +66,16 @@ const TopCard = ({ leader, rank }: TopCardProps) => {
 };
 
 const topThreeSample: Leader[] = [
-  { id: "1", name: "TopOne", crown: "9999", avatar: require("assets/icons/crown.png") },
-  { id: "2", name: "TopTwo", crown: "8888", avatar: require("assets/icons/crown.png") },
-  { id: "3", name: "TopThree", crown: "7777", avatar: require("assets/icons/crown.png") },
+  { id: "1", name: "TopOne", crown: "9999", avatar: require("assets/icons/profile-avatar.png") },
+  { id: "2", name: "TopTwo", crown: "8888", avatar: require("assets/icons/profile-avatar.png") },
+  { id: "3", name: "TopThree", crown: "7777", avatar: require("assets/icons/profile-avatar.png") },
 ];
 
 const rowsSample: Leader[] = new Array(8).fill(null).map((_, i) => ({
   id: String(i + 10),
   name: `xxxxx ${i + 1}`,
   crown: `${1000 - i * 10}`,
-  avatar: require("assets/icons/crown.png"),
+  avatar: require("assets/icons/profile-avatar.png"),
 }));
 
 const SEGMENTS = ["Weekly", "Monthly", "Total"];

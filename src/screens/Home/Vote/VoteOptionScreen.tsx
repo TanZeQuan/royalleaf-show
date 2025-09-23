@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -16,6 +16,7 @@ import {
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Ionicons } from "@expo/vector-icons";
+import FilterPopout from "components/FilterPopout"; // 确认路径正确
 import { typography, colors } from "styles";
 
 const { width } = Dimensions.get("window");
@@ -32,6 +33,7 @@ const VoteImagesScreen = () => {
   const navigation = useNavigation<VoteImagesNavigationProp>();
   const route = useRoute();
   const { category } = route.params as RouteParams;
+  const [showFilter, setShowFilter] = useState(false);
 
   // Mock data for different categories
   const getImagesForCategory = (categoryId: string) => {
@@ -172,6 +174,20 @@ const VoteImagesScreen = () => {
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{categoryTitle}</Text>
         <View style={styles.placeholder} />
+        <TouchableOpacity
+          onPress={() => setShowFilter(true)} activeOpacity={0.7}
+          style={styles.rankBtn}
+        >
+          <Image
+            source={require("assets/icons/filter-i.png")} // 替换成你的返回图标路径
+            style={{ width: 20, height: 20, resizeMode: "contain" }}
+          />
+        </TouchableOpacity>
+        <FilterPopout
+          visible={showFilter}
+          onClose={() => setShowFilter(false)}
+         
+        />
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
@@ -241,9 +257,23 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "bold",
     color: colors.black,
+    marginLeft: 80,
   },
   placeholder: {
     width: 32,
+  },
+  rankBtn: {
+    width: 35,
+    height: 35,
+    backgroundColor: "#fff",
+    borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   content: {
     flex: 1,
