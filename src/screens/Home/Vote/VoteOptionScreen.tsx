@@ -29,7 +29,7 @@ interface RouteParams {
 }
 
 interface FilterOptions {
-  sortBy: "votes" | "name" | "latest";
+  sortBy: "votes" | "name" | "latest" | "likes";
   order: "asc" | "desc";
 }
 
@@ -57,6 +57,8 @@ const FilterPopout: React.FC<{
         return "投票数";
       case "latest":
         return "最新";
+      case "likes":
+        return "点赞数";
       default:
         return value;
     }
@@ -82,7 +84,7 @@ const FilterPopout: React.FC<{
 
           <View style={filterStyles.optionGroup}>
             <Text style={filterStyles.optionLabel}>排序方式</Text>
-            {["votes", "latest"].map((option) => (
+            {["votes", "latest", "likes"].map((option) => (
               <TouchableOpacity
                 key={option}
                 style={filterStyles.option}
@@ -164,43 +166,55 @@ const VoteImagesScreen = () => {
         {
           id: 1,
           image: require("assets/images/mock.jpg"),
-          name: "投票数: 100",
+          name: "夏日清凉特饮",
           votes: 100,
-          createdAt: new Date(2024, 0, 1), // 添加创建日期用于最新排序
+          likes: 45,
+          designer: "设计师小A",
+          createdAt: new Date(2024, 0, 1),
         },
         {
           id: 2,
           image: require("assets/images/mock.jpg"),
-          name: "投票数: 120",
+          name: "经典奶茶系列",
           votes: 120,
+          likes: 67,
+          designer: "创意达人B",
           createdAt: new Date(2024, 0, 2),
         },
         {
           id: 3,
           image: require("assets/images/mock.jpg"),
-          name: "投票数: 100",
+          name: "果茶新品",
           votes: 100,
+          likes: 52,
+          designer: "设计大师C",
           createdAt: new Date(2024, 0, 3),
         },
         {
           id: 4,
           image: require("assets/images/mock.jpg"),
-          name: "投票数: 50",
+          name: "咖啡艺术",
           votes: 50,
+          likes: 23,
+          designer: "艺术之家",
           createdAt: new Date(2024, 0, 4),
         },
         {
           id: 5,
           image: require("assets/images/mock.jpg"),
-          name: "投票数: 130",
+          name: "特色调酒",
           votes: 130,
+          likes: 89,
+          designer: "调酒师D",
           createdAt: new Date(2024, 0, 5),
         },
         {
           id: 6,
           image: require("assets/images/mock.jpg"),
-          name: "投票数: 70",
+          name: "健康果汁",
           votes: 70,
+          likes: 34,
+          designer: "营养专家E",
           createdAt: new Date(2024, 0, 6),
         },
       ],
@@ -208,29 +222,37 @@ const VoteImagesScreen = () => {
         {
           id: 7,
           image: require("assets/images/mock.jpg"),
-          name: "投票数: 100",
+          name: "环保包装",
           votes: 100,
+          likes: 56,
+          designer: "环保先锋",
           createdAt: new Date(2024, 0, 7),
         },
         {
           id: 8,
           image: require("assets/images/mock.jpg"),
-          name: "投票数: 90",
+          name: "礼盒设计",
           votes: 90,
+          likes: 42,
+          designer: "礼盒专家",
           createdAt: new Date(2024, 0, 8),
         },
         {
           id: 9,
           image: require("assets/images/mock.jpg"),
-          name: "投票数: 110",
+          name: "简约风格",
           votes: 110,
+          likes: 61,
+          designer: "简约大师",
           createdAt: new Date(2024, 0, 9),
         },
         {
           id: 10,
           image: require("assets/images/mock.jpg"),
-          name: "投票数: 80",
+          name: "复古包装",
           votes: 80,
+          likes: 38,
+          designer: "复古爱好者",
           createdAt: new Date(2024, 0, 10),
         },
       ],
@@ -238,29 +260,37 @@ const VoteImagesScreen = () => {
         {
           id: 11,
           image: require("assets/images/mock.jpg"),
-          name: "投票数: 100",
+          name: "品牌标志",
           votes: 100,
+          likes: 55,
+          designer: "品牌设计师",
           createdAt: new Date(2024, 0, 11),
         },
         {
           id: 12,
           image: require("assets/images/mock.jpg"),
-          name: "投票数: 120",
+          name: "企业标识",
           votes: 120,
+          likes: 68,
+          designer: "企业形象专家",
           createdAt: new Date(2024, 0, 12),
         },
         {
           id: 13,
           image: require("assets/images/mock.jpg"),
-          name: "投票数: 95",
+          name: "创意Logo",
           votes: 95,
+          likes: 47,
+          designer: "创意无限",
           createdAt: new Date(2024, 0, 13),
         },
         {
           id: 14,
           image: require("assets/images/mock.jpg"),
-          name: "投票数: 105",
+          name: "简约标志",
           votes: 105,
+          likes: 59,
+          designer: "简约派",
           createdAt: new Date(2024, 0, 14),
         },
       ],
@@ -268,29 +298,37 @@ const VoteImagesScreen = () => {
         {
           id: 15,
           image: require("assets/images/mock.jpg"),
-          name: "投票数: 100",
+          name: "现代装修",
           votes: 100,
+          likes: 53,
+          designer: "室内设计师",
           createdAt: new Date(2024, 0, 15),
         },
         {
           id: 16,
           image: require("assets/images/mock.jpg"),
-          name: "投票数: 85",
+          name: "古典风格",
           votes: 85,
+          likes: 41,
+          designer: "古典艺术",
           createdAt: new Date(2024, 0, 16),
         },
         {
           id: 17,
           image: require("assets/images/mock.jpg"),
-          name: "投票数: 115",
+          name: "工业风设计",
           votes: 115,
+          likes: 72,
+          designer: "工业风格师",
           createdAt: new Date(2024, 0, 17),
         },
         {
           id: 18,
           image: require("assets/images/mock.jpg"),
-          name: "投票数: 125",
+          name: "简约装修",
           votes: 125,
+          likes: 81,
+          designer: "简约生活",
           createdAt: new Date(2024, 0, 18),
         },
       ],
@@ -336,6 +374,14 @@ const VoteImagesScreen = () => {
           return filter.order === "desc" ? timeB - timeA : timeA - timeB;
         });
         break;
+
+      case "likes":
+        sortedImages.sort((a, b) => {
+          return filter.order === "desc"
+            ? b.likes - a.likes
+            : a.likes - b.likes;
+        });
+        break;
     }
 
     return sortedImages;
@@ -361,6 +407,8 @@ const VoteImagesScreen = () => {
         ? "投票数"
         : currentFilter.sortBy === "name"
         ? "名称"
+        : currentFilter.sortBy === "likes"
+        ? "点赞数"
         : "最新";
     const orderText = currentFilter.order === "desc" ? "降序" : "升序";
     return `${sortText} ${orderText}`;
@@ -398,33 +446,70 @@ const VoteImagesScreen = () => {
             style={{ width: 20, height: 20, resizeMode: "contain" }}
           />
         </TouchableOpacity>
+        
+        <FilterPopout
+          visible={showFilter}
+          onClose={() => setShowFilter(false)}
+          onFilterApply={handleFilterApply}
+          currentFilter={currentFilter}
+        />
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         <Text style={styles.subtitle}>选择您想投票的选项</Text>
 
         <View style={styles.imagesGrid}>
-          {filteredImages.map((item, index) => (
-            <TouchableOpacity
-              key={item.id}
-              style={[
-                styles.imageCard,
-                index % 2 === 0 ? styles.leftCard : styles.rightCard,
-              ]}
-              onPress={() => handleImagePress(item.id)}
-            >
-              <View style={styles.imageContainer}>
-                <Image
-                  source={item.image}
-                  style={styles.voteImage}
-                  resizeMode="cover"
-                />
-                <View style={styles.imageOverlay}>
-                  <Text style={styles.imageName}>{item.name}</Text>
+          {filteredImages.map((item, index) => {
+            return (
+              <TouchableOpacity
+                key={item.id}
+                style={[
+                  styles.imageCard,
+                  index % 2 === 0 ? styles.leftCard : styles.rightCard,
+                ]}
+                onPress={() => handleImagePress(item.id)}
+              >
+                <View style={styles.imageContainer}>
+                  <Image
+                    source={item.image}
+                    style={styles.voteImage}
+                    resizeMode="cover"
+                  />
+                  <View style={styles.imageOverlay}>
+                    <Text style={styles.imageName}>{item.name}</Text>
+                  </View>
                 </View>
-              </View>
-            </TouchableOpacity>
-          ))}
+                
+                {/* 设计师信息和互动区域 */}
+                <View style={styles.infoContainer}>
+                  <Text style={styles.designerName}>{item.designer}</Text>
+                  <View style={styles.statsContainer}>
+                    <View style={styles.statItem}>
+                      <Ionicons name="heart" size={14} color={colors.like} />
+                      <Text style={styles.statText}>
+                        {item.likes}
+                      </Text>
+                    </View>
+                    <View style={styles.statItem}>
+                      <Ionicons name="trophy" size={14} color={colors.yellow} />
+                      <Text style={styles.statText}>{item.votes}</Text>
+                    </View>
+                    <TouchableOpacity 
+                      style={styles.voteButton}
+                      onPress={() => handleImagePress(item.id)}
+                    >
+                      <Ionicons 
+                        name="checkmark-circle" 
+                        size={16} 
+                        color={colors.white} 
+                      />
+                      <Text style={styles.voteButtonText}>投票</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </TouchableOpacity>
+            );
+          })}
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -478,7 +563,7 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   rankBtn: {
-    width: 35, // 与左边按钮相同的宽度
+    width: 35,
     height: 35,
     backgroundColor: "#fff",
     borderRadius: 20,
@@ -546,6 +631,44 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: colors.black,
     textAlign: "center",
+  },
+  // 新增的信息容器样式
+  infoContainer: {
+    padding: 12,
+  },
+  designerName: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: colors.black,
+    marginBottom: 8,
+  },
+  statsContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  statItem: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  statText: {
+    fontSize: 12,
+    color: "#666",
+    marginLeft: 4,
+  },
+  voteButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    backgroundColor: colors.gold_deep,
+  },
+  voteButtonText: {
+    fontSize: 12,
+    color: colors.white,
+    fontWeight: "600",
+    marginLeft: 4,
   },
 });
 
@@ -616,8 +739,8 @@ const filterStyles = StyleSheet.create({
     borderColor: "#ccc",
   },
   cancelText: {
-    color: colors.gray_deep,
-    fontWeight: "600",
+    color: colors.black,
+    fontWeight: "bold",
   },
   applyButton: {
     padding: 12,
@@ -627,7 +750,7 @@ const filterStyles = StyleSheet.create({
     borderRadius: 6,
   },
   applyText: {
-    color: "white",
+    color:colors.black,
     fontWeight: "bold",
   },
 });

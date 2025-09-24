@@ -1,3 +1,4 @@
+import colors from "@styles/colors";
 import { Dimensions, StyleSheet } from "react-native";
 import theme from "../../../styles/theme";
 
@@ -87,11 +88,11 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 20,
     marginBottom: 24,
-    borderWidth:1,
-    borderTopWidth:3,
+    borderWidth: 1,
+    borderTopWidth: 3,
     borderColor: theme.colors.gold_light,
-    borderTopLeftRadius:30,
-    borderTopRightRadius:30,
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
     backgroundColor: theme.colors.primary_bg,
   },
   sectionTitle: {
@@ -108,7 +109,7 @@ export const styles = StyleSheet.create({
   commentInput: {
     flex: 1,
     borderWidth: 1,
-    borderColor: theme.colors.gray_deep,
+    borderColor: theme.colors.gold_deep,
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 10,
@@ -138,7 +139,7 @@ export const styles = StyleSheet.create({
     textAlign: "right",
     marginBottom: 10,
   },
-  commentsSection: { paddingHorizontal: 20, marginBottom: 24, },
+  commentsSection: { paddingHorizontal: 20, marginBottom: 24 },
   commentItem: {
     backgroundColor: theme.colors.white,
     padding: 16,
@@ -155,6 +156,7 @@ export const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "bold",
     color: theme.colors.gold_deep,
+    marginRight: 10,
   },
   commentTime: { fontSize: 12, color: theme.colors.gray_text },
   commentText: { fontSize: 16, color: theme.colors.black, lineHeight: 22 },
@@ -253,5 +255,166 @@ export const styles = StyleSheet.create({
     fontSize: 16,
     color: theme.colors.black,
     textAlign: "center",
+  },
+  // 在 VoteDetailCSS.ts 中添加以下样式
+
+  designerSection: {
+    marginHorizontal: 16,
+    marginBottom: 20,
+  },
+
+  designerInfo: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    backgroundColor: colors.white,
+    padding: 12,
+    borderRadius: 8,
+    borderLeftWidth: 4,
+    borderLeftColor: colors.green,
+  },
+
+  designerAvatar: {
+    marginRight: 12,
+  },
+
+  designerDetails: {
+    flex: 1,
+  },
+
+  designerName: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: colors.black,
+    marginBottom: 4,
+  },
+
+  designerDesc: {
+    fontSize: 14,
+    color: colors.gray_text,
+    lineHeight: 18,
+  },
+
+  designerComment: {
+    backgroundColor: colors.gold_light,
+    borderLeftColor: colors.gold_deep,
+    borderLeftWidth: 3,
+  },
+
+  designerBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colors.gold_deep,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    marginRight: 8,
+  },
+
+  designerBadgeText: {
+    fontSize: 10,
+    color: colors.white,
+    fontWeight: "600",
+    marginLeft: 2,
+  },
+
+  replyComment: {
+    width: "100%",
+  },
+
+  replyHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+
+  replyOriginal: {
+    backgroundColor: colors.white,
+    padding: 8,
+    borderRadius: 4,
+    marginBottom: 8,
+    borderLeftWidth: 2,
+    borderLeftColor: colors.gold_deep,
+  },
+
+  replyToText: {
+    fontSize: 12,
+    color: colors.gray_deep,
+    fontWeight: "500",
+    marginBottom: 2,
+  },
+
+  replyOriginalText: {
+    fontSize: 12,
+    color: colors.gray_deep,
+    fontStyle: "italic",
+  },
+
+  replyButton: {
+    alignSelf: "flex-start",
+    marginTop: 8,
+  },
+
+  replyButtonText: {
+    fontSize: 12,
+    color: colors.gray_text,
+    fontWeight: "500",
+  },
+
+  replyInputContainer: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    marginTop: 8,
+    backgroundColor: colors.primary_bg,
+    padding: 8,
+    borderRadius: 8,
+  },
+
+  replyInput: {
+    flex: 1,
+    fontSize: 14,
+    color: colors.black,
+    padding: 8,
+    backgroundColor: colors.white,
+    borderRadius: 4,
+    minHeight: 40,
+    maxHeight: 80,
+  },
+
+  replySubmitButton: {
+    marginLeft: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    backgroundColor: colors.gray_nav,
+    borderRadius: 4,
+    justifyContent: "center",
+    alignItems: "center",
+    minWidth: 50,
+  },
+
+  replySubmitButtonActive: {
+    backgroundColor: colors.green_deep,
+  },
+
+  replySubmitButtonText: {
+    color: colors.white,
+    fontSize: 12,
+    fontWeight: "bold",
+  },
+
+  loadMoreButton: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 12,
+    backgroundColor: colors.gold_light,
+    borderRadius: 8,
+    marginTop: 8,
+  },
+
+  loadMoreText: {
+    fontSize: 14,
+    color: colors.green_deep,
+    marginRight: 4,
+    fontWeight: "semibold",
   },
 });
