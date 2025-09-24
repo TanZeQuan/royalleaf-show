@@ -1,14 +1,16 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import VoteLiveScreen from "../../../screens/Home/Vote/VoteCommentScreen";
 import VoteDetailScreen from "../../../screens/Home/Vote/VoteDetailScreen";
-import VoteLiveScreen from "../../../screens/Home/Vote/VoteLiveScreen";
 import VoteMainScreen from "../../../screens/Home/Vote/VoteMainScreen";
 import VoteOptionScreen from "../../../screens/Home/Vote/VoteOptionScreen";
+import VoteRanking from "../../../screens/Home/Vote/VoteRanking";
 
 export type VoteStackParamList = {
   VoteMain: undefined;
   VoteOption: { category: string }
   VoteDetail: { imageId: number; category: string };
   VoteLive: { voteId: string };
+  Ranking: undefined;
 };
 
 const Stack = createNativeStackNavigator<VoteStackParamList>();
@@ -20,6 +22,7 @@ export default function VoteStack() {
       <Stack.Screen name="VoteOption" component={VoteOptionScreen} />
       <Stack.Screen name="VoteDetail" component={VoteDetailScreen} />
       <Stack.Screen name="VoteLive" component={VoteLiveScreen} />
+      <Stack.Screen name="Ranking" component={VoteRanking} />
     </Stack.Navigator>
   );
 }

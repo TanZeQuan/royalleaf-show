@@ -21,6 +21,8 @@ const colors = {
   success: "#4CAF50",
   error: "#F44336",
   pending: "#FFC107",
+  like:"#F4320B",
+  yellow:"#FFD700",
 };
 
 export default colors;

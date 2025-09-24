@@ -1,5 +1,5 @@
-import { StyleSheet, Dimensions } from "react-native";
-import { typography, colors } from "styles";
+import { Dimensions, StyleSheet } from "react-native";
+import { colors } from "styles";
 
 // Get device dimensions
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
@@ -44,7 +44,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: wp(4),
     paddingVertical: hp(1.5),
     borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
+    borderBottomColor: colors.gold_light,
+    backgroundColor: colors.gold_light,
   },
   backButton: {
     width: wp(9),

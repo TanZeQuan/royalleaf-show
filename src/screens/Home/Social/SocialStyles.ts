@@ -11,6 +11,7 @@ export const styles = StyleSheet.create({
     paddingVertical: 5,
     borderBottomWidth: 1,
     borderBottomColor: colors.gold_light,
+    backgroundColor: colors.gold_light,
   },
   headerTitle: {
     fontSize: 18,
