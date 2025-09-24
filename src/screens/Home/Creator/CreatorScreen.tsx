@@ -123,7 +123,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
+    borderBottomColor: colors.gold_light,
+    backgroundColor: colors.gold_light,
   },
   backButton: {
     width: 35,

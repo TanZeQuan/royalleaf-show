@@ -157,7 +157,8 @@ const styles = StyleSheet.create({
     paddingVertical: verticalScale(12),
     borderBottomWidth: 1,
     minHeight: verticalScale(60),
-    borderBottomColor: "rgba(215, 167, 64, 0.1)",
+    borderBottomColor: colors.gold_light,
+    backgroundColor: colors.gold_light,
   },
   backButton: {
     width: 35,

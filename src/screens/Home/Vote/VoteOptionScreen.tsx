@@ -446,7 +446,7 @@ const VoteImagesScreen = () => {
             style={{ width: 20, height: 20, resizeMode: "contain" }}
           />
         </TouchableOpacity>
-        
+
         <FilterPopout
           visible={showFilter}
           onClose={() => setShowFilter(false)}
@@ -479,29 +479,27 @@ const VoteImagesScreen = () => {
                     <Text style={styles.imageName}>{item.name}</Text>
                   </View>
                 </View>
-                
+
                 {/* 设计师信息和互动区域 */}
                 <View style={styles.infoContainer}>
                   <Text style={styles.designerName}>{item.designer}</Text>
                   <View style={styles.statsContainer}>
                     <View style={styles.statItem}>
                       <Ionicons name="heart" size={14} color={colors.like} />
-                      <Text style={styles.statText}>
-                        {item.likes}
-                      </Text>
+                      <Text style={styles.statText}>{item.likes}</Text>
                     </View>
                     <View style={styles.statItem}>
                       <Ionicons name="trophy" size={14} color={colors.yellow} />
                       <Text style={styles.statText}>{item.votes}</Text>
                     </View>
-                    <TouchableOpacity 
+                    <TouchableOpacity
                       style={styles.voteButton}
                       onPress={() => handleImagePress(item.id)}
                     >
-                      <Ionicons 
-                        name="checkmark-circle" 
-                        size={16} 
-                        color={colors.white} 
+                      <Ionicons
+                        name="checkmark-circle"
+                        size={16}
+                        color={colors.white}
                       />
                       <Text style={styles.voteButtonText}>投票</Text>
                     </TouchableOpacity>
@@ -528,7 +526,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: "rgba(215, 167, 64, 0.1)",
+    borderBottomColor: colors.gold_light,
+    backgroundColor: colors.gold_light,
     position: "relative",
   },
   headerCenter: {
@@ -537,7 +536,7 @@ const styles = StyleSheet.create({
     right: 0,
     alignItems: "center",
     justifyContent: "center",
-    zIndex: -1,
+    // zIndex: -1,
   },
   headerTitle: {
     fontSize: 20,
@@ -750,7 +749,7 @@ const filterStyles = StyleSheet.create({
     borderRadius: 6,
   },
   applyText: {
-    color:colors.black,
+    color: colors.black,
     fontWeight: "bold",
   },
 });
