@@ -16,10 +16,10 @@ export default function ResetPasswordScreen({ route, navigation }: any) {
     try {
       const res = await resetPassword({ email, new_passcode: newPassword });
       if (res.success) {
-        Alert.alert("成功", "密码重置成功，请登录");
+        Alert.alert("✅ 成功", "密码重置成功，请登录");
         navigation.navigate("Login");
       } else {
-        Alert.alert("失败", res.message || "重置失败");
+        Alert.alert("❌ 失败", res.message || "重置失败");
       }
     } catch (err: any) {
       Alert.alert("网络错误", err.message || "服务器异常");
@@ -46,11 +46,10 @@ export default function ResetPasswordScreen({ route, navigation }: any) {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#F5F1E8' },
-  container: { flex: 1, justifyContent: 'center', padding: 20, paddingBottom: 100 },
-  title: { fontSize: 18, fontWeight: '500', color: '#8B7355', marginBottom: 30, textAlign: 'center' },
-  input: { backgroundColor: '#FFFFFF', borderRadius: 12, padding: 16, marginBottom: 30, fontSize: 16, color: '#333', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 2, elevation: 2 },
-  button: { backgroundColor: '#E1C16E', padding: 15, borderRadius: 12, shadowColor: '#D4AF37', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.3, shadowRadius: 4, elevation: 3 },
-  buttonText: { color: '#fff', textAlign: 'center', fontWeight: '600', fontSize: 16 },
-  backText: { textAlign: "center", color: "#007BFF", fontWeight: "500" },
+  safeArea: { flex: 1, backgroundColor: "#fff" },
+  container: { flex: 1, padding: 20, justifyContent: "center" },
+  title: { fontSize: 18, fontWeight: "bold", marginBottom: 20 },
+  input: { borderWidth: 1, borderColor: "#ccc", padding: 12, borderRadius: 8, marginBottom: 15 },
+  button: { backgroundColor: "#E1C16E", padding: 15, borderRadius: 8, alignItems: "center" },
+  buttonText: { color: "#fff", fontSize: 16, fontWeight: "bold" },
 });

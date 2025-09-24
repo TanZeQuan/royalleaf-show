@@ -1,6 +1,6 @@
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Dimensions,
   Image,
@@ -10,13 +10,26 @@ import {
   Text,
   TouchableOpacity,
   View,
+  ActivityIndicator,
+  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
-import { colors, typography } from "styles";
+import { typography, colors } from "styles"
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ProfileStackParamList } from "../../navigation/stacks/ProfileNav/ProfileStack";
+import { getUserProfile } from "services/UserService/userApi";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
+const safeParse = (value: string | null) => {
+  if (!value) return null;
+  try {
+    return JSON.parse(value); // 尝试 JSON.parse
+  } catch {
+    // 如果不是 JSON，比如就是 "james"
+    return { username: value };
+  }
+};
+
 
 // Responsive scaling
 const scale = (size: number) => (screenWidth / 375) * size;
@@ -27,8 +40,65 @@ type ProfileScreenNavigationProp = NativeStackNavigationProp<
   "Profile"
 >;
 
+interface UserProfile {
+  user_id: string;
+  username: string;
+  wallet_balance: number;
+  crown: number;
+}
+
 export default function ProfileScreen() {
   const navigation = useNavigation<ProfileScreenNavigationProp>();
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadProfile = async () => {
+      try {
+        const storedUser = await AsyncStorage.getItem("user");
+        if (!storedUser) {
+          Alert.alert("提示", "请先登录");
+          return;
+        }
+
+        const parsed = safeParse(storedUser);
+
+        // 如果只有 username，没有 user_id/token，就不调 profile 接口
+        if (!parsed.user_id || !parsed.token) {
+          setUser({
+            user_id: "----",
+            username: parsed.username || "未登录",
+            wallet_balance: 0,
+            crown: 0,
+          });
+          return;
+        }
+
+        // 正常调接口
+        const res = await getUserProfile(parsed.user_id, parsed.token);
+        if (res.success) {
+          setUser(res.data);
+        } else {
+          Alert.alert("获取资料失败", res.message || "请重新登录");
+        }
+      } catch (err: any) {
+        console.error("Profile Error:", err);
+        Alert.alert("错误", err.message || "无法加载资料");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProfile();
+  }, []);
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <ActivityIndicator size="large" color="#E1C16E" style={{ marginTop: 50 }} />
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -60,8 +130,12 @@ export default function ProfileScreen() {
               />
             </View>
             <View style={styles.profileInfo}>
-              <Text style={styles.username} numberOfLines={1}>XXXXX</Text>
-              <Text style={styles.userId} numberOfLines={1}>0000000000</Text>
+              <Text style={styles.username} numberOfLines={1}>
+                {user?.username || "未登录"}
+              </Text>
+              <Text style={styles.userId} numberOfLines={1}>
+                ID: {user?.user_id || "----"}
+              </Text>
             </View>
             <TouchableOpacity
               style={styles.scanButton}
@@ -80,13 +154,21 @@ export default function ProfileScreen() {
         <View style={styles.statsContainer}>
           <View style={styles.statsSection}>
             <View style={styles.statItem}>
-              <Text style={styles.statNumber} numberOfLines={1}>0.00</Text>
-              <Text style={styles.statLabel} numberOfLines={1}>钱包(RM)</Text>
+              <Text style={styles.statNumber} numberOfLines={1}>
+                {user?.wallet_balance?.toFixed(2) ?? "0.00"}
+              </Text>
+              <Text style={styles.statLabel} numberOfLines={1}>
+                钱包(RM)
+              </Text>
             </View>
             <View style={styles.statDivider} />
             <View style={styles.statItem}>
-              <Text style={styles.statNumber} numberOfLines={1}>30</Text>
-              <Text style={styles.statLabel} numberOfLines={1}>皇冠</Text>
+              <Text style={styles.statNumber} numberOfLines={1}>
+                {user?.crown ?? 0}
+              </Text>
+              <Text style={styles.statLabel} numberOfLines={1}>
+                皇冠
+              </Text>
             </View>
             <View style={styles.statDivider} />
             <View style={styles.statItem}>
@@ -94,7 +176,9 @@ export default function ProfileScreen() {
                 source={require("assets/icons/profile-delivery.png")}
                 style={styles.walletIcon}
               />
-              <Text style={styles.statLabel} numberOfLines={1}>物流</Text>
+              <Text style={styles.statLabel} numberOfLines={1}>
+                物流
+              </Text>
             </View>
           </View>
         </View>
@@ -199,9 +283,6 @@ export default function ProfileScreen() {
           </View>
         </View>
       </ScrollView>
-
-      {/* Floating Gift Button */}
-      {/* <ButtonAnimation /> */}
     </SafeAreaView>
   );
 }

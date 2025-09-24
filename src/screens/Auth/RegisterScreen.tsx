@@ -17,13 +17,10 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { registerUser } from "../../services/UserService/userApi";
-import {
-  formatDateForApi,
-  getDateFromBirthday,
-  parseBirthdayInput
-} from "../../utils/dateUtils";
+import { registerUser, editProfile } from "../../services/UserService/userApi";
+import { formatDateForApi } from "../../utils/dateUtils";
 
 const { width, height } = Dimensions.get("window");
 
@@ -112,7 +109,7 @@ export default function RegisterScreen({ navigation, onRegister }: RegisterScree
     agreeToTerms: false,
     showDatePicker: false,
     showLocationModal: false,
-    selectedDate: null as Date | null,
+    selectedDate: new Date(2000, 0, 1), // Default to Jan 1, 2000
     avatarUri: null as string | null,
   });
 
@@ -131,17 +128,37 @@ export default function RegisterScreen({ navigation, onRegister }: RegisterScree
     setUiState(prev => ({ ...prev, [field]: value }));
   }, []);
 
+  // Handle phone input with proper +60 formatting
   const handlePhoneChange = useCallback((text: string) => {
-    const digitsOnly = text.replace(/\D/g, "");
-    updateFormData("phone", digitsOnly.slice(0, 10));
+    let digitsOnly = text.replace(/\D/g, "");
+
+    if (text.startsWith('+60')) {
+      digitsOnly = digitsOnly.slice(2); // 去掉 +60
+    } else if (text.startsWith('0')) {
+      digitsOnly = digitsOnly.slice(1); // 去掉前导 0
+    }
+
+    const formattedPhone = `+60${digitsOnly.slice(0, 10)}`;
+    updateFormData("phone", formattedPhone);
   }, [updateFormData]);
 
+  // Format phone for display with proper formatting
   const formatPhoneForDisplay = useCallback((value: string) => {
     if (!value) return "";
+
+    // If it's already in +60 format
+    if (value.startsWith('+60')) {
+      const digits = value.slice(3);
+      if (digits.length <= 3) return `+60 ${digits}`;
+      if (digits.length <= 6) return `+60 ${digits.slice(0, 3)}-${digits.slice(3)}`;
+      return `+60 ${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
+    }
+
+    // Local number formatting
     const len = value.length;
     if (len <= 3) return value;
     if (len <= 6) return `${value.slice(0, 3)}-${value.slice(3)}`;
-    return `${value.slice(0, 3)}-${value.slice(3, 6)}${value.slice(6)}`;
+    return `${value.slice(0, 3)}-${value.slice(3, 6)}-${value.slice(6)}`;
   }, []);
 
   const validateEmail = useCallback((email: string) => {
@@ -187,15 +204,26 @@ export default function RegisterScreen({ navigation, onRegister }: RegisterScree
     return "Strong";
   }, [validation.passwordStrength]);
 
-  const handleBirthdayChange = useCallback((text: string) => {
-    const formatted = parseBirthdayInput(text);
-    updateFormData("birthday", formatted);
+  // Handle DateTimePicker change
+  const handleDateChange = useCallback((event: any, selectedDate?: Date) => {
+    if (Platform.OS === 'android') {
+      updateUiState("showDatePicker", false);
+    }
 
-    if (formatted.length === 10) {
-      const date = getDateFromBirthday(formatted);
-      if (date) updateUiState("selectedDate", date);
+    if (selectedDate) {
+      updateUiState("selectedDate", selectedDate);
+      // Format date as DD/MM/YYYY for display
+      const day = selectedDate.getDate().toString().padStart(2, '0');
+      const month = (selectedDate.getMonth() + 1).toString().padStart(2, '0');
+      const year = selectedDate.getFullYear().toString();
+      updateFormData("birthday", `${day}/${month}/${year}`);
     }
   }, [updateFormData, updateUiState]);
+
+  // Show date picker
+  const showDatePicker = useCallback(() => {
+    updateUiState("showDatePicker", true);
+  }, [updateUiState]);
 
   const pickImageFromGallery = useCallback(async () => {
     try {
@@ -225,7 +253,7 @@ export default function RegisterScreen({ navigation, onRegister }: RegisterScree
   }, [updateFormData, updateUiState]);
 
   const validateForm = useCallback(() => {
-    const { username, name, phone, email, password, confirmPassword } = formData;
+    const { username, name, phone, email, password, confirmPassword, birthday } = formData;
     const { agreeToTerms } = uiState;
     const { passwordStrength, emailValid } = validation;
 
@@ -237,7 +265,7 @@ export default function RegisterScreen({ navigation, onRegister }: RegisterScree
       Alert.alert("Error", "Name is required.");
       return false;
     }
-    if (!phone || phone.length < 9) {
+    if (!phone || phone.length < 8) {
       Alert.alert("Error", "Please enter a valid phone number.");
       return false;
     }
@@ -253,28 +281,51 @@ export default function RegisterScreen({ navigation, onRegister }: RegisterScree
       Alert.alert("Error", "Passwords do not match.");
       return false;
     }
+    if (!birthday) {
+      Alert.alert("Error", "Please select your birthday.");
+      return false;
+    }
     if (!agreeToTerms) {
       Alert.alert("Error", "Please agree to terms and conditions.");
       return false;
     }
     return true;
   }, [formData, uiState, validation]);
+  function formatPhoneForApi(input: string) {
+    let phone = input.trim().replace(/[^\d+]/g, ""); // 去掉非数字非+字符
+
+    if (phone.startsWith("+60")) {
+      const digits = phone.slice(3).slice(0, 10);
+      return `+60${digits}`;
+    } else if (phone.startsWith("0")) {
+      const digits = phone.slice(1).slice(0, 10);
+      return `+60${digits}`;
+    } else {
+      const digits = phone.slice(0, 10);
+      return `+60${digits}`;
+    }
+  }
 
   const handleRegister = useCallback(async () => {
     if (!validateForm()) return;
 
     const { username, name, phone, email, password, location, referralCode } = formData;
-    const { selectedDate } = uiState;
+    const { selectedDate, avatarUri } = uiState;
 
     updateUiState("loading", true);
 
     try {
       const dob = formatDateForApi(selectedDate, formData.birthday);
+      const formattedPhone = formatPhoneForApi(phone);
+
+      console.log("➡️ Phone sent to backend:", formattedPhone);
+
+      // 1️⃣ 调用注册 API
       const response = await registerUser({
         username: username.trim(),
         passcode: password,
         name: name.trim(),
-        phone: `+60${phone}`,
+        phone: formattedPhone,
         email,
         dob,
         address: location,
@@ -282,17 +333,41 @@ export default function RegisterScreen({ navigation, onRegister }: RegisterScree
       });
 
       if (response.success) {
-        Alert.alert("Success", response.message || "Registration successful!");
+        let userId: string | null = null;
+
+        Alert.alert("✅ 成功", response.message || "注册成功！");
+
+        // 2️⃣ 如果有头像，额外上传
+        if (avatarUri) {
+          try {
+            const formData = new FormData();
+            formData.append("user_id", userId ?? "");
+            formData.append("image", {
+              uri: avatarUri,
+              name: "avatar.jpg",
+              type: "image/jpeg",
+            } as any);
+
+            const editRes = await editProfile(formData as any);
+            console.log("头像上传结果:", editRes);
+          } catch (uploadErr) {
+            console.warn("头像上传失败:", uploadErr);
+          }
+        }
+
+        // 3️⃣ 跳转登录
         navigation.navigate("Login");
       } else {
-        Alert.alert("Failed", response.message || "Registration failed.");
+        Alert.alert("❌ 注册失败", response.message || "Registration failed.");
       }
-    } catch (error) {
-      Alert.alert("Error", "Unable to register. Please try again.");
+    } catch (error: any) {
+      console.error("Register Error:", error);
+      Alert.alert("❌ 错误", error.response?.data?.message || "Unable to register. Please try again.");
     } finally {
       updateUiState("loading", false);
     }
   }, [formData, uiState, validateForm, updateUiState, navigation]);
+
 
   // Render components
   const renderHeader = () => (
@@ -417,6 +492,48 @@ export default function RegisterScreen({ navigation, onRegister }: RegisterScree
     );
   };
 
+  // Render Birthday Field with DateTimePicker
+  const renderBirthdayField = () => (
+    <View style={styles.inputGroup}>
+      <TouchableOpacity
+        style={styles.inputContainer}
+        onPress={showDatePicker}
+        activeOpacity={0.7}
+      >
+        <Image
+          source={require("assets/icons/reg-birth.png")}
+          style={[styles.inputIcon, styles.imageIcon]}
+          resizeMode="contain"
+        />
+        <Text style={[styles.input, !formData.birthday && styles.placeholderText]}>
+          {formData.birthday || "输入生日日期 DD/MM/YYYY"}
+        </Text>
+        <Ionicons name="calendar-outline" size={normalize(SIZES.iconSize)} color={COLORS.textLight} />
+      </TouchableOpacity>
+
+      {uiState.showDatePicker && (
+        <DateTimePicker
+          value={uiState.selectedDate}
+          mode="date"
+          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+          onChange={handleDateChange}
+          maximumDate={new Date()} // Can't select future dates
+          minimumDate={new Date(1900, 0, 1)} // Reasonable minimum date
+          style={Platform.OS === 'ios' ? styles.datePickerIOS : undefined}
+        />
+      )}
+
+      {Platform.OS === 'ios' && uiState.showDatePicker && (
+        <TouchableOpacity
+          style={styles.datePickerCloseButton}
+          onPress={() => updateUiState("showDatePicker", false)}
+        >
+          <Text style={styles.datePickerCloseText}>Done</Text>
+        </TouchableOpacity>
+      )}
+    </View>
+  );
+
   const renderLocationModal = () => (
     <Modal
       visible={uiState.showLocationModal}
@@ -503,7 +620,7 @@ export default function RegisterScreen({ navigation, onRegister }: RegisterScree
               {/* Phone */}
               {renderInputField(
                 "call-outline",
-                "输入您的电话号码",
+                "输入您的电话号码 (例如: +60123456789 或 0123456789)",
                 formatPhoneForDisplay(formData.phone),
                 handlePhoneChange,
                 { keyboardType: "phone-pad" }
@@ -552,18 +669,8 @@ export default function RegisterScreen({ navigation, onRegister }: RegisterScree
                 }
               )}
 
-              {/* Birthday */}
-              {renderInputField(
-                "",
-                "输入生日日期 DD/MM/YYYY",
-                formData.birthday,
-                handleBirthdayChange,
-                {
-                  keyboardType: "numeric",
-                  maxLength: 10,
-                  iconSource: require("assets/icons/reg-birth.png")
-                }
-              )}
+              {/* Birthday with DateTimePicker */}
+              {renderBirthdayField()}
 
               {/* Location */}
               <View style={styles.inputGroup}>
@@ -719,9 +826,9 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between", // 确保左右元素分布一致
+    justifyContent: "space-between",
     paddingHorizontal: wp(2),
-    paddingVertical: Platform.OS === "ios" ? hp(1.5) : hp(2.0), // 适当微调 iOS 顶部间距
+    paddingVertical: Platform.OS === "ios" ? hp(1.5) : hp(2.0),
     zIndex: 10,
   },
   backButton: {
@@ -729,7 +836,7 @@ const styles = StyleSheet.create({
     height: normalize(36),
     borderRadius: normalize(18),
     backgroundColor: COLORS.white,
-    marginLeft:10,
+    marginLeft: 10,
     justifyContent: "center",
     alignItems: "center",
     shadowColor: COLORS.shadow,
@@ -744,7 +851,7 @@ const styles = StyleSheet.create({
     color: COLORS.text,
     flex: 1,
     textAlign: "center",
-    marginRight: normalize(45), // Offset for back button
+    marginRight: normalize(45),
   },
   backgroundPattern: {
     position: "absolute",
@@ -873,6 +980,25 @@ const styles = StyleSheet.create({
   passwordStrengthText: {
     fontSize: normalize(SIZES.small),
     fontWeight: "500",
+  },
+  // DateTimePicker styles
+  datePickerIOS: {
+    backgroundColor: COLORS.white,
+    borderRadius: normalize(10),
+    marginTop: hp(1),
+  },
+  datePickerCloseButton: {
+    backgroundColor: COLORS.primary,
+    borderRadius: normalize(8),
+    paddingVertical: hp(1),
+    paddingHorizontal: wp(4),
+    alignItems: "center",
+    marginTop: hp(1),
+  },
+  datePickerCloseText: {
+    fontSize: normalize(SIZES.base),
+    fontWeight: "600",
+    color: COLORS.text,
   },
   termsContainer: {
     flexDirection: "row",

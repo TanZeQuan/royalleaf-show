@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { loginUser } from '@services/UserService/userApi';
 import React, { useState } from "react";
 import {
   Alert,
@@ -29,7 +30,7 @@ export default function LoginScreen({ navigation, onLogin }: LoginScreenProps) {
 
   const validateForm = (): boolean => {
     if (!username.trim() || !password.trim()) {
-      Alert.alert("Error", "Please fill in all fields.");
+      Alert.alert("错误", "请输入用户名和密码");
       return false;
     }
     return true;
@@ -40,32 +41,36 @@ export default function LoginScreen({ navigation, onLogin }: LoginScreenProps) {
 
     setLoading(true);
     try {
-      // 🔹 Test mode: simulate API response
-      const response = {
-        success: true, // change to false to simulate failure
-        message: "Mock login successful!",
-        data: { username: username.trim(), token: "mock-token-123" },
-      };
+      const response = await loginUser({
+        username: username.trim(),
+        passcode: password,
+      });
 
       if (response.success) {
-        // 保存用户信息到 AsyncStorage
-        await AsyncStorage.setItem("user", JSON.stringify(response.data));
+        // 🔹 统一保存
+        const userData = {
+          user_id: response.data?.user_id,    // ✅ 来自 response.data
+          username: response.data?.username,
+          token: response.token ?? null,
+        };
 
-        // 更新 app 状态
-        onLogin(username); // ✅ 保持类型一致
+        // login screen 成功后
+         await AsyncStorage.setItem("userData", JSON.stringify(userData));
 
-        Alert.alert("Success", response.message);
+        // 👉 保持 onLogin 传 username（如果你只想改 Profile，就不用动 AppNavigator）
+        onLogin(userData.username);
+
+        Alert.alert("✅ 登录成功", response.message || "欢迎回来！");
       } else {
-        Alert.alert("Login Failed", response.message || "Invalid credentials.");
+        Alert.alert("❌ 登录失败", response.message || "账号或密码错误");
       }
     } catch (error: any) {
-      Alert.alert("Error", "Test mode: Something went wrong.");
+      console.error("Login Error:", error);
+      Alert.alert("错误", error.response?.data?.message || error.message || "登录失败，请稍后再试");
     } finally {
       setLoading(false);
     }
   };
-
-
 
   const handleSocialLogin = (platform: string): void => {
     Alert.alert("Coming Soon", `${platform} login will be available soon!`);
@@ -280,7 +285,7 @@ const styles = StyleSheet.create({
   logo: {
     width: height * 0.25,
     height: height * 0.25,
-    marginTop:30,
+    marginTop: 30,
     alignSelf: "center",
   },
 

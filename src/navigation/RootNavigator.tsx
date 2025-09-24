@@ -26,14 +26,14 @@ export default function RootNavigator({ onLogout }: RootNavigatorProps) {
           paddingTop:2,
           paddingBottom: Platform.OS === "ios" ? 10 : 8, // 调小底部间距
           shadowColor: "#000",
-          shadowOffset: { width: 0, height: -1 },
+          shadowOffset: { width: 0, height: 1 },
           shadowOpacity: 0.1,
           shadowRadius: 4,
           elevation: 5,
         },
         tabBarLabelStyle: {
           fontSize: 13,
-          marginTop: 5,
+          marginTop: 3,
         },
         tabBarIcon: ({ focused, color, size }) => {
           let iconName: keyof typeof Ionicons.glyphMap = "home";
