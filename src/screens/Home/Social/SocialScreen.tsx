@@ -493,7 +493,7 @@ export default function SocialScreen() {
       </View>
 
       {/* Tab Navigation */}
-      <View style={topicStyles.tabContainer}>
+      {/* <View style={topicStyles.tabContainer}>
         <TouchableOpacity
           style={[topicStyles.tab, activeTab === 'posts' && topicStyles.activeTab]}
           onPress={() => setActiveTab('posts')}
@@ -510,7 +510,7 @@ export default function SocialScreen() {
             话题讨论
           </Text>
         </TouchableOpacity>
-      </View>
+      </View> */}
 
       {/* Create Post Modal */}
       {showCreatePost && (
