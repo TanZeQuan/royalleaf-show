@@ -1,6 +1,7 @@
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
+
 import {
   Dimensions,
   Image,
@@ -14,88 +15,108 @@ import {
   Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { typography, colors } from "styles"
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { typography, colors } from "styles";
 import { ProfileStackParamList } from "../../navigation/stacks/ProfileNav/ProfileStack";
-import { getUserProfile } from "services/UserService/userApi";
+import { viewProfile } from "services/UserService/userApi";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
+
+// ---------- Safe Parse ----------
 const safeParse = (value: string | null) => {
   if (!value) return null;
   try {
-    return JSON.parse(value); // 尝试 JSON.parse
+    return JSON.parse(value);
   } catch {
-    // 如果不是 JSON，比如就是 "james"
     return { username: value };
   }
 };
 
-
-// Responsive scaling
+// ---------- Responsive scaling ----------
 const scale = (size: number) => (screenWidth / 375) * size;
 const verticalScale = (size: number) => (screenHeight / 812) * size;
+const getFullImageUrl = (img: string | undefined) => {
+  if (!img) return undefined;
+  // 如果 img 以 http/https 开头就直接用，否则拼接 BASE_URL
+  return img.startsWith("http") ? img : `http://192.168.0.241:8080/royal/${img.replace(/^\/+/, '')}`;
+};
 
+// ---------- Types ----------
 type ProfileScreenNavigationProp = NativeStackNavigationProp<
   ProfileStackParamList,
   "Profile"
 >;
 
 interface UserProfile {
+  image?: string;
   user_id: string;
   username: string;
   wallet_balance: number;
   crown: number;
 }
 
+type ParsedUser = UserProfile | { username: string } | null;
+
+// ---------- Component ----------
 export default function ProfileScreen() {
   const navigation = useNavigation<ProfileScreenNavigationProp>();
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const loadProfile = async () => {
-      try {
-        const storedUser = await AsyncStorage.getItem("user");
-        if (!storedUser) {
-          Alert.alert("提示", "请先登录");
-          return;
-        }
-
-        const parsed = safeParse(storedUser);
-
-        // 如果只有 username，没有 user_id/token，就不调 profile 接口
-        if (!parsed.user_id || !parsed.token) {
-          setUser({
-            user_id: "----",
-            username: parsed.username || "未登录",
-            wallet_balance: 0,
-            crown: 0,
-          });
-          return;
-        }
-
-        // 正常调接口
-        const res = await getUserProfile(parsed.user_id, parsed.token);
-        if (res.success) {
-          setUser(res.data);
-        } else {
-          Alert.alert("获取资料失败", res.message || "请重新登录");
-        }
-      } catch (err: any) {
-        console.error("Profile Error:", err);
-        Alert.alert("错误", err.message || "无法加载资料");
-      } finally {
-        setLoading(false);
+  // ---------- Load profile ----------
+  const loadProfile = async () => {
+    setLoading(true);
+    try {
+      const storedUser = await AsyncStorage.getItem("userData");
+      if (!storedUser) {
+        Alert.alert("提示", "请先登录");
+        setUser(null);
+        return;
       }
-    };
 
-    loadProfile();
-  }, []);
+      const parsed = safeParse(storedUser) as ParsedUser;
+      const userId = (parsed as any)?.user_id;
+
+      if (!userId) {
+        // 仅有用户名
+        setUser({
+          user_id: "----",
+          username: (parsed as any)?.username || "未登录",
+          wallet_balance: 0,
+          crown: 0,
+        });
+        return;
+      }
+
+      const res = await viewProfile(userId);
+      if (res.success) {
+        setUser(res.data);
+      } else {
+        Alert.alert("获取资料失败", res.message || "请重新登录");
+      }
+    } catch (err: any) {
+      console.error("Profile Error:", err);
+      Alert.alert("错误", err.message || "无法加载资料");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ---------- 页面加载和返回刷新 ----------
+  useEffect(() => {
+    loadProfile(); // 首次加载
+    const unsubscribe = navigation.addListener("focus", loadProfile); // 每次返回刷新
+    return unsubscribe;
+  }, [navigation]);
 
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
-        <ActivityIndicator size="large" color="#E1C16E" style={{ marginTop: 50 }} />
+        <ActivityIndicator
+          size="large"
+          color="#E1C16E"
+          style={{ marginTop: 50 }}
+        />
       </SafeAreaView>
     );
   }
@@ -125,7 +146,11 @@ export default function ProfileScreen() {
           <View style={styles.profileRow}>
             <View style={styles.profileImageContainer}>
               <Image
-                source={require("assets/icons/profile-avatar.png")}
+                source={
+                  user?.image
+                    ? { uri: getFullImageUrl(user.image) }
+                    : require("assets/icons/profile-avatar.png")
+                }
                 style={styles.profileImage}
               />
             </View>
@@ -137,16 +162,6 @@ export default function ProfileScreen() {
                 ID: {user?.user_id || "----"}
               </Text>
             </View>
-            <TouchableOpacity
-              style={styles.scanButton}
-              onPress={() => navigation.navigate("Scan")}
-              activeOpacity={0.7}
-            >
-              <Image
-                source={require("assets/icons/profile-scan.png")}
-                style={styles.scanIcon}
-              />
-            </TouchableOpacity>
           </View>
         </View>
 
@@ -193,7 +208,9 @@ export default function ProfileScreen() {
           >
             <View style={styles.leafContent}>
               <View style={styles.leafTextContainer}>
-                <Text style={styles.leafTitle} numberOfLines={1}>Leaf Guest</Text>
+                <Text style={styles.leafTitle} numberOfLines={1}>
+                  Leaf Guest
+                </Text>
                 <Text style={styles.leafSubtitle} numberOfLines={2}>
                   9 Cups away from Leaf Knight
                 </Text>
@@ -230,7 +247,9 @@ export default function ProfileScreen() {
                   source={require("assets/icons/home-story.png")}
                   style={styles.cardIcon}
                 />
-                <Text style={styles.cardTitle} numberOfLines={2}>我们的故事</Text>
+                <Text style={styles.cardTitle} numberOfLines={2}>
+                  我们的故事
+                </Text>
               </ImageBackground>
             </TouchableOpacity>
 
@@ -245,7 +264,9 @@ export default function ProfileScreen() {
                   source={require("assets/icons/login-vote.png")}
                   style={styles.cardIcon}
                 />
-                <Text style={styles.cardTitle} numberOfLines={2}>投票</Text>
+                <Text style={styles.cardTitle} numberOfLines={2}>
+                  投票
+                </Text>
               </ImageBackground>
             </TouchableOpacity>
           </View>
@@ -262,7 +283,9 @@ export default function ProfileScreen() {
                   source={require("assets/images/profile-creator.png")}
                   style={styles.cardIcon}
                 />
-                <Text style={styles.cardTitle} numberOfLines={2}>创造者</Text>
+                <Text style={styles.cardTitle} numberOfLines={2}>
+                  创造者
+                </Text>
               </ImageBackground>
             </TouchableOpacity>
 
@@ -277,7 +300,9 @@ export default function ProfileScreen() {
                   source={require("assets/images/profile-leaf.png")}
                   style={styles.cardIcon}
                 />
-                <Text style={styles.cardTitle} numberOfLines={2}>茶会</Text>
+                <Text style={styles.cardTitle} numberOfLines={2}>
+                  茶会
+                </Text>
               </ImageBackground>
             </TouchableOpacity>
           </View>
@@ -331,7 +356,7 @@ const styles = StyleSheet.create({
   profileImage: {
     width: scale(80),
     height: scale(80),
-    borderRadius: scale(25),
+    borderRadius: scale(50),
     resizeMode: "cover",
   },
   profileInfo: {
@@ -512,3 +537,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.green
   },
 });
+
+function loadProfile() {
+  throw new Error("Function not implemented.");
+}

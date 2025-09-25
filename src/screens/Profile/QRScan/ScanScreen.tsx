@@ -2,8 +2,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { CameraView, useCameraPermissions } from "expo-camera";
-import React, { useEffect, useState } from "react";
-import { Image, StatusBar, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import React, { useEffect, useState, useLayoutEffect } from "react";
+import { Image, Platform, StatusBar, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import QRCode from "react-native-qrcode-svg";
 import { ProfileStackParamList } from "../../../navigation/stacks/ProfileNav/ProfileStack";
 type ProfileScreenNavigationProp = NativeStackNavigationProp<
@@ -19,6 +19,28 @@ export default function App() {
   const handleGoBack = () => {
     navigation.goBack();
   };
+
+  useLayoutEffect(() => {
+    navigation.getParent()?.setOptions({
+      tabBarStyle: { display: "none" },
+    });
+
+
+    return () => {
+      navigation.getParent()?.setOptions({
+        tabBarStyle: {
+          backgroundColor: "#F9F5EC",
+          height: 80, // 从 70 ➝ 90 或更大
+          paddingBottom: Platform.OS === "ios" ? 25 : 15, // 底部留白
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: -2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 4,
+          elevation: 5,
+        },
+      });
+    };
+  }, [navigation]);
 
   useEffect(() => {
     if (!permission) requestPermission();

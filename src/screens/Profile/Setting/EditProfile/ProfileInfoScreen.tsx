@@ -1,104 +1,196 @@
+// ProfileInfoScreen.tsx
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import * as ImagePicker from "expo-image-picker";
-import React, { useRef, useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
-  Animated,
+  FlatList,
   Image,
+  Modal,
   ScrollView,
   StatusBar,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  View
+  View,
+  Platform,
+  ActivityIndicator,
+  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import { SettingStackParamList } from "navigation/stacks/ProfileNav/SettingStack";
+import { editProfile, uploadFile } from "@services/UserService/userApi";
 
 interface FormData {
+  username: string;
   name: string;
   email: string;
   phone: string;
-  birthday: string;
-  location: string;
+  dob: string;
+  address: string;
+  gender: number;
 }
 
+type RNFile = {
+  uri: string;
+  type: string;
+  name: string;
+};
+
 export default function ProfileInfoScreen() {
-  const navigation =
-    useNavigation<NativeStackNavigationProp<SettingStackParamList>>();
+  const navigation = useNavigation<NativeStackNavigationProp<SettingStackParamList>>();
 
   const [formData, setFormData] = useState<FormData>({
+    username: "",
     name: "",
     email: "",
     phone: "",
-    birthday: "",
-    location: "",
+    dob: "",
+    address: "",
+    gender: 0,
   });
 
   const [avatar, setAvatar] = useState<string | null>(null);
+  const [avatarFile, setAvatarFile] = useState<RNFile | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [tempDate, setTempDate] = useState<Date>(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string>("");
 
-  const [modalVisible, setModalVisible] = useState(false);
-  const [modalType, setModalType] = useState<"birthday" | "location" | null>(
-    null
-  );
-  const slideAnim = useRef(new Animated.Value(300)).current;
+  const [locationModalVisible, setLocationModalVisible] = useState(false);
+  const [genderModalVisible, setGenderModalVisible] = useState(false);
+  const [locations] = useState([
+    "北京", "上海", "广州", "深圳", "香港", "马来西亚", "新加坡"
+  ]);
 
-  // 🗓️ Format date
+  useEffect(() => {
+    loadUserData();
+  }, []);
+
+  const loadUserData = async () => {
+    try {
+      const stored = await AsyncStorage.getItem("userData");
+      if (stored) {
+        const userData = JSON.parse(stored);
+        setCurrentUserId(userData.user_id || "");
+
+        setFormData({
+          username: userData.username || "",
+          name: userData.name || "",
+          email: userData.email || "",
+          phone: userData.phone || "",
+          address: userData.address || "",
+          gender: userData.gender || 0,
+          dob: userData.dob || "",
+        });
+
+        if (userData.dob) {
+          const dobDate = new Date(userData.dob);
+          if (!isNaN(dobDate.getTime())) setSelectedDate(dobDate);
+        }
+
+        if (userData.image) setAvatar(userData.image);
+      }
+    } catch (error) {
+      console.error("加载用户数据失败:", error);
+    }
+  };
+
   const formatDate = (date: Date) => {
     const year = date.getFullYear();
     const month = (date.getMonth() + 1).toString().padStart(2, "0");
     const day = date.getDate().toString().padStart(2, "0");
-    return `${year}年${month}月${day}日`;
+    return `${year}-${month}-${day}`;
   };
 
-  // 🗓️ Open bottom sheet
-  const openBottomSheet = (type: "birthday" | "location") => {
-    setModalType(type);
-    if (type === "birthday" && selectedDate) {
-      setTempDate(selectedDate);
-    }
-    setModalVisible(true);
-    Animated.timing(slideAnim, {
-      toValue: 0,
-      duration: 300,
-      useNativeDriver: true,
-    }).start();
-  };
-
-  // 🗓️ Close bottom sheet
-  const closeBottomSheet = () => {
-    Animated.timing(slideAnim, {
-      toValue: 300,
-      duration: 250,
-      useNativeDriver: true,
-    }).start(() => setModalVisible(false));
-  };
-
-  // ✅ Confirm date
-  const confirmDate = () => {
-    setSelectedDate(tempDate);
-    setFormData({ ...formData, birthday: formatDate(tempDate) });
-    closeBottomSheet();
-  };
-
-  // 📸 Pick image
   const pickImage = async () => {
-    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permission.granted) {
-      alert("需要访问相册权限！");
+    try {
+      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permission.granted) {
+        alert("需要访问相册权限！");
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
+
+      if (!result.canceled) {
+        const uri = result.assets[0].uri;
+        setAvatar(uri);
+
+        const filename = uri.split('/').pop() || 'avatar.jpg';
+        const fileType = filename.endsWith('.png') ? 'image/png' : 'image/jpeg';
+
+        setAvatarFile({ uri, type: fileType, name: filename });
+      }
+    } catch (error) {
+      console.error("选择图片失败:", error);
+      alert("选择图片失败");
+    }
+  };
+
+  const handleSave = async () => {
+    if (!currentUserId) {
+      Alert.alert("错误", "未找到用户信息，请重新登录");
       return;
     }
-    const result = await ImagePicker.launchImageLibraryAsync({
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.8,
-    });
-    if (!result.canceled) {
-      setAvatar(result.assets[0].uri);
+
+    setIsLoading(true);
+    try {
+      // 上传头像
+      let imageUrl = avatar;
+      if (avatarFile) {
+        const uploadResult = await uploadFile(currentUserId, avatarFile);
+        if (uploadResult.success) imageUrl = uploadResult.data.link;
+      }
+
+      const payload: any = {
+        user_id: currentUserId,                          // 必填
+        username: formData.username?.trim() || formData.username || "",
+        name: formData.name?.trim() || formData.name || "",
+        image: imageUrl || avatar || "",
+        address: formData.address?.trim() || formData.address || "",
+        gender: [0, 1, 2].includes(formData.gender) ? formData.gender : 0,
+        dob: selectedDate ? formatDate(selectedDate) : formData.dob || "1900-01-01",
+      };
+
+      console.log("🔹 发送的数据:", payload);
+
+      const response = await editProfile(payload);
+
+      if (response.success) {
+        // 更新本地数据
+        const stored = await AsyncStorage.getItem("userData");
+        if (stored) {
+          const userData = JSON.parse(stored);
+          await AsyncStorage.setItem("userData", JSON.stringify({ ...userData, ...payload }));
+        }
+
+        Alert.alert("成功", "资料已更新 ✅");
+        navigation.goBack();
+      } else {
+        Alert.alert("保存失败", response.message || "请检查数据");
+      }
+    } catch (err: any) {
+      console.error("💥 保存资料失败:", err.response?.data || err.message);
+      Alert.alert("错误", "保存资料失败，请重试");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const getGenderText = (gender: number) => {
+    switch (gender) {
+      case 1: return "男";
+      case 2: return "女";
+      default: return "未选择";
     }
   };
 
@@ -108,22 +200,14 @@ export default function ProfileInfoScreen() {
 
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          activeOpacity={0.7}
-          onPress={() => navigation.goBack()}
-        >
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton} activeOpacity={0.7}>
           <Ionicons name="arrow-back" size={24} color="#2C2C2C" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>编辑个人信息</Text>
         <View style={styles.headerSpacer} />
       </View>
 
-      <ScrollView
-        style={styles.container}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
+      <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* Avatar */}
         <View style={styles.avatarSection}>
           <TouchableOpacity onPress={pickImage} activeOpacity={0.8}>
@@ -148,15 +232,22 @@ export default function ProfileInfoScreen() {
         {/* Fields */}
         <View style={styles.formSection}>
           <InputField
+            value={formData.username}
+            onChangeText={(text: string) => setFormData({ ...formData, username: text })}
+            placeholder="输入用户名"
+            label="用户名"
+            iconName="person-outline"
+          />
+          <InputField
             value={formData.name}
-            onChangeText={(text) => setFormData({ ...formData, name: text })}
+            onChangeText={(text: string) => setFormData({ ...formData, name: text })}
             placeholder="输入您的姓名"
-            label="姓名"
+            label="姓名 *"
             iconName="person-outline"
           />
           <InputField
             value={formData.email}
-            onChangeText={(text) => setFormData({ ...formData, email: text })}
+            onChangeText={(text: string) => setFormData({ ...formData, email: text })}
             placeholder="输入您的邮箱地址"
             label="邮箱"
             iconName="mail-outline"
@@ -164,30 +255,41 @@ export default function ProfileInfoScreen() {
           />
           <InputField
             value={formData.phone}
-            onChangeText={(text) => setFormData({ ...formData, phone: text })}
+            onChangeText={(text: string) => setFormData({ ...formData, phone: text })}
             placeholder="输入您的手机号码"
             label="手机号"
             iconName="call-outline"
             keyboardType="phone-pad"
           />
+
+          {/* 生日选择 */}
           <InputField
-            value={formData.birthday}
-            placeholder={
-              selectedDate ? formatDate(selectedDate) : "选择您的生日"
-            }
+            value={selectedDate ? formatDate(selectedDate) : ""}
+            placeholder="选择您的生日"
             label="生日"
             iconName="calendar-outline"
             showArrow
-            onPress={() => openBottomSheet("birthday")}
-            hasValue={!!selectedDate}
+            onPress={() => setShowDatePicker(true)}
           />
+
+          {/* 性别选择 */}
           <InputField
-            value={formData.location}
+            value={getGenderText(formData.gender)}
+            placeholder="选择性别"
+            label="性别"
+            iconName="male-female-outline"
+            showArrow
+            onPress={() => setGenderModalVisible(true)}
+          />
+
+          {/* 地区选择 */}
+          <InputField
+            value={formData.address}
             placeholder="选择您的地区"
             label="地区"
             iconName="location-outline"
             showArrow
-            onPress={() => openBottomSheet("location")}
+            onPress={() => setLocationModalVisible(true)}
           />
         </View>
 
@@ -203,62 +305,96 @@ export default function ProfileInfoScreen() {
             <Ionicons name="chevron-forward" size={18} color="#999" />
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.saveButton} activeOpacity={0.8}>
-            <Text style={styles.saveButtonText}>保存更改</Text>
+          <TouchableOpacity
+            style={[styles.saveButton, isLoading && styles.saveButtonDisabled]}
+            activeOpacity={0.8}
+            onPress={handleSave}
+            disabled={isLoading}
+          >
+            {isLoading ? <ActivityIndicator color="#3B4650" /> : <Text style={styles.saveButtonText}>保存更改</Text>}
           </TouchableOpacity>
         </View>
       </ScrollView>
 
-      {/* Bottom sheet modal remains same */}
+      {/* 日期选择器 */}
+      {showDatePicker && (
+        <DateTimePicker
+          value={selectedDate || new Date()}
+          mode="date"
+          display={Platform.OS === "ios" ? "spinner" : "default"}
+          maximumDate={new Date()}
+          onChange={(event, date) => {
+            setShowDatePicker(false);
+            if (date) setSelectedDate(date);
+          }}
+        />
+      )}
+
+      {/* 性别选择 Modal */}
+      <Modal visible={genderModalVisible} transparent animationType="slide">
+        <View style={styles.modalOverlay}>
+          <View style={styles.locationSheet}>
+            <Text style={styles.sheetTitle}>选择性别</Text>
+            {[{ label: "男", value: 1 }, { label: "女", value: 2 }, { label: "未选择", value: 0 }].map(item => (
+              <TouchableOpacity
+                key={item.value}
+                style={styles.locationItem}
+                onPress={() => {
+                  setFormData({ ...formData, gender: item.value });
+                  setGenderModalVisible(false);
+                }}
+              >
+                <Text style={styles.locationText}>{item.label}</Text>
+              </TouchableOpacity>
+            ))}
+            <TouchableOpacity style={styles.closeButton} onPress={() => setGenderModalVisible(false)}>
+              <Text style={styles.closeText}>关闭</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* 地区选择 Modal */}
+      <Modal visible={locationModalVisible} transparent animationType="slide">
+        <View style={styles.modalOverlay}>
+          <View style={styles.locationSheet}>
+            <Text style={styles.sheetTitle}>选择地区</Text>
+            <FlatList
+              data={locations}
+              keyExtractor={(item) => item}
+              renderItem={({ item }) => (
+                <TouchableOpacity style={styles.locationItem} onPress={() => { setFormData({ ...formData, address: item }); setLocationModalVisible(false); }}>
+                  <Text style={styles.locationText}>{item}</Text>
+                </TouchableOpacity>
+              )}
+            />
+            <TouchableOpacity style={styles.closeButton} onPress={() => setLocationModalVisible(false)}>
+              <Text style={styles.closeText}>关闭</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
 
-type InputFieldProps = {
-  value: string;
-  onChangeText?: (text: string) => void;
-  placeholder: string;
-  label: string;
-  iconName: string;
-  showArrow?: boolean;
-  onPress?: () => void;
-  keyboardType?: any;
-  hasValue?: boolean;
-};
-
-const InputField = ({
-  value,
-  onChangeText,
-  placeholder,
-  label,
-  iconName,
-  showArrow = false,
-  onPress,
-  keyboardType = "default",
-  hasValue = false,
-}: InputFieldProps) => (
+const InputField = ({ value, onChangeText, placeholder, label, iconName, showArrow = false, onPress, keyboardType = "default", editable = true }: any) => (
   <View style={styles.inputContainer}>
     <Text style={styles.inputLabel}>{label}</Text>
-    <TouchableOpacity
-      style={[styles.inputWrapper, onPress && styles.inputWrapperTouchable]}
-      activeOpacity={onPress ? 0.7 : 1}
-      onPress={onPress}
-    >
+    <TouchableOpacity style={[styles.inputWrapper, onPress && styles.inputWrapperTouchable]} activeOpacity={onPress ? 0.7 : 1} onPress={onPress} disabled={!onPress && !editable}>
       <View style={styles.inputIconContainer}>
         <Ionicons name={iconName as any} size={18} color="#D7A740" />
       </View>
       <TextInput
-        style={[styles.textInput, hasValue && styles.textInputHasValue]}
+        style={[styles.textInput, !editable && styles.disabledInput]}
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder}
-        placeholderTextColor={hasValue ? "#2C2C2C" : "#999"}
-        editable={!onPress}
+        placeholderTextColor="#999"
+        editable={!onPress && editable}
         keyboardType={keyboardType}
       />
-      {showArrow && (
-        <Ionicons name="chevron-forward" size={18} color="#999" />
-      )}
+      {showArrow && <Ionicons name="chevron-forward" size={18} color="#999" />}
     </TouchableOpacity>
   </View>
 );
@@ -272,45 +408,30 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 20,
-    paddingVertical: 15,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     backgroundColor: "#F9F5EC",
-    borderBottomWidth: 1,
-    borderBottomColor: "rgba(215, 167, 64, 0.1)",
   },
   backButton: {
-    width: 35,
-    height: 35,
-    borderRadius: 20,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    padding: 4,
   },
   headerTitle: {
     fontSize: 18,
     fontWeight: "600",
     color: "#2C2C2C",
-    flex: 1,
-    textAlign: "center",
   },
   headerSpacer: {
-    width: 34, // Same width as back button to center the title
+    width: 24,
   },
   container: {
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 30,
+    paddingBottom: 40,
   },
   avatarSection: {
     alignItems: "center",
-    paddingVertical: 30,
-    paddingHorizontal: 20,
+    paddingVertical: 24,
   },
   avatarWrapper: {
     position: "relative",
@@ -319,275 +440,153 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: "#fff",
-    alignItems: "center",
+    backgroundColor: "#E8E8E8",
     justifyContent: "center",
-    shadowColor: "#D7A740",
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 8,
+    alignItems: "center",
+    overflow: "hidden",
+  },
+  avatarImage: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 50,
   },
   placeholderAvatar: {
     width: "100%",
     height: "100%",
-    borderRadius: 50,
-    backgroundColor: "#FFF8E7",
-    alignItems: "center",
     justifyContent: "center",
-  },
-  avatarImage: {
-    width: 100,
-    height: 100,
+    alignItems: "center",
+    backgroundColor: "#E8E8E8",
     borderRadius: 50,
   },
   cameraIconWrapper: {
     position: "absolute",
-    bottom: 2,
-    right: 2,
+    bottom: 0,
+    right: 0,
     backgroundColor: "#D7A740",
-    padding: 8,
-    borderRadius: 20,
-    borderWidth: 3,
-    borderColor: "#fff",
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 2,
+    borderColor: "#F9F5EC",
   },
   avatarHint: {
     marginTop: 12,
-    fontSize: 13,
-    color: "#999",
-    fontWeight: "400",
+    fontSize: 14,
+    color: "#666",
   },
   formSection: {
     paddingHorizontal: 20,
-    marginBottom: 20,
   },
   inputContainer: {
     marginBottom: 20,
   },
   inputLabel: {
-    fontSize: 14,
-    fontWeight: "600",
+    fontSize: 16,
+    fontWeight: "500",
     color: "#2C2C2C",
     marginBottom: 8,
-    marginLeft: 4,
   },
   inputWrapper: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#fff",
-    borderRadius: 16,
+    borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 14,
-    shadowColor: "#000",
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 3,
     borderWidth: 1,
-    borderColor: "rgba(215, 167, 64, 0.1)",
+    borderColor: "#E8E8E8",
   },
   inputWrapperTouchable: {
-    backgroundColor: "#FEFCF7",
+    backgroundColor: "#f8f8f8",
   },
   inputIconContainer: {
     marginRight: 12,
   },
   textInput: {
     flex: 1,
-    fontSize: 15,
+    fontSize: 16,
     color: "#2C2C2C",
-    fontWeight: "400",
   },
-  textInputHasValue: {
-    fontWeight: "500",
-    color: "#2C2C2C",
+  disabledInput: {
+    color: "#999",
   },
   buttonSection: {
     paddingHorizontal: 20,
-    gap: 12,
+    marginTop: 20,
   },
   passwordButton: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#E1C16E",
-    borderRadius: 16,
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-    shadowColor: "#000",
-    shadowOpacity: 0.06,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 2,
+    backgroundColor: "#fff",
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 20,
     borderWidth: 1,
-    borderColor: "rgba(215, 167, 64, 0.1)",
+    borderColor: "#E8E8E8",
   },
   passwordButtonText: {
     flex: 1,
-    fontSize: 15,
-    color: "#3B4650",
-    alignItems: "center",
-    textAlign: "center",
-    fontWeight: "500",
+    marginLeft: 12,
+    fontSize: 16,
+    color: "#666",
   },
   saveButton: {
-    backgroundColor: "#E1C16E",
-    borderRadius: 16,
-    paddingVertical: 16,
+    backgroundColor: "#D7A740",
+    padding: 16,
+    borderRadius: 12,
     alignItems: "center",
-    shadowColor: "#D7A740",
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 6,
+  },
+  saveButtonDisabled: {
+    opacity: 0.6,
   },
   saveButtonText: {
-    color: "#3B4650",
     fontSize: 16,
     fontWeight: "600",
+    color: "#3B4650",
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.4)",
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "flex-end",
   },
-  bottomSheet: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: 0,
+  locationSheet: {
     backgroundColor: "#fff",
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    paddingHorizontal: 20,
-    paddingBottom: 30,
-    maxHeight: "70%",
-  },
-  sheetHandle: {
-    width: 40,
-    height: 4,
-    backgroundColor: "#E0E0E0",
-    borderRadius: 2,
-    alignSelf: "center",
-    marginTop: 12,
-    marginBottom: 20,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20,
+    maxHeight: "80%",
   },
   sheetTitle: {
     fontSize: 18,
     fontWeight: "600",
-    color: "#2C2C2C",
     textAlign: "center",
     marginBottom: 20,
   },
-  sheetContent: {
-    marginBottom: 20,
-  },
-  datePickerContainer: {
-    backgroundColor: "#F9F5EC",
-    borderRadius: 16,
+  locationItem: {
     padding: 16,
-    marginBottom: 16,
-  },
-  datePickerRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 16,
-  },
-  pickerColumn: {
-    flex: 1,
-    marginHorizontal: 4,
-  },
-  pickerLabel: {
-    textAlign: "center",
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#2C2C2C",
-    marginBottom: 8,
-  },
-  picker: {
-    height: 120,
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "rgba(215, 167, 64, 0.2)",
-  },
-  pickerItem: {
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    alignItems: "center",
-  },
-  pickerItemSelected: {
-    backgroundColor: "#D7A740",
-  },
-  pickerItemText: {
-    fontSize: 15,
-    color: "#2C2C2C",
-    fontWeight: "400",
-  },
-  pickerItemTextSelected: {
-    color: "#fff",
-    fontWeight: "600",
-  },
-  selectedDateDisplay: {
-    backgroundColor: "#fff",
-    padding: 12,
-    borderRadius: 12,
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "rgba(215, 167, 64, 0.2)",
-  },
-  selectedDateText: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#D7A740",
-  },
-  datePickerButtons: {
-    flexDirection: "row",
-    gap: 12,
-  },
-  datePickerButton: {
-    flex: 1,
-    backgroundColor: "#D7A740",
-    borderRadius: 12,
-    paddingVertical: 14,
-    alignItems: "center",
-  },
-  datePickerButtonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  datePickerPlaceholder: {
-    alignItems: "center",
-    paddingVertical: 40,
-  },
-  placeholderText: {
-    marginTop: 12,
-    fontSize: 14,
-    color: "#999",
-  },
-  sheetOption: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 16,
-    paddingHorizontal: 4,
     borderBottomWidth: 1,
-    borderBottomColor: "#F5F5F5",
+    borderBottomColor: "#f0f0f0",
   },
-  sheetOptionText: {
-    flex: 1,
-    marginLeft: 12,
+  locationText: {
     fontSize: 16,
     color: "#2C2C2C",
-    fontWeight: "400",
   },
-  sheetCloseButton: {
-    backgroundColor: "#F5F5F5",
-    borderRadius: 12,
-    paddingVertical: 14,
+  closeButton: {
+    padding: 16,
     alignItems: "center",
+    marginTop: 10,
+    backgroundColor: "#f0f0f0",
+    borderRadius: 8,
   },
-  sheetCloseText: {
+  closeText: {
     fontSize: 16,
     color: "#666",
     fontWeight: "500",
   },
 });
+
+function updateLocalUserData(arg0: any) {
+  throw new Error("Function not implemented.");
+}

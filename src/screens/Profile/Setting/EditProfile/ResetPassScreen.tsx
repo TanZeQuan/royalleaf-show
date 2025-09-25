@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -6,34 +6,135 @@ import {
   TouchableOpacity,
   StyleSheet,
   StatusBar,
+  ActivityIndicator,
+  Alert,
 } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useNavigation } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { profileResetPassword, viewProfile } from "../../../../services/UserService/userApi";
+
+// 🔹 可复用密码输入框组件
+const PasswordInput = ({
+  value,
+  onChangeText,
+  placeholder,
+}: {
+  value: string;
+  onChangeText: (text: string) => void;
+  placeholder: string;
+}) => {
+  const [showPassword, setShowPassword] = useState(false);
+
+  return (
+    <View style={styles.inputContainer}>
+      <View style={styles.inputWrapper}>
+        <View style={styles.lockIconContainer}>
+          <Ionicons name="lock-closed-outline" size={20} color="#999" />
+        </View>
+        <TextInput
+          style={styles.textInput}
+          placeholder={placeholder}
+          placeholderTextColor="#999"
+          secureTextEntry={!showPassword}
+          value={value}
+          onChangeText={onChangeText}
+          autoCapitalize="none"
+        />
+        <TouchableOpacity
+          style={styles.eyeIcon}
+          onPress={() => setShowPassword(!showPassword)}
+          activeOpacity={0.7}
+        >
+          <Ionicons
+            name={showPassword ? "eye-outline" : "eye-off-outline"}
+            size={20}
+            color="#999"
+          />
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+};
 
 export default function ResetPasswordScreen() {
   const navigation = useNavigation();
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
-  const [showOldPassword, setShowOldPassword] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
 
-  const handleReset = () => {
-    if (!oldPassword.trim()) {
-      alert("请输入旧密码");
-      return;
-    }
-    if (!newPassword.trim()) {
-      alert("请输入新密码");
+  // 🔹 获取登录用户信息
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const storedUserId = await AsyncStorage.getItem("user_id");
+        if (!storedUserId) {
+          Alert.alert("请先登录");
+          navigation.goBack();
+          return;
+        }
+
+        // 可选：用 viewProfile 验证用户是否存在
+        const res = await viewProfile(storedUserId);
+        if (!res.success) {
+          Alert.alert(res.message || "用户信息获取失败");
+          navigation.goBack();
+          return;
+        }
+
+        setUserId(storedUserId);
+      } catch (err) {
+        console.error("Error getting user info:", err);
+        Alert.alert("获取用户信息失败，请重试");
+        navigation.goBack();
+      }
+    };
+    fetchUser();
+  }, []);
+
+  const handleReset = async () => {
+    if (!oldPassword.trim() || !newPassword.trim()) {
+      Alert.alert("请填写完整的密码");
       return;
     }
     if (newPassword.length < 6) {
-      alert("新密码至少需要6位");
+      Alert.alert("新密码至少需要6位");
       return;
     }
-    alert("密码修改成功 ✅");
-    navigation.goBack();
+
+    try {
+      setLoading(true); // 开始加载
+      const storedUser = await AsyncStorage.getItem("userData");
+      if (!storedUser) return;
+
+      const parsedUser = JSON.parse(storedUser);
+      const user_id = parsedUser.user_id;
+
+      const res = await profileResetPassword({
+        user_id,
+        current_passcode: oldPassword.trim(),
+        new_passcode: newPassword.trim(),
+      });
+
+      if (res.success) {
+        Alert.alert("成功", "密码修改成功 ✅", [
+          {
+            text: "确定",
+            onPress: () => navigation.goBack(), // ✅ 成功后返回上一页
+          },
+        ]);
+      } else {
+        Alert.alert("失败", res.message);
+      }
+    } catch (err: any) {
+      Alert.alert("错误", err.message || "修改失败");
+    } finally {
+      setLoading(false); // 结束加载
+    }
   };
+
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -52,77 +153,37 @@ export default function ResetPasswordScreen() {
           <View style={styles.headerSpacer} />
         </View>
 
-        {/* Password Input Fields */}
+        {/* 输入框 */}
         <View style={styles.inputSection}>
-          {/* Old Password Field */}
-          <View style={styles.inputContainer}>
-            <View style={styles.inputWrapper}>
-              <View style={styles.lockIconContainer}>
-                <Ionicons name="lock-closed-outline" size={20} color="#999" />
-              </View>
-              <TextInput
-                style={styles.textInput}
-                placeholder="旧密码"
-                placeholderTextColor="#999"
-                secureTextEntry={!showOldPassword}
-                value={oldPassword}
-                onChangeText={setOldPassword}
-                autoCapitalize="none"
-              />
-              <TouchableOpacity
-                style={styles.eyeIcon}
-                onPress={() => setShowOldPassword(!showOldPassword)}
-                activeOpacity={0.7}
-              >
-                <Ionicons
-                  name={showOldPassword ? "eye-outline" : "eye-off-outline"}
-                  size={20}
-                  color="#999"
-                />
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          {/* New Password Field */}
-          <View style={styles.inputContainer}>
-            <View style={styles.inputWrapper}>
-              <View style={styles.lockIconContainer}>
-                <Ionicons name="lock-closed-outline" size={20} color="#999" />
-              </View>
-              <TextInput
-                style={styles.textInput}
-                placeholder="新密码"
-                placeholderTextColor="#999"
-                secureTextEntry={!showNewPassword}
-                value={newPassword}
-                onChangeText={setNewPassword}
-                autoCapitalize="none"
-              />
-              <TouchableOpacity
-                style={styles.eyeIcon}
-                onPress={() => setShowNewPassword(!showNewPassword)}
-                activeOpacity={0.7}
-              >
-                <Ionicons
-                  name={showNewPassword ? "eye-outline" : "eye-off-outline"}
-                  size={20}
-                  color="#999"
-                />
-              </TouchableOpacity>
-            </View>
-          </View>
+          <PasswordInput
+            value={oldPassword}
+            onChangeText={setOldPassword}
+            placeholder="旧密码"
+          />
+          <PasswordInput
+            value={newPassword}
+            onChangeText={setNewPassword}
+            placeholder="新密码"
+          />
         </View>
 
-        {/* Reset Button */}
-        <TouchableOpacity 
-          style={styles.resetButton} 
+        {/* 重置按钮 */}
+        <TouchableOpacity
+          style={styles.resetButton}
           onPress={handleReset}
           activeOpacity={0.8}
+          disabled={loading}
         >
-          <Text style={styles.resetButtonText}>更改密码</Text>
-          <View style={styles.lockButtonIcon}>
-            <Ionicons name="lock-closed" size={16} color="#fff" />
-          </View>
+          {loading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <>
+              <Text style={styles.resetButtonText}>更改密码</Text>
+              <View style={styles.lockButtonIcon}>
+                <Ionicons name="lock-closed" size={16} color="#fff" />
+              </View>
+            </>
+          )}
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -130,100 +191,34 @@ export default function ResetPasswordScreen() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: "#F9F5EC",
-  },
-  container: {
-    flex: 1,
-    paddingHorizontal: 20,
-    paddingTop: 10,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingVertical: 15,
-    marginBottom: 40,
-  },
-  backButton: {
-     width: 35,
-    height: 35,
-    borderRadius: 20,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#2C2C2C",
-    flex: 1,
-    textAlign: "center",
-  },
-  headerSpacer: {
-    width: 34, // Same width as back button to center the title
-  },
-  inputSection: {
-    marginBottom: 30,
-  },
-  inputContainer: {
-    marginBottom: 16,
-  },
+  safeArea: { flex: 1, backgroundColor: "#F9F5EC" },
+  container: { flex: 1, padding: 20 },
+  header: { flexDirection: "row", alignItems: "center", marginBottom: 30 },
+  backButton: { padding: 5 },
+  headerTitle: { flex: 1, textAlign: "center", fontSize: 18, fontWeight: "600" },
+  headerSpacer: { width: 24 },
+  inputSection: { marginBottom: 30 },
+  inputContainer: { marginBottom: 15 },
   inputWrapper: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#fff",
-    borderRadius: 25,
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    shadowColor: "#000",
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 3,
     borderWidth: 1,
-    borderColor: "rgba(0, 0, 0, 0.05)",
+    borderColor: "#ccc",
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    backgroundColor: "#fff",
   },
-  lockIconContainer: {
-    marginRight: 12,
-  },
-  textInput: {
-    flex: 1,
-    fontSize: 16,
-    color: "#2C2C2C",
-    fontWeight: "400",
-  },
-  eyeIcon: {
-    padding: 4,
-    marginLeft: 8,
-  },
+  lockIconContainer: { paddingRight: 8 },
+  textInput: { flex: 1, height: 44, color: "#333" },
+  eyeIcon: { paddingLeft: 8 },
   resetButton: {
-    backgroundColor: "#D7A740",
-    borderRadius: 25,
-    paddingVertical: 16,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#D7A740",
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 6,
-    marginTop: 10,
+    backgroundColor: "#4CAF50",
+    paddingVertical: 12,
+    borderRadius: 8,
   },
-  resetButtonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
-    marginRight: 8,
-  },
-  lockButtonIcon: {
-    marginLeft: 4,
-  },
+  resetButtonText: { color: "#fff", fontWeight: "600", fontSize: 16 },
+  lockButtonIcon: { marginLeft: 8 },
 });

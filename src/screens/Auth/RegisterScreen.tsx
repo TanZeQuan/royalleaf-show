@@ -1,3 +1,4 @@
+
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import React, { useCallback, useState } from "react";
@@ -19,7 +20,7 @@ import {
 } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { registerUser, editProfile } from "../../services/UserService/userApi";
+import { registerUser, editProfile, uploadFile } from "../../services/UserService/userApi";
 import { formatDateForApi } from "../../utils/dateUtils";
 
 const { width, height } = Dimensions.get("window");
@@ -109,8 +110,9 @@ export default function RegisterScreen({ navigation, onRegister }: RegisterScree
     agreeToTerms: false,
     showDatePicker: false,
     showLocationModal: false,
-    selectedDate: new Date(2000, 0, 1), // Default to Jan 1, 2000
+    selectedDate: new Date(2000, 0, 1),
     avatarUri: null as string | null,
+    errors: {} as Record<string, string>, // Track field-specific errors
   });
 
   // Validation state
@@ -119,9 +121,39 @@ export default function RegisterScreen({ navigation, onRegister }: RegisterScree
     emailValid: true,
   });
 
+  // Helper function to generate unique values for testing
+  const generateUniqueValue = (base: string, type: 'username' | 'email' | 'phone') => {
+    const timestamp = Date.now();
+    const random = Math.floor(Math.random() * 1000);
+
+    switch (type) {
+      case 'username':
+        return `${base}${timestamp}${random}`.toLowerCase().replace(/[^a-z0-9]/g, '');
+      case 'email':
+        return `${base.split('@')[0]}${timestamp}${random}@${base.split('@')[1] || 'test.com'}`;
+      case 'phone':
+        // Keep the +60 prefix and randomize the last few digits
+        const baseDigits = base.replace(/[^\d]/g, '');
+        const prefix = baseDigits.slice(0, -4);
+        const suffix = String(timestamp).slice(-4);
+        return `+60${prefix}${suffix}`;
+      default:
+        return base;
+    }
+  };
+
+  // Clear field-specific error when user starts typing
+  const clearFieldError = (field: string) => {
+    setUiState(prev => ({
+      ...prev,
+      errors: { ...prev.errors, [field]: '' }
+    }));
+  };
+
   // Handlers
   const updateFormData = useCallback((field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    clearFieldError(field);
   }, []);
 
   const updateUiState = useCallback((field: string, value: any) => {
@@ -133,9 +165,9 @@ export default function RegisterScreen({ navigation, onRegister }: RegisterScree
     let digitsOnly = text.replace(/\D/g, "");
 
     if (text.startsWith('+60')) {
-      digitsOnly = digitsOnly.slice(2); // 去掉 +60
+      digitsOnly = digitsOnly.slice(2);
     } else if (text.startsWith('0')) {
-      digitsOnly = digitsOnly.slice(1); // 去掉前导 0
+      digitsOnly = digitsOnly.slice(1);
     }
 
     const formattedPhone = `+60${digitsOnly.slice(0, 10)}`;
@@ -146,7 +178,6 @@ export default function RegisterScreen({ navigation, onRegister }: RegisterScree
   const formatPhoneForDisplay = useCallback((value: string) => {
     if (!value) return "";
 
-    // If it's already in +60 format
     if (value.startsWith('+60')) {
       const digits = value.slice(3);
       if (digits.length <= 3) return `+60 ${digits}`;
@@ -154,7 +185,6 @@ export default function RegisterScreen({ navigation, onRegister }: RegisterScree
       return `+60 ${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
     }
 
-    // Local number formatting
     const len = value.length;
     if (len <= 3) return value;
     if (len <= 6) return `${value.slice(0, 3)}-${value.slice(3)}`;
@@ -212,7 +242,6 @@ export default function RegisterScreen({ navigation, onRegister }: RegisterScree
 
     if (selectedDate) {
       updateUiState("selectedDate", selectedDate);
-      // Format date as DD/MM/YYYY for display
       const day = selectedDate.getDate().toString().padStart(2, '0');
       const month = (selectedDate.getMonth() + 1).toString().padStart(2, '0');
       const year = selectedDate.getFullYear().toString();
@@ -220,7 +249,6 @@ export default function RegisterScreen({ navigation, onRegister }: RegisterScree
     }
   }, [updateFormData, updateUiState]);
 
-  // Show date picker
   const showDatePicker = useCallback(() => {
     updateUiState("showDatePicker", true);
   }, [updateUiState]);
@@ -256,43 +284,45 @@ export default function RegisterScreen({ navigation, onRegister }: RegisterScree
     const { username, name, phone, email, password, confirmPassword, birthday } = formData;
     const { agreeToTerms } = uiState;
     const { passwordStrength, emailValid } = validation;
+    const errors: Record<string, string> = {};
 
     if (!username.trim()) {
-      Alert.alert("Error", "Username is required.");
-      return false;
+      errors.username = "Username is required";
     }
     if (!name.trim()) {
-      Alert.alert("Error", "Name is required.");
-      return false;
+      errors.name = "Name is required";
     }
     if (!phone || phone.length < 8) {
-      Alert.alert("Error", "Please enter a valid phone number.");
-      return false;
+      errors.phone = "Please enter a valid phone number";
     }
     if (!email || !emailValid) {
-      Alert.alert("Error", "Please enter a valid email address.");
-      return false;
+      errors.email = "Please enter a valid email address";
     }
     if (!password || passwordStrength < 50) {
-      Alert.alert("Error", "Please create a stronger password.");
-      return false;
+      errors.password = "Please create a stronger password";
     }
     if (password !== confirmPassword) {
-      Alert.alert("Error", "Passwords do not match.");
-      return false;
+      errors.confirmPassword = "Passwords do not match";
     }
     if (!birthday) {
-      Alert.alert("Error", "Please select your birthday.");
-      return false;
+      errors.birthday = "Please select your birthday";
     }
     if (!agreeToTerms) {
-      Alert.alert("Error", "Please agree to terms and conditions.");
+      errors.terms = "Please agree to terms and conditions";
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setUiState(prev => ({ ...prev, errors }));
+      // Show the first error
+      const firstError = Object.values(errors)[0];
+      Alert.alert("Error", firstError);
       return false;
     }
     return true;
   }, [formData, uiState, validation]);
+
   function formatPhoneForApi(input: string) {
-    let phone = input.trim().replace(/[^\d+]/g, ""); // 去掉非数字非+字符
+    let phone = input.trim().replace(/[^\d+]/g, "");
 
     if (phone.startsWith("+60")) {
       const digits = phone.slice(3).slice(0, 10);
@@ -306,68 +336,130 @@ export default function RegisterScreen({ navigation, onRegister }: RegisterScree
     }
   }
 
-  const handleRegister = useCallback(async () => {
-    if (!validateForm()) return;
+  // Show confirmation dialog for testing unique values
+  const showRetryWithUniqueValues = (originalError: string) => {
+    Alert.alert(
+      "Registration Failed",
+      `${originalError}\n\nWould you like to try with automatically generated unique values for testing?`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Try with unique values",
+          onPress: () => handleRegisterWithUniqueValues()
+        }
+      ]
+    );
+  };
 
-    const { username, name, phone, email, password, location, referralCode } = formData;
+  const handleRegisterWithUniqueValues = async () => {
+    // Generate unique values
+    const uniqueUsername = generateUniqueValue(formData.username || 'user', 'username');
+    const uniqueEmail = generateUniqueValue(formData.email || 'test@example.com', 'email');
+    const uniquePhone = generateUniqueValue(formData.phone || '+60123456789', 'phone');
+
+    // Update form data
+    setFormData(prev => ({
+      ...prev,
+      username: uniqueUsername,
+      email: uniqueEmail,
+      phone: uniquePhone
+    }));
+
+    // Show what we're using
+    Alert.alert(
+      "Using Unique Values",
+      `Username: ${uniqueUsername}\nEmail: ${uniqueEmail}\nPhone: ${uniquePhone}\n\nProceeding with registration...`,
+      [{ text: "OK", onPress: () => performRegistration(uniqueUsername, uniqueEmail, uniquePhone) }]
+    );
+  };
+
+  const performRegistration = async (username?: string, email?: string, phone?: string) => {
+    const { name, password, location, referralCode } = formData;
     const { selectedDate, avatarUri } = uiState;
 
     updateUiState("loading", true);
 
     try {
       const dob = formatDateForApi(selectedDate, formData.birthday);
-      const formattedPhone = formatPhoneForApi(phone);
+      const formattedPhone = formatPhoneForApi(phone || formData.phone);
 
-      console.log("➡️ Phone sent to backend:", formattedPhone);
-
-      // 1️⃣ 调用注册 API
-      const response = await registerUser({
-        username: username.trim(),
+      const registrationData = {
+        username: (username || formData.username).trim(),
         passcode: password,
         name: name.trim(),
         phone: formattedPhone,
-        email,
+        email: email || formData.email,
         dob,
         address: location,
         referral: referralCode.trim(),
-      });
+      };
 
-      if (response.success) {
-        let userId: string | null = null;
+      console.log("Registration data:", registrationData);
 
-        Alert.alert("✅ 成功", response.message || "注册成功！");
+      const response = await registerUser(registrationData);
 
-        // 2️⃣ 如果有头像，额外上传
+      if (response.success && response.data?.user_id) {
+        const userId = response.data.user_id;
+        Alert.alert("✅ Success", response.message || "Registration successful!");
+        
         if (avatarUri) {
+          const fileInfo = { uri: avatarUri, type: "image/jpeg", name: "avatar.jpg" };
           try {
-            const formData = new FormData();
-            formData.append("user_id", userId ?? "");
-            formData.append("image", {
-              uri: avatarUri,
-              name: "avatar.jpg",
-              type: "image/jpeg",
-            } as any);
-
-            const editRes = await editProfile(formData as any);
-            console.log("头像上传结果:", editRes);
-          } catch (uploadErr) {
-            console.warn("头像上传失败:", uploadErr);
+            const uploadRes = await uploadFile(userId, fileInfo);
+            console.log("Avatar upload result:", uploadRes);
+          } catch (err) {
+            console.warn("Avatar upload failed:", err);
           }
         }
 
-        // 3️⃣ 跳转登录
         navigation.navigate("Login");
       } else {
-        Alert.alert("❌ 注册失败", response.message || "Registration failed.");
+        Alert.alert("❌ Registration Failed", response.message || "Registration failed.");
       }
     } catch (error: any) {
       console.error("Register Error:", error);
-      Alert.alert("❌ 错误", error.response?.data?.message || "Unable to register. Please try again.");
+
+      const errorMessage = error.response?.data?.message || error.message || "Unable to register. Please try again.";
+
+      // Check if it's a "already exists" error and offer unique value retry
+      if (errorMessage.toLowerCase().includes('already') ||
+        errorMessage.toLowerCase().includes('exists') ||
+        errorMessage.toLowerCase().includes('taken') ||
+        errorMessage.toLowerCase().includes('duplicate')) {
+        showRetryWithUniqueValues(errorMessage);
+      } else {
+        Alert.alert("❌ Error", errorMessage);
+      }
     } finally {
       updateUiState("loading", false);
     }
-  }, [formData, uiState, validateForm, updateUiState, navigation]);
+  };
 
+  const handleRegister = useCallback(async () => {
+    if (!validateForm()) return;
+    await performRegistration();
+  }, [formData, uiState, validateForm]);
+
+  // Quick fill button for testing
+  const handleQuickFill = () => {
+    const timestamp = Date.now();
+    setFormData({
+      name: "Test User",
+      username: `testuser${timestamp}`,
+      phone: `+601234${String(timestamp).slice(-5)}`,
+      email: `test${timestamp}@example.com`,
+      password: "TestPass123!",
+      confirmPassword: "TestPass123!",
+      birthday: "01/01/1990",
+      location: "Kuala Lumpur",
+      referralCode: "",
+    });
+    setUiState(prev => ({
+      ...prev,
+      agreeToTerms: true,
+      selectedDate: new Date(1990, 0, 1)
+    }));
+  };
 
   // Render components
   const renderHeader = () => (
@@ -380,6 +472,15 @@ export default function RegisterScreen({ navigation, onRegister }: RegisterScree
         <Ionicons name="arrow-back" size={normalize(SIZES.iconSize)} color={COLORS.text} />
       </TouchableOpacity>
       <Text style={styles.headerTitle}>创建账号</Text>
+      {__DEV__ && (
+        <TouchableOpacity
+          style={styles.quickFillButton}
+          onPress={handleQuickFill}
+          activeOpacity={0.6}
+        >
+          <Text style={styles.quickFillText}>Quick Fill</Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 
@@ -412,6 +513,7 @@ export default function RegisterScreen({ navigation, onRegister }: RegisterScree
     placeholder: string,
     value: string,
     onChangeText: (text: string) => void,
+    fieldKey: string,
     options: {
       secureTextEntry?: boolean;
       keyboardType?: any;
@@ -425,7 +527,11 @@ export default function RegisterScreen({ navigation, onRegister }: RegisterScree
     } = {}
   ) => (
     <View style={styles.inputGroup}>
-      <View style={[styles.inputContainer, options.isValid === false && styles.inputError]}>
+      <View style={[
+        styles.inputContainer,
+        options.isValid === false && styles.inputError,
+        uiState.errors[fieldKey] && styles.inputError
+      ]}>
         {options.iconSource ? (
           <Image
             source={options.iconSource}
@@ -465,6 +571,9 @@ export default function RegisterScreen({ navigation, onRegister }: RegisterScree
           </TouchableOpacity>
         )}
       </View>
+      {uiState.errors[fieldKey] && (
+        <Text style={styles.errorText}>{uiState.errors[fieldKey]}</Text>
+      )}
       {options.validation}
     </View>
   );
@@ -496,7 +605,10 @@ export default function RegisterScreen({ navigation, onRegister }: RegisterScree
   const renderBirthdayField = () => (
     <View style={styles.inputGroup}>
       <TouchableOpacity
-        style={styles.inputContainer}
+        style={[
+          styles.inputContainer,
+          uiState.errors.birthday && styles.inputError
+        ]}
         onPress={showDatePicker}
         activeOpacity={0.7}
       >
@@ -511,14 +623,18 @@ export default function RegisterScreen({ navigation, onRegister }: RegisterScree
         <Ionicons name="calendar-outline" size={normalize(SIZES.iconSize)} color={COLORS.textLight} />
       </TouchableOpacity>
 
+      {uiState.errors.birthday && (
+        <Text style={styles.errorText}>{uiState.errors.birthday}</Text>
+      )}
+
       {uiState.showDatePicker && (
         <DateTimePicker
           value={uiState.selectedDate}
           mode="date"
           display={Platform.OS === 'ios' ? 'spinner' : 'default'}
           onChange={handleDateChange}
-          maximumDate={new Date()} // Can't select future dates
-          minimumDate={new Date(1900, 0, 1)} // Reasonable minimum date
+          maximumDate={new Date()}
+          minimumDate={new Date(1900, 0, 1)}
           style={Platform.OS === 'ios' ? styles.datePickerIOS : undefined}
         />
       )}
@@ -605,7 +721,8 @@ export default function RegisterScreen({ navigation, onRegister }: RegisterScree
                 "输入您的用户名",
                 formData.username,
                 (text) => updateFormData("username", text),
-                { autoCapitalize: "words" }
+                "username",
+                { autoCapitalize: "none" }
               )}
 
               {/* Name */}
@@ -614,6 +731,7 @@ export default function RegisterScreen({ navigation, onRegister }: RegisterScree
                 "输入您的姓名",
                 formData.name,
                 (text) => updateFormData("name", text),
+                "name",
                 { autoCapitalize: "words" }
               )}
 
@@ -623,6 +741,7 @@ export default function RegisterScreen({ navigation, onRegister }: RegisterScree
                 "输入您的电话号码 (例如: +60123456789 或 0123456789)",
                 formatPhoneForDisplay(formData.phone),
                 handlePhoneChange,
+                "phone",
                 { keyboardType: "phone-pad" }
               )}
 
@@ -632,6 +751,7 @@ export default function RegisterScreen({ navigation, onRegister }: RegisterScree
                 "输入您的电子邮件",
                 formData.email,
                 handleEmailChange,
+                "email",
                 {
                   keyboardType: "email-address",
                   autoCapitalize: "none",
@@ -648,6 +768,7 @@ export default function RegisterScreen({ navigation, onRegister }: RegisterScree
                 "创建密码",
                 formData.password,
                 handlePasswordChange,
+                "password",
                 {
                   secureTextEntry: !uiState.showPassword,
                   showToggle: true,
@@ -662,6 +783,7 @@ export default function RegisterScreen({ navigation, onRegister }: RegisterScree
                 "确认密码",
                 formData.confirmPassword,
                 (text) => updateFormData("confirmPassword", text),
+                "confirmPassword",
                 {
                   secureTextEntry: !uiState.showConfirmPassword,
                   showToggle: true,
@@ -675,7 +797,10 @@ export default function RegisterScreen({ navigation, onRegister }: RegisterScree
               {/* Location */}
               <View style={styles.inputGroup}>
                 <TouchableOpacity
-                  style={styles.inputContainer}
+                  style={[
+                    styles.inputContainer,
+                    uiState.errors.location && styles.inputError
+                  ]}
                   onPress={() => updateUiState("showLocationModal", true)}
                   activeOpacity={0.7}
                 >
@@ -690,6 +815,9 @@ export default function RegisterScreen({ navigation, onRegister }: RegisterScree
                   </Text>
                   <Ionicons name="chevron-down" size={normalize(SIZES.iconSize)} color={COLORS.textLight} />
                 </TouchableOpacity>
+                {uiState.errors.location && (
+                  <Text style={styles.errorText}>{uiState.errors.location}</Text>
+                )}
               </View>
 
               {/* Referral Code */}
@@ -698,6 +826,7 @@ export default function RegisterScreen({ navigation, onRegister }: RegisterScree
                 "推荐码 (如有)",
                 formData.referralCode,
                 (text) => updateFormData("referralCode", text),
+                "referralCode",
                 {
                   autoCapitalize: "characters",
                   iconSource: require("assets/icons/reg-referral.png")
@@ -707,7 +836,11 @@ export default function RegisterScreen({ navigation, onRegister }: RegisterScree
               {/* Terms */}
               <View style={styles.termsContainer}>
                 <TouchableOpacity
-                  style={[styles.checkbox, uiState.agreeToTerms && styles.checkboxChecked]}
+                  style={[
+                    styles.checkbox,
+                    uiState.agreeToTerms && styles.checkboxChecked,
+                    uiState.errors.terms && styles.checkboxError
+                  ]}
                   onPress={() => updateUiState("agreeToTerms", !uiState.agreeToTerms)}
                   activeOpacity={0.8}
                 >
@@ -723,6 +856,9 @@ export default function RegisterScreen({ navigation, onRegister }: RegisterScree
                   </Text>
                 </View>
               </View>
+              {uiState.errors.terms && (
+                <Text style={styles.errorText}>{uiState.errors.terms}</Text>
+              )}
 
               {/* Register Button */}
               <TouchableOpacity
@@ -852,6 +988,18 @@ const styles = StyleSheet.create({
     flex: 1,
     textAlign: "center",
     marginRight: normalize(45),
+  },
+
+  quickFillButton: {
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  quickFillText: {
+    color: COLORS.white,
+    fontSize: normalize(12),
+    fontWeight: '600',
   },
   backgroundPattern: {
     position: "absolute",
@@ -1021,6 +1169,9 @@ const styles = StyleSheet.create({
   checkboxChecked: {
     backgroundColor: COLORS.primaryDark,
     borderColor: COLORS.primaryDark,
+  },
+  checkboxError: {
+    borderColor: COLORS.error,
   },
   termsTextContainer: {
     flex: 1,
