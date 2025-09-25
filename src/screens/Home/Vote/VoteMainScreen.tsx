@@ -25,7 +25,7 @@ import { colors } from "styles";
 import {
   Category,
   voteService,
-} from "../../../services/VoteService/voteMainApi"; // 根据实际路径调整
+} from "../../../services/VoteService/voteMainApi";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 
