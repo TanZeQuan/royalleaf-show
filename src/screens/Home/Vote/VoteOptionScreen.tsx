@@ -18,7 +18,11 @@ import {
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
 import { colors } from "styles";
-import { VoteActivity, voteActivityService, VoteProduct } from "../../../services/VoteService/voteOptionsApi"; // 调整路径根据您的项目结构
+import {
+  VoteActivity,
+  voteActivityService,
+  VoteProduct,
+} from "../../../services/VoteService/voteOptionsApi";
 
 const { width } = Dimensions.get("window");
 const imageSize = (width - 70) / 2; // 2 images per row with margins
@@ -34,7 +38,6 @@ interface FilterOptions {
   sortBy: "votes" | "name" | "latest" | "likes";
   order: "asc" | "desc";
 }
-
 
 // 简单的 FilterPopout 组件（内联定义）
 const FilterPopout: React.FC<{
@@ -280,11 +283,21 @@ const VoteImagesScreen = () => {
 
   const filteredProducts = getFilteredProducts();
 
+  // 在 VoteOptionScreen.tsx 中更新 handleImagePress 函数
   const handleImagePress = (product: VoteProduct) => {
-    navigation.navigate("VoteDetail", {
+    console.log("点击产品，准备跳转到详情页面:", product);
+    console.log("传递的参数:", {
       productId: product.subId,
-      product,
+      product: product,
       activity: selectedActivity,
+      category: category,
+    });
+
+    navigation.navigate("VoteDetail", {
+      productId: product.subId, // 传递产品ID用于获取详情
+      product: product, // 传递基础产品信息（可选，用于快速显示）
+      activity: selectedActivity,
+      category: category,
     });
   };
 
@@ -476,7 +489,6 @@ const VoteImagesScreen = () => {
     </SafeAreaView>
   );
 };
-
 
 // ... 样式部分保持不变 ...
 const styles = StyleSheet.create({
