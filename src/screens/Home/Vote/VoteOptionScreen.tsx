@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Dimensions,
   Image,
@@ -18,6 +18,11 @@ import {
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
 import { colors } from "styles";
+import {
+  VoteActivity,
+  voteActivityService,
+  VoteProduct,
+} from "../../../services/VoteService/voteOptionsApi";
 
 const { width } = Dimensions.get("window");
 const imageSize = (width - 70) / 2; // 2 images per row with margins
@@ -26,6 +31,7 @@ type VoteImagesNavigationProp = NativeStackNavigationProp<any>;
 
 interface RouteParams {
   category: string;
+  categoryName: string;
 }
 
 interface FilterOptions {
@@ -152,239 +158,121 @@ const VoteImagesScreen = () => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<VoteImagesNavigationProp>();
   const route = useRoute();
-  const { category } = route.params as RouteParams;
+  const { category, categoryName } = route.params as RouteParams;
+
   const [showFilter, setShowFilter] = useState(false);
   const [currentFilter, setCurrentFilter] = useState<FilterOptions>({
     sortBy: "votes",
     order: "desc",
   });
 
-  // Mock data for different categories
-  const getImagesForCategory = (categoryId: string) => {
-    const mockImages = {
-      drinks: [
-        {
-          id: 1,
-          image: require("assets/images/mock.jpg"),
-          name: "夏日清凉特饮",
-          votes: 100,
-          likes: 45,
-          designer: "设计师小A",
-          createdAt: new Date(2024, 0, 1),
-        },
-        {
-          id: 2,
-          image: require("assets/images/mock.jpg"),
-          name: "经典奶茶系列",
-          votes: 120,
-          likes: 67,
-          designer: "创意达人B",
-          createdAt: new Date(2024, 0, 2),
-        },
-        {
-          id: 3,
-          image: require("assets/images/mock.jpg"),
-          name: "果茶新品",
-          votes: 100,
-          likes: 52,
-          designer: "设计大师C",
-          createdAt: new Date(2024, 0, 3),
-        },
-        {
-          id: 4,
-          image: require("assets/images/mock.jpg"),
-          name: "咖啡艺术",
-          votes: 50,
-          likes: 23,
-          designer: "艺术之家",
-          createdAt: new Date(2024, 0, 4),
-        },
-        {
-          id: 5,
-          image: require("assets/images/mock.jpg"),
-          name: "特色调酒",
-          votes: 130,
-          likes: 89,
-          designer: "调酒师D",
-          createdAt: new Date(2024, 0, 5),
-        },
-        {
-          id: 6,
-          image: require("assets/images/mock.jpg"),
-          name: "健康果汁",
-          votes: 70,
-          likes: 34,
-          designer: "营养专家E",
-          createdAt: new Date(2024, 0, 6),
-        },
-      ],
-      packaging: [
-        {
-          id: 7,
-          image: require("assets/images/mock.jpg"),
-          name: "环保包装",
-          votes: 100,
-          likes: 56,
-          designer: "环保先锋",
-          createdAt: new Date(2024, 0, 7),
-        },
-        {
-          id: 8,
-          image: require("assets/images/mock.jpg"),
-          name: "礼盒设计",
-          votes: 90,
-          likes: 42,
-          designer: "礼盒专家",
-          createdAt: new Date(2024, 0, 8),
-        },
-        {
-          id: 9,
-          image: require("assets/images/mock.jpg"),
-          name: "简约风格",
-          votes: 110,
-          likes: 61,
-          designer: "简约大师",
-          createdAt: new Date(2024, 0, 9),
-        },
-        {
-          id: 10,
-          image: require("assets/images/mock.jpg"),
-          name: "复古包装",
-          votes: 80,
-          likes: 38,
-          designer: "复古爱好者",
-          createdAt: new Date(2024, 0, 10),
-        },
-      ],
-      logo: [
-        {
-          id: 11,
-          image: require("assets/images/mock.jpg"),
-          name: "品牌标志",
-          votes: 100,
-          likes: 55,
-          designer: "品牌设计师",
-          createdAt: new Date(2024, 0, 11),
-        },
-        {
-          id: 12,
-          image: require("assets/images/mock.jpg"),
-          name: "企业标识",
-          votes: 120,
-          likes: 68,
-          designer: "企业形象专家",
-          createdAt: new Date(2024, 0, 12),
-        },
-        {
-          id: 13,
-          image: require("assets/images/mock.jpg"),
-          name: "创意Logo",
-          votes: 95,
-          likes: 47,
-          designer: "创意无限",
-          createdAt: new Date(2024, 0, 13),
-        },
-        {
-          id: 14,
-          image: require("assets/images/mock.jpg"),
-          name: "简约标志",
-          votes: 105,
-          likes: 59,
-          designer: "简约派",
-          createdAt: new Date(2024, 0, 14),
-        },
-      ],
-      decoration: [
-        {
-          id: 15,
-          image: require("assets/images/mock.jpg"),
-          name: "现代装修",
-          votes: 100,
-          likes: 53,
-          designer: "室内设计师",
-          createdAt: new Date(2024, 0, 15),
-        },
-        {
-          id: 16,
-          image: require("assets/images/mock.jpg"),
-          name: "古典风格",
-          votes: 85,
-          likes: 41,
-          designer: "古典艺术",
-          createdAt: new Date(2024, 0, 16),
-        },
-        {
-          id: 17,
-          image: require("assets/images/mock.jpg"),
-          name: "工业风设计",
-          votes: 115,
-          likes: 72,
-          designer: "工业风格师",
-          createdAt: new Date(2024, 0, 17),
-        },
-        {
-          id: 18,
-          image: require("assets/images/mock.jpg"),
-          name: "简约装修",
-          votes: 125,
-          likes: 81,
-          designer: "简约生活",
-          createdAt: new Date(2024, 0, 18),
-        },
-      ],
+  // 新增状态
+  const [voteActivities, setVoteActivities] = useState<VoteActivity[]>([]);
+  const [voteProducts, setVoteProducts] = useState<VoteProduct[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedActivity, setSelectedActivity] = useState<VoteActivity | null>(
+    null
+  );
+  const [productsLoading, setProductsLoading] = useState(false);
+
+  // 获取投票活动数据
+  useEffect(() => {
+    const fetchVoteData = async () => {
+      try {
+        setLoading(true);
+
+        // 使用 API 服务获取进行中的投票活动
+        const activities = await voteActivityService.getVotingActivities();
+
+        // 过滤当前分类的活动
+        const filteredActivities = activities.filter(
+          (activity) => activity.category === category
+        );
+        setVoteActivities(filteredActivities);
+
+        // 如果有活动，默认选择第一个并获取对应的产品
+        if (filteredActivities.length > 0) {
+          setSelectedActivity(filteredActivities[0]);
+          await fetchVoteProducts(filteredActivities[0].votesId);
+        } else {
+          setVoteProducts([]);
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error("获取投票数据出错:", error);
+        setLoading(false);
+      }
     };
-    return mockImages[categoryId as keyof typeof mockImages] || [];
+
+    fetchVoteData();
+  }, [category]);
+
+  // 获取特定投票活动的产品数据
+  const fetchVoteProducts = async (votesId: string) => {
+    try {
+      setProductsLoading(true);
+
+      // 使用 API 服务获取产品数据
+      const products = await voteActivityService.getVoteProducts(votesId);
+      setVoteProducts(products);
+    } catch (error) {
+      console.error("获取投票产品出错:", error);
+      setVoteProducts([]);
+    } finally {
+      setLoading(false);
+      setProductsLoading(false);
+    }
   };
 
-  const getCategoryTitle = (categoryId: string) => {
-    const titles = {
-      drinks: "饮料专场",
-      packaging: "包装专场",
-      logo: "Logo专场",
-      decoration: "装修专场",
-    };
-    return titles[categoryId as keyof typeof titles] || "投票";
+  // 处理活动选择
+  const handleActivityPress = async (activity: VoteActivity) => {
+    setSelectedActivity(activity);
+    await fetchVoteProducts(activity.votesId);
   };
 
-  // 筛选图片的函数
-  const getFilteredImages = (images: any[], filter: FilterOptions) => {
-    const sortedImages = [...images];
+  // 获取筛选后的产品
+  const getFilteredProducts = () => {
+    if (!voteProducts.length) return [];
 
-    switch (filter.sortBy) {
+    let filteredProducts = [...voteProducts];
+
+    // 应用排序
+    switch (currentFilter.sortBy) {
       case "votes":
-        sortedImages.sort((a, b) => {
-          return filter.order === "desc"
-            ? b.votes - a.votes
-            : a.votes - b.votes;
+        filteredProducts.sort((a, b) => {
+          return currentFilter.order === "desc"
+            ? b.voted - a.voted
+            : a.voted - b.voted;
         });
         break;
 
       case "name":
-        sortedImages.sort((a, b) => {
-          return filter.order === "desc"
+        filteredProducts.sort((a, b) => {
+          return currentFilter.order === "desc"
             ? b.name.localeCompare(a.name)
             : a.name.localeCompare(b.name);
         });
         break;
 
       case "latest":
-        sortedImages.sort((a, b) => {
-          const timeA = a.createdAt.getTime();
-          const timeB = b.createdAt.getTime();
-          return filter.order === "desc" ? timeB - timeA : timeA - timeB;
+        filteredProducts.sort((a, b) => {
+          const timeA = new Date(a.createdAt).getTime();
+          const timeB = new Date(b.createdAt).getTime();
+          return currentFilter.order === "desc" ? timeB - timeA : timeA - timeB;
         });
         break;
 
       case "likes":
-        sortedImages.sort((a, b) => {
-          return filter.order === "desc"
-            ? b.likes - a.likes
-            : a.likes - b.likes;
+        // 如果没有likes字段，可以用voted代替或默认排序
+        filteredProducts.sort((a, b) => {
+          return currentFilter.order === "desc"
+            ? b.voted - a.voted
+            : a.voted - b.voted;
         });
         break;
     }
 
-    return sortedImages;
+    return filteredProducts;
   };
 
   // 应用筛选
@@ -393,12 +281,24 @@ const VoteImagesScreen = () => {
     setShowFilter(false);
   };
 
-  const images = getImagesForCategory(category);
-  const filteredImages = getFilteredImages(images, currentFilter);
-  const categoryTitle = getCategoryTitle(category);
+  const filteredProducts = getFilteredProducts();
 
-  const handleImagePress = (imageId: number) => {
-    navigation.navigate("VoteDetail", { imageId, category });
+  // 在 VoteOptionScreen.tsx 中更新 handleImagePress 函数
+  const handleImagePress = (product: VoteProduct) => {
+    console.log("点击产品，准备跳转到详情页面:", product);
+    console.log("传递的参数:", {
+      productId: product.subId,
+      product: product,
+      activity: selectedActivity,
+      category: category,
+    });
+
+    navigation.navigate("VoteDetail", {
+      productId: product.subId, // 传递产品ID用于获取详情
+      product: product, // 传递基础产品信息（可选，用于快速显示）
+      activity: selectedActivity,
+      category: category,
+    });
   };
 
   const getFilterIndicatorText = () => {
@@ -414,13 +314,41 @@ const VoteImagesScreen = () => {
     return `${sortText} ${orderText}`;
   };
 
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
+        <View style={styles.header}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => navigation.goBack()}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="arrow-back" size={24} color="#333" />
+          </TouchableOpacity>
+          <View style={styles.headerCenter}>
+            <Text style={styles.headerTitle}>{categoryName}</Text>
+          </View>
+          <TouchableOpacity style={styles.rankBtn} activeOpacity={0.7}>
+            <Image
+              source={require("assets/icons/filter-i.png")}
+              style={{ width: 20, height: 20, resizeMode: "contain" }}
+            />
+          </TouchableOpacity>
+        </View>
+        <View style={styles.centerContainer}>
+          <Text style={styles.centerText}>加载中...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
 
       {/* Header */}
       <View style={styles.header}>
-        {/* 左边按钮 */}
         <TouchableOpacity
           style={styles.backButton}
           onPress={() => navigation.goBack()}
@@ -429,13 +357,10 @@ const VoteImagesScreen = () => {
           <Ionicons name="arrow-back" size={24} color="#333" />
         </TouchableOpacity>
 
-        {/* 中间标题区域 - 使用绝对定位居中 */}
         <View style={styles.headerCenter}>
-          <Text style={styles.headerTitle}>{categoryTitle}</Text>
-          {/* <Text style={styles.filterIndicator}>{getFilterIndicatorText()}</Text> */}
+          <Text style={styles.headerTitle}>{categoryName}</Text>
         </View>
 
-        {/* 右边按钮 */}
         <TouchableOpacity
           onPress={() => setShowFilter(true)}
           activeOpacity={0.7}
@@ -456,64 +381,116 @@ const VoteImagesScreen = () => {
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        <Text style={styles.subtitle}>选择您想投票的选项</Text>
+        {/* 投票活动选择区域 */}
+        {voteActivities.length > 0 && (
+          <View style={styles.activitiesSection}>
+            <Text style={styles.sectionTitle}>进行中的投票活动</Text>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={styles.activitiesScroll}
+            >
+              {voteActivities.map((activity) => (
+                <TouchableOpacity
+                  key={activity.id}
+                  style={[
+                    styles.activityCard,
+                    selectedActivity?.id === activity.id &&
+                      styles.activityCardSelected,
+                  ]}
+                  onPress={() => handleActivityPress(activity)}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.activityName}>{activity.name}</Text>
+                  <Text style={styles.activityPeriod}>
+                    {new Date(activity.votedAt).toLocaleDateString()} -{" "}
+                    {new Date(activity.votedStop).toLocaleDateString()}
+                  </Text>
+                  {/* {selectedActivity?.id === activity.id && (
+                    <View style={styles.selectedIndicator} />
+                  )} */}
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        )}
 
-        <View style={styles.imagesGrid}>
-          {filteredImages.map((item, index) => {
-            return (
-              <TouchableOpacity
-                key={item.id}
-                style={[
-                  styles.imageCard,
-                  index % 2 === 0 ? styles.leftCard : styles.rightCard,
-                ]}
-                onPress={() => handleImagePress(item.id)}
-              >
-                <View style={styles.imageContainer}>
-                  <Image
-                    source={item.image}
-                    style={styles.voteImage}
-                    resizeMode="cover"
-                  />
-                  <View style={styles.imageOverlay}>
-                    <Text style={styles.imageName}>{item.name}</Text>
-                  </View>
-                </View>
+        {/* 产品加载状态 */}
+        {productsLoading && (
+          <View style={styles.centerContainer}>
+            <Text style={styles.centerText}>加载产品中...</Text>
+          </View>
+        )}
 
-                {/* 设计师信息和互动区域 */}
-                <View style={styles.infoContainer}>
-                  <Text style={styles.designerName}>{item.designer}</Text>
-                  <View style={styles.statsContainer}>
-                    <View style={styles.statItem}>
-                      <Ionicons name="heart" size={14} color={colors.like} />
-                      <Text style={styles.statText}>{item.likes}</Text>
+        {!productsLoading && (
+          <>
+            <Text style={styles.subtitle}>选择您想投票的选项</Text>
+
+            <View style={styles.imagesGrid}>
+              {filteredProducts.map((product, index) => (
+                <TouchableOpacity
+                  key={product.subId}
+                  style={[
+                    styles.imageCard,
+                    index % 2 === 0 ? styles.leftCard : styles.rightCard,
+                  ]}
+                  onPress={() => handleImagePress(product)}
+                >
+                  <View style={styles.imageContainer}>
+                    <Image
+                      source={{ uri: product.image }}
+                      style={styles.voteImage}
+                      resizeMode="cover"
+                    />
+                    <View style={styles.imageOverlay}>
+                      <Text style={styles.imageName}>{product.name}</Text>
                     </View>
-                    <View style={styles.statItem}>
-                      <Ionicons name="trophy" size={14} color={colors.yellow} />
-                      <Text style={styles.statText}>{item.votes}</Text>
-                    </View>
-                    <TouchableOpacity
-                      style={styles.voteButton}
-                      onPress={() => handleImagePress(item.id)}
-                    >
-                      <Ionicons
-                        name="checkmark-circle"
-                        size={16}
-                        color={colors.white}
-                      />
-                      <Text style={styles.voteButtonText}>投票</Text>
-                    </TouchableOpacity>
                   </View>
-                </View>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
+
+                  {/* 设计师信息和互动区域 */}
+                  <View style={styles.infoContainer}>
+                    <Text style={styles.designerName}>
+                      设计师: {product.userId}
+                    </Text>
+                    <View style={styles.statsContainer}>
+                      <View style={styles.statItem}>
+                        <Ionicons
+                          name="trophy"
+                          size={14}
+                          color={colors.yellow}
+                        />
+                        <Text style={styles.statText}>{product.voted}</Text>
+                      </View>
+                      <TouchableOpacity
+                        style={styles.voteButton}
+                        onPress={() => handleImagePress(product)}
+                      >
+                        <Ionicons
+                          name="checkmark-circle"
+                          size={16}
+                          color={colors.white}
+                        />
+                        <Text style={styles.voteButtonText}>投票</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            {filteredProducts.length === 0 && (
+              <View style={styles.emptyContainer}>
+                <Text style={styles.emptyText}>暂无投票产品</Text>
+              </View>
+            )}
+          </>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
 };
 
+// ... 样式部分保持不变 ...
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -536,7 +513,6 @@ const styles = StyleSheet.create({
     right: 0,
     alignItems: "center",
     justifyContent: "center",
-    // zIndex: -1,
   },
   headerTitle: {
     fontSize: 20,
@@ -578,6 +554,57 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
   },
+  // 新增的活动选择区域样式
+  activitiesSection: {
+    marginBottom: 30,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    // fontWeight: "bold",
+    color: colors.gray_deep,
+    marginBottom: 16,
+    textAlign: "center", // ✅ 加这个
+  },
+  activitiesScroll: {
+    flexGrow: 0,
+  },
+  activityCard: {
+    backgroundColor: colors.white,
+    padding: 16,
+    borderRadius: 12,
+    marginRight: 12,
+    minWidth: 150,
+    shadowColor: colors.gold_deep,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
+    position: "relative",
+  },
+  activityCardSelected: {
+    backgroundColor: colors.gold_light,
+    borderWidth: 2,
+    borderColor: colors.gold_deep,
+  },
+  activityName: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: colors.black,
+    marginBottom: 4,
+  },
+  activityPeriod: {
+    fontSize: 12,
+    color: colors.gray_text,
+  },
+  // selectedIndicator: {
+  //   position: "absolute",
+  //   top: 8,
+  //   right: 8,
+  //   width: 8,
+  //   height: 8,
+  //   borderRadius: 4,
+  //   backgroundColor: colors.gold_deep,
+  // },
   subtitle: {
     fontSize: 16,
     color: colors.gray_deep,
@@ -631,7 +658,6 @@ const styles = StyleSheet.create({
     color: colors.black,
     textAlign: "center",
   },
-  // 新增的信息容器样式
   infoContainer: {
     padding: 12,
   },
@@ -668,6 +694,24 @@ const styles = StyleSheet.create({
     color: colors.white,
     fontWeight: "600",
     marginLeft: 4,
+  },
+  centerContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  centerText: {
+    fontSize: 16,
+    color: colors.gray_text,
+  },
+  emptyContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 40,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: colors.gray_text,
   },
 });
 

@@ -4,8 +4,9 @@ import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useHideTabBar } from "hooks/useHideTabBar";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
   Dimensions,
   Image,
   ImageBackground,
@@ -21,6 +22,10 @@ import {
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
 import { colors } from "styles";
+import {
+  Category,
+  voteService,
+} from "../../../services/VoteService/voteMainApi";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 
@@ -38,38 +43,61 @@ const VoteMainScreen = () => {
   // ✅ 自动隐藏底部导航栏
   useHideTabBar(true);
 
-  const categories = [
-    {
-      id: "drinks",
-      title: "饮料专场",
-      description: "为您最爱的饮料投票",
-      image: require("assets/images/votebg.png"),
-    },
-    {
-      id: "packaging",
-      title: "包装专场",
-      description: "选出最佳包装设计",
-      image: require("assets/images/votebg.png"),
-    },
-    {
-      id: "logo",
-      title: "Logo专场",
-      description: "投票选择最佳Logo",
-      image: require("assets/images/votebg.png"),
-    },
-    {
-      id: "decoration",
-      title: "装修专场",
-      description: "选择您喜爱的装修风格",
-      image: require("assets/images/votebg.png"),
-    },
-  ];
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleCategoryPress = (categoryId: string) => {
-    navigation.navigate("VoteOption", { category: categoryId });
+  // 获取分类数据
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const data = await voteService.getCategories();
+        setCategories(data);
+      } catch (error) {
+        console.error("Failed to fetch categories:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+  const handleCategoryPress = (category: Category) => {
+    navigation.navigate("VoteOption", {
+      category: category.cateId,
+      categoryName: category.name,
+    });
   };
 
-  const handleGoBack = () => navigation.goBack();
+  // 加载状态
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
+        <View style={styles.header}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => navigation.goBack()}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="arrow-back" size={24} color="#333" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>投票</Text>
+          <View style={styles.placeholder} />
+          <TouchableOpacity style={styles.rankBtn} activeOpacity={0.7}>
+            <Image
+              source={require("assets/icons/ranking-i.png")}
+              style={{ width: 20, height: 20, resizeMode: "contain" }}
+            />
+          </TouchableOpacity>
+        </View>
+        <View style={styles.centerContainer}>
+          <ActivityIndicator size="large" color={colors.primary_bg} />
+          <Text style={styles.centerText}>加载中...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -89,7 +117,7 @@ const VoteMainScreen = () => {
         <TouchableOpacity
           style={styles.rankBtn}
           activeOpacity={0.7}
-          onPress={() => navigation.navigate("Ranking")} // 👈 跳转
+          onPress={() => navigation.navigate("Ranking")}
         >
           <Image
             source={require("assets/icons/ranking-i.png")}
@@ -116,11 +144,11 @@ const VoteMainScreen = () => {
                     index === categories.length - 1 ? 0 : verticalScale(16),
                 },
               ]}
-              onPress={() => handleCategoryPress(category.id)}
+              onPress={() => handleCategoryPress(category)}
               activeOpacity={0.8}
             >
               <ImageBackground
-                source={category.image}
+                source={{ uri: category.image }}
                 style={styles.categoryCard}
                 imageStyle={styles.cardBackground}
                 resizeMode="cover"
@@ -128,10 +156,10 @@ const VoteMainScreen = () => {
                 <View style={styles.categoryContentRow}>
                   <View style={styles.categoryContent}>
                     <Text style={styles.categoryTitle} numberOfLines={1}>
-                      {category.title}
+                      {category.name}
                     </Text>
                     <Text style={styles.categoryDescription} numberOfLines={2}>
-                      {category.description}
+                      {category.desc}
                     </Text>
                   </View>
                 </View>
@@ -164,10 +192,10 @@ const styles = StyleSheet.create({
     width: 35,
     height: 35,
     borderRadius: 20,
-    backgroundColor: "#fff",
+    backgroundColor: colors.white,
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#000",
+    shadowColor: colors.gray_text,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -176,11 +204,11 @@ const styles = StyleSheet.create({
   rankBtn: {
     width: 35,
     height: 35,
-    backgroundColor: "#fff",
+    backgroundColor: colors.white,
     borderRadius: 20,
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#000",
+    shadowColor: colors.gray_text,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -205,7 +233,8 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: moderateScale(16),
-    color: "#666666",
+    color: colors.gray_text,
+    fontWeight: "semibold",
     marginBottom: verticalScale(24),
     textAlign: "center",
     lineHeight: moderateScale(22),
@@ -218,7 +247,7 @@ const styles = StyleSheet.create({
     borderRadius: scale(12),
     overflow: "hidden",
     elevation: 3,
-    shadowColor: "#000",
+    shadowColor: colors.gray_nav,
     shadowOffset: {
       width: 0,
       height: 2,
@@ -251,17 +280,30 @@ const styles = StyleSheet.create({
   categoryTitle: {
     fontSize: moderateScale(18),
     fontWeight: "bold",
-    color: "#000000ff",
+    color: colors.black,
     marginBottom: verticalScale(4),
     textAlign: "center",
     textShadowRadius: 2,
   },
   categoryDescription: {
     fontSize: moderateScale(14),
-    color: "#969696ff",
+    color: colors.gray_text,
     textAlign: "center",
     lineHeight: moderateScale(18),
     textShadowRadius: 2,
+  },
+  centerContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: scale(40),
+  },
+  centerText: {
+    marginTop: verticalScale(16),
+    fontSize: moderateScale(16),
+    color: colors.gray_text,
+    textAlign: "center",
+    lineHeight: moderateScale(22),
   },
 });
 

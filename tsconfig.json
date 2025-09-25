@@ -39,7 +39,7 @@
   "include": [
     "**/*.ts",
     "**/*.tsx"
-  ],
+, "src/services/VoteService/voteOptions.tss"  ],
   "exclude": [
     "node_modules",
     "dist",

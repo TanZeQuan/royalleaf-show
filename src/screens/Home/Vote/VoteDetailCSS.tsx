@@ -20,7 +20,7 @@ export const styles = StyleSheet.create({
     width: 35,
     height: 35,
     borderRadius: 20,
-    backgroundColor: "#fff",
+    backgroundColor:colors.white,
     alignItems: "center",
     justifyContent: "center",
     shadowColor: "#000",
@@ -64,7 +64,7 @@ export const styles = StyleSheet.create({
     shadowRadius: 3,
     elevation: 3,
   },
-  voteCountText: { fontSize: 16, color: "#666666", marginBottom: 8 },
+  voteCountText: { fontSize: 16, color: colors.gray_text, marginBottom: 8 },
   voteCountNumber: {
     fontSize: 32,
     fontWeight: "bold",
@@ -417,5 +417,14 @@ export const styles = StyleSheet.create({
     color: colors.green_deep,
     marginRight: 4,
     fontWeight: "semibold",
+  },
+    centerContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  centerText: {
+    fontSize: 16,
+    color: colors.gray_text,
   },
 });
