@@ -30,6 +30,7 @@ export interface Comment {
   text: string;
   isDesigner: boolean;
   replyTo: string | null;
+  replies?: string;
 }
 
 export interface TopicDetailRouteParams {

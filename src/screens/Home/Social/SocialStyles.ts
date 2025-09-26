@@ -867,6 +867,386 @@ export const shareStyles = StyleSheet.create({
   },
 });
 
+// Instagram 风格评论弹窗样式
+export const commentModalStyles = StyleSheet.create({
+  overlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.8)",
+    justifyContent: "flex-end",
+    zIndex: 1000,
+  },
+
+  commentModal: {
+    backgroundColor: colors.white,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    height: "80%",
+    maxHeight: "80%",
+    display: "flex",
+    flexDirection: "column",
+  },
+
+  modalHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: "#f0f0f0",
+    position: "relative",
+  },
+
+  modalTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: colors.black,
+  },
+
+  closeButton: {
+    position: "absolute",
+    right: 20,
+    padding: 8,
+  },
+
+  closeButtonText: {
+    fontSize: 18,
+    color: colors.gray_deep,
+    fontWeight: "500",
+  },
+
+  modalHandle: {
+    width: 36,
+    height: 4,
+    backgroundColor: "#d1d5db",
+    borderRadius: 2,
+    alignSelf: "center",
+    marginTop: 8,
+    marginBottom: 8,
+  },
+
+  commentsList: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    minHeight: 200,
+  },
+
+  commentItem: {
+    flexDirection: "row",
+    paddingVertical: 16,
+    paddingHorizontal: 4,
+    alignItems: "flex-start",
+    borderBottomWidth: 0.5,
+    borderBottomColor: "#f0f0f0",
+  },
+
+  commentAvatar: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: colors.gray_light,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 12,
+  },
+
+  commentAvatarText: {
+    fontSize: 14,
+  },
+
+  commentContent: {
+    flex: 1,
+  },
+
+  commentUser: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: colors.black,
+    marginBottom: 2,
+  },
+
+  commentText: {
+    fontSize: 14,
+    color: colors.black,
+    lineHeight: 18,
+    marginBottom: 4,
+  },
+
+  commentMeta: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  commentTime: {
+    fontSize: 12,
+    color: colors.gray_text,
+    marginRight: 16,
+  },
+
+  commentReplyButton: {
+    fontSize: 12,
+    color: colors.gray_text,
+    fontWeight: "500",
+    paddingHorizontal: 4,
+    paddingVertical: 2,
+  },
+
+  commentLikeButton: {
+    marginLeft: 16,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    minWidth: 24,
+    alignItems: "center",
+  },
+
+  commentLikeIcon: {
+    fontSize: 12,
+    color: colors.gray_text,
+  },
+
+  repliesContainer: {
+    marginTop: 12,
+    paddingLeft: 44,
+    paddingTop: 8,
+  },
+
+  replyItem: {
+    flexDirection: "row",
+    paddingVertical: 8,
+    paddingHorizontal: 8,
+    alignItems: "flex-start",
+    backgroundColor: "#fafafa",
+    borderRadius: 8,
+    marginBottom: 4,
+  },
+
+  replyAvatar: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: colors.gray_light,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 8,
+  },
+
+  replyAvatarText: {
+    fontSize: 10,
+  },
+
+  replyContent: {
+    flex: 1,
+  },
+
+  replyUser: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: colors.black,
+  },
+
+  replyText: {
+    fontSize: 13,
+    color: colors.black,
+    lineHeight: 16,
+    marginTop: 1,
+  },
+
+  loadMoreReplies: {
+    paddingLeft: 52,
+    paddingVertical: 8,
+  },
+
+  loadMoreRepliesText: {
+    fontSize: 12,
+    color: colors.gray_text,
+    fontWeight: "500",
+  },
+
+  // 回复输入容器
+  replyInputContainer: {
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: "#f0f0f0",
+  },
+
+  replyInputWrapper: {
+    backgroundColor: "#f8f9fa",
+    borderRadius: 12,
+    padding: 12,
+  },
+
+  replyInput: {
+    fontSize: 14,
+    color: colors.black,
+    paddingVertical: 8,
+    paddingHorizontal: 4,
+    maxHeight: 80,
+    minHeight: 40,
+    marginBottom: 8,
+  },
+
+  replyActions: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    gap: 8,
+  },
+
+  replyActionButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+    backgroundColor: "#e9ecef",
+  },
+
+  replyActionButtonActive: {
+    backgroundColor: colors.gold_deep,
+  },
+
+  replyActionButtonDisabled: {
+    backgroundColor: "#f0f0f0",
+  },
+
+  replyActionText: {
+    fontSize: 14,
+    color: colors.gray_text,
+    fontWeight: "500",
+  },
+
+  replyActionTextActive: {
+    color: colors.white,
+  },
+
+  replyActionTextDisabled: {
+    color: "#ccc",
+  },
+
+  // 加载回复按钮
+  loadRepliesButton: {
+    alignSelf: "flex-start",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    marginTop: 8,
+    backgroundColor: "#f8f9fa",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#e9ecef",
+  },
+
+  loadRepliesButtonText: {
+    fontSize: 12,
+    color: colors.gray_text,
+    fontWeight: "500",
+  },
+
+  // 加载中状态
+  loadingReplies: {
+    paddingVertical: 8,
+    alignItems: "center",
+  },
+
+  loadingRepliesText: {
+    fontSize: 12,
+    color: colors.gray_text,
+    fontStyle: "italic",
+  },
+
+  commentInputSection: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    paddingBottom: 24,
+    borderTopWidth: 1,
+    borderTopColor: "#f0f0f0",
+    backgroundColor: colors.white,
+    minHeight: 60,
+  },
+
+  commentInputAvatar: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: colors.gray_light,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 12,
+    marginBottom: 8,
+  },
+
+  commentInputWrapper: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "flex-end",
+    backgroundColor: "#f8f9fa",
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    maxHeight: 120,
+    minHeight: 44,
+  },
+
+  commentInput: {
+    flex: 1,
+    fontSize: 15,
+    color: colors.black,
+    paddingVertical: 8,
+    paddingHorizontal: 4,
+    maxHeight: 80,
+    lineHeight: 20,
+  },
+
+  commentSendButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    marginLeft: 8,
+  },
+
+  commentSendButtonText: {
+    fontSize: 14,
+    color: colors.gold_deep,
+    fontWeight: "600",
+  },
+
+  commentSendButtonDisabled: {
+    color: colors.gray_text,
+  },
+
+  emptyCommentsContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 60,
+    paddingHorizontal: 40,
+  },
+
+  emptyCommentsIcon: {
+    fontSize: 64,
+    marginBottom: 16,
+    opacity: 0.6,
+  },
+
+  emptyCommentsTitle: {
+    fontSize: 20,
+    fontWeight: "600",
+    color: colors.black,
+    marginBottom: 8,
+    textAlign: "center",
+  },
+
+  emptyCommentsText: {
+    fontSize: 16,
+    color: colors.gray_text,
+    textAlign: "center",
+    lineHeight: 24,
+  },
+});
+
 // 给话题讨论用的
 export const topicStyles = StyleSheet.create({
   tabContainer: {
