@@ -162,6 +162,16 @@ export default function ProfileScreen() {
                 ID: {user?.user_id || "----"}
               </Text>
             </View>
+            <TouchableOpacity
+              style={styles.scanButton}
+              onPress={() => navigation.navigate("Scan")}
+              activeOpacity={0.7}
+            >
+              <Image
+                source={require("assets/icons/profile-scan.png")}
+                style={styles.scanIcon}
+              />
+            </TouchableOpacity>
           </View>
         </View>
 
@@ -172,7 +182,12 @@ export default function ProfileScreen() {
               <Text style={styles.statNumber} numberOfLines={1}>
                 {user?.wallet_balance?.toFixed(2) ?? "0.00"}
               </Text>
-              <Text style={styles.statLabel} numberOfLines={1}>
+
+              <Text
+                style={styles.statLabel}
+                numberOfLines={1}
+                onPress={() => navigation.navigate("WalletStack" as never)}
+              >
                 钱包(RM)
               </Text>
             </View>

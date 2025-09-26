@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import React from "react";
 import BenefitScreen from "screens/Profile/Benefit/BenefitScreen";
 import ProfileScreen from "screens/Profile/ProfileScreen";
+import WalletStack from "@navigation/stacks/HomeNav/WalletStack";
 import ScanScreen from "screens/Profile/QRScan/ScanScreen";
 import RankingScreen from "screens/Profile/Benefit/RankingScreen"
 
@@ -11,7 +12,8 @@ export type ProfileStackParamList = {
   SettingStack: undefined;
   Scan: undefined;
   Benefit: undefined;
-  RankingScreen: undefined; 
+  RankingScreen: undefined;
+  WalletStack: undefined;
 };
 
 const Stack = createNativeStackNavigator<ProfileStackParamList>();
@@ -29,6 +31,7 @@ export default function ProfileStack({ onLogout }: ProfileStackProps) {
       </Stack.Screen>
       <Stack.Screen name="Scan" component={ScanScreen} />
       <Stack.Screen name="Benefit" component={BenefitScreen} />
+      <Stack.Screen name="WalletStack" component={WalletStack} />
       <Stack.Screen name="RankingScreen" component={RankingScreen} />
     </Stack.Navigator>
   );
