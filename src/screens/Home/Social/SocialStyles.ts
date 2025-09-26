@@ -8,13 +8,13 @@ export const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: 20,
-    paddingVertical: 5,
+    paddingVertical: 10,
     borderBottomWidth: 1,
     borderBottomColor: colors.gold_light,
     backgroundColor: colors.gold_light,
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "bold",
     color: colors.black,
     textAlign: "center",
@@ -214,30 +214,34 @@ export const styles = StyleSheet.create({
 
   commentBox: {
     flexDirection: "row",
-    alignItems: "center",
-    // borderTopWidth: 1,
-    // borderTopColor: colors.gray_light,
-    paddingHorizontal: 5,
-    paddingVertical: 8,
+    alignItems: "flex-end",
+    backgroundColor: '#f8f9fa',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#e9ecef',
+    paddingHorizontal: 4,
+    paddingVertical: 4,
   },
   commentInput: {
     flex: 1,
     fontSize: 14,
     paddingVertical: 10,
     paddingHorizontal: 15,
-    borderWidth: 1,
-    borderColor: colors.gold_light,
-    borderRadius: 18,
-    marginRight: 10,
+    borderRadius: 16,
+    marginRight: 8,
     color: colors.black,
-    backgroundColor: colors.white,
+    backgroundColor: '#ffffff',
+    maxHeight: 80,
+    minHeight: 40,
   },
   commentPostButton: {
-    marginLeft: 10,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 6,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 16,
     backgroundColor: colors.gray_light,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 60,
   },
   commentPostButtonActive: {
     backgroundColor: colors.gold_deep,
@@ -251,9 +255,51 @@ export const styles = StyleSheet.create({
 
   bottomSpacing: { height: 20 },
 
+  // 评论区域整体包装器
+  commentSectionWrapper: {
+    backgroundColor: '#ffffff',
+    borderTopWidth: 1,
+    borderTopColor: '#e9ecef',
+    maxHeight: '70%', // 保留最大高度限制以防内容过多
+  },
+
+  // 评论列表滚动视图
+  commentsScrollView: {
+    maxHeight: 450, // 限制滚动区域最大高度
+    paddingHorizontal: 16,
+    paddingTop: 16,
+  },
+
+  // 评论滚动内容容器
+  commentsScrollContent: {
+    paddingBottom: 20,
+  },
+
+  // 空评论容器
+  emptyCommentsContainer: {
+    paddingVertical: 40,
+    alignItems: 'center',
+  },
+
+  emptyCommentsText: {
+    fontSize: 15,
+    color: '#6c757d',
+    fontStyle: 'italic',
+  },
+
+  // 固定在底部的输入框包装器
+  commentInputWrapper: {
+    backgroundColor: '#ffffff',
+    borderTopWidth: 1,
+    borderTopColor: '#e9ecef',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+
   commentSection: {
     paddingHorizontal: 16,
     paddingBottom: 12,
+    maxHeight: 400, // 限制评论区域最大高度，使其可滚动
   },
   commentRow: {
     flexDirection: "row",
@@ -279,14 +325,103 @@ export const styles = StyleSheet.create({
     paddingLeft: 8,
   },
 
+  // 评论卡片 - 优化设计
+  commentCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    marginBottom: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#e9ecef',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+
+  // 评论头部区域
+  commentHeader: {
+    marginBottom: 12,
+  },
+
+  // 回复区域
+  repliesSection: {
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#e9ecef',
+  },
+
+  // 回复滚动容器
+  repliesScrollView: {
+    maxHeight: 200,
+    marginBottom: 8,
+  },
+
+  // 展开回复按钮 - 优化样式
+  expandReplyButton: {
+    alignSelf: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    marginTop: 12,
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    borderWidth: 1.5,
+    borderColor: colors.gold_deep,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+
+  expandReplyButtonText: {
+    fontSize: 13,
+    color: colors.gold_deep,
+    fontWeight: '600',
+  },
+
+  // 加载回复按钮
+  loadRepliesButton: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    marginTop: 8,
+    backgroundColor: '#f8f9fa',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#e9ecef',
+  },
+
+  loadRepliesButtonText: {
+    fontSize: 12,
+    color: '#6c757d',
+    fontWeight: '500',
+  },
+
+  // 加载中状态
+  loadingReplies: {
+    paddingVertical: 8,
+    alignItems: 'center',
+  },
+
+  loadingRepliesText: {
+    fontSize: 12,
+    color: '#6c757d',
+    fontStyle: 'italic',
+  },
+
   // 回复按钮
   replyButton: {
     alignSelf: "flex-start",
-    marginTop: 4,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    marginTop: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
     backgroundColor: "#f8f9fa",
     borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#e9ecef",
   },
 
   replyButtonText: {
@@ -427,23 +562,29 @@ export const styles = StyleSheet.create({
     fontWeight: "500",
   },
 
-  // 展开更多评论按钮
+  // 更好看的展开按钮样式
   loadMoreCommentsButton: {
     alignSelf: "center",
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    marginTop: 12,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    marginTop: 16,
     marginBottom: 8,
-    backgroundColor: colors.gold_light,
+    backgroundColor: '#f8f9fa',
     borderRadius: 20,
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: colors.gold_deep,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
   },
 
   loadMoreCommentsButtonText: {
     fontSize: 14,
     color: colors.gold_deep,
     fontWeight: "600",
+    textAlign: 'center',
   },
   previewContainer: {
     marginTop: 10,
@@ -466,6 +607,7 @@ export const styles = StyleSheet.create({
     height: 24,
     alignItems: "center",
     justifyContent: "center",
+    
   },
   removeImageText: {
     color: "#fff",

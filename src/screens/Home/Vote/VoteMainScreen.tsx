@@ -182,11 +182,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: scale(16),
-    paddingVertical: verticalScale(12),
+    paddingVertical: verticalScale(10),
     borderBottomWidth: 1,
-    minHeight: verticalScale(60),
+    // minHeight: verticalScale(60),
     borderBottomColor: colors.gold_light,
     backgroundColor: colors.gold_light,
+    fontSize:20,
   },
   backButton: {
     width: 35,
@@ -215,7 +216,7 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   headerTitle: {
-    fontSize: moderateScale(20),
+    fontSize: moderateScale(19),
     fontWeight: "bold",
     color: colors.black,
     marginLeft: 80,

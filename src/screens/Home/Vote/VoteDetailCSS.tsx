@@ -15,6 +15,7 @@ export const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: colors.gold_light,
     backgroundColor: colors.gold_light,
+    fontSize:20,
   },
   backButton: {
     width: 35,

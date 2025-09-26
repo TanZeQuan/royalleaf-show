@@ -2,7 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import * as ImagePicker from "expo-image-picker";
-import React, { useEffect, useLayoutEffect, useState } from "react"; // 添加 useEffect
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react"; // 添加 useRef
 import {
   Alert,
   Dimensions,
@@ -231,6 +231,14 @@ export default function SocialScreen() {
   const [commentReplies, setCommentReplies] = useState<Record<string, any[]>>({});
   const [loadingReplies, setLoadingReplies] = useState<Set<string>>(new Set());
 
+  // 展开数量状态 - 记录每个评论的回复展开状态
+  const [expandedReplies, setExpandedReplies] = useState<Set<string>>(new Set());
+
+  // ScrollView 和评论容器的 refs
+  const scrollViewRef = useRef<ScrollView>(null);
+  const [commentPositions, setCommentPositions] = useState<Record<string, number>>({});
+  const [buttonPositions, setButtonPositions] = useState<Record<string, number>>({});
+
   useEffect(() => {
     const fetchPostsData = async () => {
       try {
@@ -333,7 +341,7 @@ export default function SocialScreen() {
 
     setLoadingReplies(prev => new Set(prev).add(commentId));
     try {
-      const repliesData = await getCommentReplies(commentId, 10, 0);
+      const repliesData = await getCommentReplies(commentId, 20, 0); // 一次加载20个回复，按需显示
       setCommentReplies(prev => ({
         ...prev,
         [commentId]: repliesData.replies
@@ -374,16 +382,81 @@ export default function SocialScreen() {
     }
   };
 
-  // 切换评论展开状态
-  const toggleCommentExpansion = (commentId: string) => {
-    setExpandedComments(prev => {
+  // 切换评论的回复展开状态
+  const toggleReplyExpansion = (commentId: string) => {
+    setExpandedReplies(prev => {
       const newSet = new Set(prev);
       if (newSet.has(commentId)) {
+        // 收起回复
         newSet.delete(commentId);
+        // 收起时滚动到该评论卡片顶部
+        setTimeout(() => {
+          scrollToComment(commentId);
+        }, 100);
       } else {
+        // 展开所有回复
         newSet.add(commentId);
         // 展开时加载回复
-        loadCommentReplies(commentId);
+        if (!commentReplies[commentId]) {
+          loadCommentReplies(commentId);
+        }
+      }
+      return newSet;
+    });
+  };
+
+  // 滚动到评论位置（屏幕中间）
+  const scrollToComment = (commentId: string) => {
+    const commentY = commentPositions[commentId];
+    if (commentY && scrollViewRef.current) {
+      const screenHeight = Dimensions.get('window').height;
+      const targetY = Math.max(0, commentY - screenHeight / 2);
+      scrollViewRef.current.scrollTo({
+        y: targetY,
+        animated: true
+      });
+    }
+  };
+
+  // 记录评论位置
+  const onCommentLayout = (commentId: string, event: any) => {
+    const { y } = event.nativeEvent.layout;
+    setCommentPositions(prev => ({
+      ...prev,
+      [commentId]: y
+    }));
+  };
+
+  // 记录按钮位置
+  const onButtonLayout = (buttonId: string, event: any) => {
+    const { y } = event.nativeEvent.layout;
+    setButtonPositions(prev => ({
+      ...prev,
+      [buttonId]: y
+    }));
+  };
+
+  // 滚动到按钮位置（屏幕中间）
+  const scrollToButton = (buttonId: string) => {
+    const buttonY = buttonPositions[buttonId];
+    if (buttonY !== undefined && scrollViewRef.current) {
+      const screenHeight = Dimensions.get('window').height;
+      const targetY = Math.max(0, buttonY - screenHeight / 2);
+      scrollViewRef.current.scrollTo({
+        y: targetY,
+        animated: true
+      });
+    }
+  };
+
+  // 切换评论列表展开状态 - 简化为一键全部展开/收起
+  const toggleCommentExpansion = (postId: string) => {
+    setExpandedComments(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(postId)) {
+        newSet.delete(postId);
+      } else {
+        newSet.add(postId);
       }
       return newSet;
     });
@@ -844,6 +917,7 @@ export default function SocialScreen() {
         </View>
       ) : activeTab === "posts" ? (
         <ScrollView
+          ref={scrollViewRef}
           style={styles.feedContainer}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
@@ -952,185 +1026,196 @@ export default function SocialScreen() {
                   </TouchableOpacity>
                 </View>
 
-                {/* Comment Section */}
+                {/* Comment Section - 可滚动的评论区域 */}
                 {activeCommentPostId === post.id && (
-                  <View style={styles.commentSection}>
-                    {post.commentsList.length > 0 ? (
-                      <>
-                        {/* 显示评论和回复 */}
-                        {post.commentsList.slice(0, expandedComments.has(post.id) ? undefined : 5).map((comment: Comment) => (
-                          <View key={comment.id} style={styles.commentContainer}>
-                            <View style={styles.commentRow}>
-                              <Text style={styles.commentUser}>{comment.user}：</Text>
-                              <Text style={styles.commentText}>{comment.text}</Text>
-                            </View>
-
-                            {/* 回复按钮 */}
-                            <TouchableOpacity
-                              style={styles.replyButton}
-                              onPress={() => handleReply(comment.id)}
+                  <View style={styles.commentSectionWrapper}>
+                    {/* 评论列表滚动区域 */}
+                    <ScrollView
+                      style={styles.commentsScrollView}
+                      nestedScrollEnabled={true}
+                      showsVerticalScrollIndicator={false}
+                      contentContainerStyle={styles.commentsScrollContent}
+                    >
+                      {post.commentsList.length > 0 ? (
+                        <>
+                          {/* 显示评论卡片 */}
+                          {post.commentsList.slice(0, expandedComments.has(post.id) ? undefined : 3).map((comment: Comment) => (
+                            <View
+                              key={comment.id}
+                              style={styles.commentCard}
+                              onLayout={(event) => onCommentLayout(comment.id, event)}
                             >
-                              <Text style={styles.replyButtonText}>回复</Text>
-                            </TouchableOpacity>
+                              {/* 评论内容 */}
+                              <View style={styles.commentHeader}>
+                                <View style={styles.commentRow}>
+                                  <Text style={styles.commentUser}>{comment.user}：</Text>
+                                  <Text style={styles.commentText}>{comment.text}</Text>
+                                </View>
 
-                            {/* 显示回复列表 */}
-                            {commentReplies[comment.id] && commentReplies[comment.id].length > 0 && (
-                              <View style={styles.repliesContainer}>
-                                {commentReplies[comment.id].slice(0, expandedComments.has(comment.id) ? undefined : 3).map((reply: any, index: number) => (
-                                  <View key={reply.commentLogId || index} style={styles.replyRow}>
-                                    <Text style={styles.replyUser}>{reply.userId || 'User'}：</Text>
-                                    <Text style={styles.replyText}>{reply.desc}</Text>
-                                  </View>
-                                ))}
-
-                                {/* 展开更多回复按钮 */}
-                                {commentReplies[comment.id].length > 3 && !expandedComments.has(comment.id) && (
-                                  <TouchableOpacity
-                                    style={styles.loadMoreButton}
-                                    onPress={() => toggleCommentExpansion(comment.id)}
-                                  >
-                                    <Text style={styles.loadMoreButtonText}>
-                                      展开更多回复 ({commentReplies[comment.id].length - 3}条)
-                                    </Text>
-                                  </TouchableOpacity>
-                                )}
-
-                                {expandedComments.has(comment.id) && commentReplies[comment.id].length > 3 && (
-                                  <TouchableOpacity
-                                    style={styles.loadMoreButton}
-                                    onPress={() => toggleCommentExpansion(comment.id)}
-                                  >
-                                    <Text style={styles.loadMoreButtonText}>收起回复</Text>
-                                  </TouchableOpacity>
-                                )}
-                              </View>
-                            )}
-
-                            {/* 回复输入框 */}
-                            {activeReplyCommentId === comment.id && (
-                              <View style={styles.replyInputContainer}>
-                                <KeyboardAvoidingView
-                                  behavior={Platform.OS === "ios" ? "padding" : "height"}
-                                  keyboardVerticalOffset={Platform.OS === "ios" ? 100 : 0}
+                                {/* 回复按钮 */}
+                                <TouchableOpacity
+                                  style={styles.replyButton}
+                                  onPress={() => handleReply(comment.id)}
                                 >
-                                  <View style={styles.replyInputBox}>
-                                    <TextInput
-                                      style={styles.replyInput}
-                                      placeholder={`回复 ${comment.user}...`}
-                                      value={replyText}
-                                      onChangeText={setReplyText}
-                                      multiline
-                                      autoFocus={false}
-                                      onFocus={() => {
-                                        // 防止自动滚动
-                                      }}
-                                    />
-                                    <View style={styles.replyActions}>
-                                      <TouchableOpacity
-                                        style={styles.cancelReplyButton}
-                                        onPress={() => {
-                                          setActiveReplyCommentId(null);
-                                          setReplyText("");
-                                        }}
-                                      >
-                                        <Text style={styles.cancelReplyButtonText}>取消</Text>
-                                      </TouchableOpacity>
-                                      <TouchableOpacity
-                                        style={[
-                                          styles.sendReplyButton,
-                                          replyText.trim() ? styles.sendReplyButtonActive : null
-                                        ]}
-                                        onPress={() => handleSendReply(comment.id)}
-                                      >
-                                        <Text style={[
-                                          styles.sendReplyButtonText,
-                                          replyText.trim() ? styles.sendReplyButtonTextActive : null
-                                        ]}>发送</Text>
-                                      </TouchableOpacity>
-                                    </View>
-                                  </View>
-                                </KeyboardAvoidingView>
+                                  <Text style={styles.replyButtonText}>回复</Text>
+                                </TouchableOpacity>
                               </View>
-                            )}
 
-                            {/* 点击加载回复 */}
-                            {!commentReplies[comment.id] && !loadingReplies.has(comment.id) && (
-                              <TouchableOpacity
-                                style={styles.startReplyButton}
-                                onPress={() => loadCommentReplies(comment.id)}
-                              >
-                                <Text style={styles.startReplyButtonText}>查看回复</Text>
-                              </TouchableOpacity>
-                            )}
+                              {/* 回复列表区域 - 可滚动 */}
+                              {commentReplies[comment.id] && commentReplies[comment.id].length > 0 && (
+                                <View style={styles.repliesSection}>
+                                  {/* 回复滚动容器 */}
+                                  <ScrollView
+                                    style={styles.repliesScrollView}
+                                    nestedScrollEnabled={true}
+                                    showsVerticalScrollIndicator={false}
+                                  >
+                                    {/* 显示回复 */}
+                                    {commentReplies[comment.id].slice(0, expandedReplies.has(comment.id) ? undefined : 3).map((reply: any, index: number) => (
+                                      <View key={reply.commentLogId || index} style={styles.replyRow}>
+                                        <Text style={styles.replyUser}>{reply.userId || 'User'}：</Text>
+                                        <Text style={styles.replyText}>{reply.desc}</Text>
+                                      </View>
+                                    ))}
+                                  </ScrollView>
 
-                            {loadingReplies.has(comment.id) && (
-                              <Text style={styles.startReplyButtonText}>加载中...</Text>
-                            )}
-                          </View>
-                        ))}
+                                  {/* 展开/收起回复按钮 */}
+                                  {commentReplies[comment.id].length > 3 && (
+                                    <TouchableOpacity
+                                      style={styles.expandReplyButton}
+                                      onPress={() => toggleReplyExpansion(comment.id)}
+                                    >
+                                      <Text style={styles.expandReplyButtonText}>
+                                        {expandedReplies.has(comment.id)
+                                          ? '收起回复'
+                                          : `查看更多回复 (${commentReplies[comment.id].length - 3}条)`
+                                        }
+                                      </Text>
+                                    </TouchableOpacity>
+                                  )}
+                                </View>
+                              )}
 
-                        {/* 展开更多评论按钮 */}
-                        {post.commentsList.length > 5 && !expandedComments.has(post.id) && (
-                          <TouchableOpacity
-                            style={styles.loadMoreCommentsButton}
-                            onPress={() => {
-                              setExpandedComments(prev => new Set(prev).add(post.id));
-                            }}
-                          >
-                            <Text style={styles.loadMoreCommentsButtonText}>
-                              展开更多评论 ({post.commentsList.length - 5}条)
-                            </Text>
-                          </TouchableOpacity>
-                        )}
+                              {/* 回复输入框 */}
+                              {activeReplyCommentId === comment.id && (
+                                <View style={styles.replyInputContainer}>
+                                  <KeyboardAvoidingView
+                                    behavior={Platform.OS === "ios" ? "padding" : "height"}
+                                    keyboardVerticalOffset={Platform.OS === "ios" ? 100 : 0}
+                                  >
+                                    <View style={styles.replyInputBox}>
+                                      <TextInput
+                                        style={styles.replyInput}
+                                        placeholder={`回复 ${comment.user}...`}
+                                        value={replyText}
+                                        onChangeText={setReplyText}
+                                        multiline
+                                        autoFocus={false}
+                                        onFocus={() => {
+                                          // 防止自动滚动
+                                        }}
+                                      />
+                                      <View style={styles.replyActions}>
+                                        <TouchableOpacity
+                                          style={styles.cancelReplyButton}
+                                          onPress={() => {
+                                            setActiveReplyCommentId(null);
+                                            setReplyText("");
+                                          }}
+                                        >
+                                          <Text style={styles.cancelReplyButtonText}>取消</Text>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity
+                                          style={[
+                                            styles.sendReplyButton,
+                                            replyText.trim() ? styles.sendReplyButtonActive : null
+                                          ]}
+                                          onPress={() => handleSendReply(comment.id)}
+                                        >
+                                          <Text style={[
+                                            styles.sendReplyButtonText,
+                                            replyText.trim() ? styles.sendReplyButtonTextActive : null
+                                          ]}>发送</Text>
+                                        </TouchableOpacity>
+                                      </View>
+                                    </View>
+                                  </KeyboardAvoidingView>
+                                </View>
+                              )}
 
-                        {expandedComments.has(post.id) && post.commentsList.length > 5 && (
-                          <TouchableOpacity
-                            style={styles.loadMoreCommentsButton}
-                            onPress={() => {
-                              setExpandedComments(prev => {
-                                const newSet = new Set(prev);
-                                newSet.delete(post.id);
-                                return newSet;
-                              });
-                            }}
-                          >
-                            <Text style={styles.loadMoreCommentsButtonText}>收起评论</Text>
-                          </TouchableOpacity>
-                        )}
-                      </>
-                    ) : (
-                      <Text style={styles.noCommentText}>
-                        还没有评论，快来抢沙发吧~ 🛋️
-                      </Text>
-                    )}
+                              {/* 点击加载回复 */}
+                              {!commentReplies[comment.id] && !loadingReplies.has(comment.id) && (
+                                <TouchableOpacity
+                                  style={styles.loadRepliesButton}
+                                  onPress={() => loadCommentReplies(comment.id)}
+                                >
+                                  <Text style={styles.loadRepliesButtonText}>查看回复</Text>
+                                </TouchableOpacity>
+                              )}
 
-                    <View style={styles.commentBox}>
-                      <TextInput
-                        style={styles.commentInput}
-                        placeholder="写下你的评论..."
-                        value={commentText}
-                        onChangeText={setCommentText}
-                      />
-                      <TouchableOpacity
-                        style={[
-                          styles.commentPostButton,
-                          commentText.trim()
-                            ? styles.commentPostButtonActive
-                            : null,
-                        ]}
-                        onPress={() => handleAddComment(post.id)}
-                      >
-                        <Text
+                              {loadingReplies.has(comment.id) && (
+                                <View style={styles.loadingReplies}>
+                                  <Text style={styles.loadingRepliesText}>加载中...</Text>
+                                </View>
+                              )}
+                            </View>
+                          ))}
+
+                          {/* 展开更多评论按钮 */}
+                          {post.commentsList.length > 3 && (
+                            <TouchableOpacity
+                              style={styles.loadMoreCommentsButton}
+                              onPress={() => toggleCommentExpansion(post.id)}
+                            >
+                              <Text style={styles.loadMoreCommentsButtonText}>
+                                {expandedComments.has(post.id)
+                                  ? '收起评论'
+                                  : `查看更多评论 (${post.commentsList.length - 3}条)`
+                                }
+                              </Text>
+                            </TouchableOpacity>
+                          )}
+                        </>
+                      ) : (
+                        <View style={styles.emptyCommentsContainer}>
+                          <Text style={styles.emptyCommentsText}>
+                            还没有评论，快来抢沙发吧~
+                          </Text>
+                        </View>
+                      )}
+                    </ScrollView>
+
+                    {/* 固定在底部的评论输入框 */}
+                    <View style={styles.commentInputWrapper}>
+                      <View style={styles.commentBox}>
+                        <TextInput
+                          style={styles.commentInput}
+                          placeholder="写下你的评论..."
+                          value={commentText}
+                          onChangeText={setCommentText}
+                          multiline
+                        />
+                        <TouchableOpacity
                           style={[
-                            styles.commentPostButtonText,
+                            styles.commentPostButton,
                             commentText.trim()
-                              ? styles.commentPostButtonTextActive
+                              ? styles.commentPostButtonActive
                               : null,
                           ]}
+                          onPress={() => handleAddComment(post.id)}
                         >
-                          发表
-                        </Text>
-                      </TouchableOpacity>
+                          <Text
+                            style={[
+                              styles.commentPostButtonText,
+                              commentText.trim()
+                                ? styles.commentPostButtonTextActive
+                                : null,
+                            ]}
+                          >
+                            发表
+                          </Text>
+                        </TouchableOpacity>
+                      </View>
                     </View>
                   </View>
                 )}
