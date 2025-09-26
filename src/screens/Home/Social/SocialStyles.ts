@@ -273,6 +273,178 @@ export const styles = StyleSheet.create({
     fontStyle: "italic",
     marginBottom: 8,
   },
+  // 评论容器
+  commentContainer: {
+    marginBottom: 12,
+    paddingLeft: 8,
+  },
+
+  // 回复按钮
+  replyButton: {
+    alignSelf: "flex-start",
+    marginTop: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    backgroundColor: "#f8f9fa",
+    borderRadius: 12,
+  },
+
+  replyButtonText: {
+    color: "#6c757d",
+    fontSize: 12,
+    fontWeight: "500",
+  },
+
+  // 回复容器
+  repliesContainer: {
+    marginTop: 8,
+    paddingLeft: 8,
+  },
+
+  // 回复行
+  replyRow: {
+    flexDirection: "row",
+    marginBottom: 8,
+    paddingLeft: 12,
+    paddingRight: 8,
+    paddingVertical: 8,
+    backgroundColor: "#f8f9fa",
+    borderRadius: 8,
+    borderLeftWidth: 2,
+    borderLeftColor: "#e9ecef",
+  },
+
+  replyUser: {
+    fontWeight: "600",
+    fontSize: 13,
+    color: "#495057",
+    marginRight: 4,
+  },
+
+  replyText: {
+    fontSize: 13,
+    color: "#6c757d",
+    flex: 1,
+  },
+
+  // 回复输入区域
+  replyInputContainer: {
+    marginTop: 8,
+  },
+
+  startReplyButton: {
+    alignSelf: "flex-start",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    backgroundColor: "#f8f9fa",
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#e9ecef",
+    marginBottom: 8,
+  },
+
+  startReplyButtonText: {
+    fontSize: 12,
+    color: "#6c757d",
+    fontWeight: "500",
+  },
+
+  replyInputBox: {
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: "#e9ecef",
+  },
+
+  replyInput: {
+    borderWidth: 1,
+    borderColor: "#e9ecef",
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    fontSize: 14,
+    marginBottom: 8,
+    minHeight: 60,
+    textAlignVertical: "top",
+  },
+
+  replyActions: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    gap: 8,
+  },
+
+  cancelReplyButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+    backgroundColor: "#f8f9fa",
+  },
+
+  cancelReplyButtonText: {
+    fontSize: 14,
+    color: "#6c757d",
+    fontWeight: "500",
+  },
+
+  sendReplyButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+    backgroundColor: "#e9ecef",
+  },
+
+  sendReplyButtonActive: {
+    backgroundColor: colors.gold_deep,
+  },
+
+  sendReplyButtonText: {
+    fontSize: 14,
+    color: "#6c757d",
+    fontWeight: "600",
+  },
+
+  sendReplyButtonTextActive: {
+    color: colors.white,
+  },
+
+  // 展开更多按钮样式
+  loadMoreButton: {
+    alignSelf: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    marginVertical: 8,
+    backgroundColor: "#f8f9fa",
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#e9ecef",
+  },
+
+  loadMoreButtonText: {
+    fontSize: 13,
+    color: "#6c757d",
+    fontWeight: "500",
+  },
+
+  // 展开更多评论按钮
+  loadMoreCommentsButton: {
+    alignSelf: "center",
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    marginTop: 12,
+    marginBottom: 8,
+    backgroundColor: colors.gold_light,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: colors.gold_deep,
+  },
+
+  loadMoreCommentsButtonText: {
+    fontSize: 14,
+    color: colors.gold_deep,
+    fontWeight: "600",
+  },
   previewContainer: {
     marginTop: 10,
     marginBottom: 20,
@@ -300,6 +472,23 @@ export const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
   },
+  loadingContainer: {
+  flex: 1,
+  justifyContent: 'center',
+  alignItems: 'center',
+  backgroundColor: '#F9F5EC',
+},
+emptyContainer: {
+  flex: 1,
+  justifyContent: 'center',
+  alignItems: 'center',
+  paddingVertical: 100,
+},
+emptyText: {
+  fontSize: 16,
+  color: '#666',
+  textAlign: 'center',
+},
 });
 
 // 给 Button 用的
