@@ -18,13 +18,7 @@ import {
   SafeAreaView,
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
-import {
-  Comment,
-  ItemData,
-  RouteParams,
-  voteActivityService,
-  VoteProductDetails,
-} from "../../../services/VoteService/voteDetailsApi"; // 导入API服务
+import { Comment, ItemData, RouteParams, voteActivityService, VoteProductDetails } from "../../../services/VoteService/voteDetailsApi"; // 导入API服务
 import { styles } from "./VoteDetailCSS";
 
 type VoteDetailNavigationProp = NativeStackNavigationProp<any>;
@@ -33,16 +27,9 @@ const VoteDetailScreen = () => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<VoteDetailNavigationProp>();
   const route = useRoute();
-  const {
-    productId,
-    product: initialProduct,
-    activity,
-    category,
-  } = route.params as RouteParams;
+  const { productId, product: initialProduct, activity, category } = route.params as RouteParams;
 
-  const [product, setProduct] = useState<VoteProductDetails | null>(
-    initialProduct || null
-  );
+  const [product, setProduct] = useState<VoteProductDetails | null>(initialProduct || null);
   const [loading, setLoading] = useState(!initialProduct); // 如果没有初始数据则加载
   const [voteCount, setVoteCount] = useState(initialProduct?.voted || 0);
   const [hasVoted, setHasVoted] = useState(false);
@@ -61,8 +48,7 @@ const VoteDetailScreen = () => {
       if (!initialProduct && productId) {
         try {
           setLoading(true);
-          const productDetails =
-            await voteActivityService.getVoteProductDetails(productId);
+          const productDetails = await voteActivityService.getVoteProductDetails(productId);
           if (productDetails) {
             setProduct(productDetails);
             setVoteCount(productDetails.voted);
@@ -104,20 +90,18 @@ const VoteDetailScreen = () => {
         image: require("assets/images/mock.jpg"),
         designer: {
           name: "加载中...",
-          desc: "正在获取设计师信息",
-        },
+          desc: "正在获取设计师信息"
+        }
       };
     }
 
     return {
       name: product.name,
-      image: product.image
-        ? { uri: product.image }
-        : require("assets/images/mock.jpg"),
+      image: product.image ? { uri: product.image } : require("assets/images/mock.jpg"),
       designer: {
         name: product.userId || "未知设计师",
-        desc: product.desc || "这位设计师很神秘，没有留下描述",
-      },
+        desc: product.desc || "这位设计师很神秘，没有留下描述"
+      }
     };
   };
 
@@ -174,7 +158,7 @@ const VoteDetailScreen = () => {
       timeAgo: "刚刚",
       isDesigner: true,
       replyTo: user,
-      replyText: comments.find((c) => c.user === user)?.text || "",
+      replyText: comments.find(c => c.user === user)?.text || ""
     };
 
     setComments((prev) => [newReply, ...prev]);
@@ -184,7 +168,7 @@ const VoteDetailScreen = () => {
   };
 
   const handleLoadMore = () => {
-    setCommentsDisplayCount((prev) => prev + 10);
+    setCommentsDisplayCount(prev => prev + 10);
   };
 
   if (loading) {
@@ -248,19 +232,11 @@ const VoteDetailScreen = () => {
             <Text style={styles.sectionTitle}>设计师信息</Text>
             <View style={styles.designerInfo}>
               <View style={styles.designerAvatar}>
-                <Ionicons
-                  name="person-circle"
-                  size={40}
-                  color={colors.green_deep}
-                />
+                <Ionicons name="person-circle" size={40} color={colors.green_deep} />
               </View>
               <View style={styles.designerDetails}>
-                <Text style={styles.designerName}>
-                  {itemData.designer.name}
-                </Text>
-                <Text style={styles.designerDesc}>
-                  {itemData.designer.desc}
-                </Text>
+                <Text style={styles.designerName}>{itemData.designer.name}</Text>
+                <Text style={styles.designerDesc}>{itemData.designer.desc}</Text>
               </View>
             </View>
           </View>
@@ -327,64 +303,45 @@ const VoteDetailScreen = () => {
           {displayedComments.length > 0 ? (
             <>
               {displayedComments.map((comment) => (
-                <View
-                  key={comment.id}
-                  style={[
-                    styles.commentItem,
-                    comment.isDesigner && styles.designerComment,
-                  ]}
-                >
+                <View key={comment.id} style={[
+                  styles.commentItem,
+                  comment.isDesigner && styles.designerComment
+                ]}>
                   {/* 设计师回复的样式 */}
                   {comment.isDesigner && comment.replyTo ? (
                     <View style={styles.replyComment}>
                       <View style={styles.replyHeader}>
                         <View style={styles.designerBadge}>
-                          <Ionicons
-                            name="checkmark-circle"
-                            size={12}
-                            color={colors.white}
-                          />
+                          <Ionicons name="checkmark-circle" size={12} color={colors.white} />
                           <Text style={styles.designerBadgeText}>设计师</Text>
                         </View>
                         <Text style={styles.commentUser}>{comment.user}</Text>
-                        <Text style={styles.commentTime}>
-                          {comment.timeAgo}
-                        </Text>
+                        <Text style={styles.commentTime}>{comment.timeAgo}</Text>
                       </View>
-
+                      
                       {/* 回复的原文引用 */}
                       <View style={styles.replyOriginal}>
-                        <Text style={styles.replyToText}>
-                          回复 {comment.replyTo}:
-                        </Text>
-                        <Text style={styles.replyOriginalText}>
-                          "{comment.replyText}"
-                        </Text>
+                        <Text style={styles.replyToText}>回复 {comment.replyTo}:</Text>
+                        <Text style={styles.replyOriginalText}>"{comment.replyText}"</Text>
                       </View>
-
+                      
                       <Text style={styles.commentText}>{comment.text}</Text>
-
+                      
                       {/* 回复按钮 - 不对设计师评论显示 */}
                     </View>
                   ) : (
                     <View>
                       <View style={styles.commentHeader}>
                         <Text style={styles.commentUser}>{comment.user}</Text>
-                        <Text style={styles.commentTime}>
-                          {comment.timeAgo}
-                        </Text>
+                        <Text style={styles.commentTime}>{comment.timeAgo}</Text>
                       </View>
                       <Text style={styles.commentText}>{comment.text}</Text>
-
+                      
                       {/* 回复按钮 - 不对自己的评论显示 */}
                       {comment.user !== "我" && !comment.isDesigner && (
-                        <TouchableOpacity
+                        <TouchableOpacity 
                           style={styles.replyButton}
-                          onPress={() =>
-                            setReplyingTo(
-                              replyingTo === comment.user ? null : comment.user
-                            )
-                          }
+                          onPress={() => setReplyingTo(replyingTo === comment.user ? null : comment.user)}
                         >
                           <Text style={styles.replyButtonText}>
                             {replyingTo === comment.user ? "取消回复" : "回复"}
@@ -393,7 +350,7 @@ const VoteDetailScreen = () => {
                       )}
                     </View>
                   )}
-
+                  
                   {/* 回复输入框 */}
                   {replyingTo === comment.user && (
                     <View style={styles.replyInputContainer}>
@@ -418,19 +375,15 @@ const VoteDetailScreen = () => {
                   )}
                 </View>
               ))}
-
+              
               {/* 加载更多按钮 */}
               {hasMoreComments && (
-                <TouchableOpacity
+                <TouchableOpacity 
                   style={styles.loadMoreButton}
                   onPress={handleLoadMore}
                 >
                   <Text style={styles.loadMoreText}>加载更多评论</Text>
-                  <Ionicons
-                    name="chevron-down"
-                    size={16}
-                    color={colors.green_deep}
-                  />
+                  <Ionicons name="chevron-down" size={16} color={colors.green_deep} />
                 </TouchableOpacity>
               )}
             </>
@@ -444,7 +397,7 @@ const VoteDetailScreen = () => {
         <View style={styles.bottomSpacing} />
       </ScrollView>
 
-      {/* 投票确认模态框 */}
+       {/* 投票确认模态框 */}
       <Modal
         visible={showConfirmModal}
         transparent={true}
@@ -455,8 +408,7 @@ const VoteDetailScreen = () => {
           <View style={styles.modalContainer}>
             <Text style={styles.modalTitle}>确认投票</Text>
             <Text style={styles.modalMessage}>
-              您确定要投票给{itemData.name ? `"${itemData.name}"` : "这个选项"}
-              吗？
+              您确定要投票给{itemData.name ? `"${itemData.name}"` : "这个选项"}吗？
             </Text>
             <View style={styles.modalButtons}>
               <TouchableOpacity
