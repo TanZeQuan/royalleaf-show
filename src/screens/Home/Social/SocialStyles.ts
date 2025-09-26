@@ -1058,13 +1058,14 @@ export const commentModalStyles = StyleSheet.create({
 
   loadMoreReplies: {
     paddingLeft: 52,
-    paddingVertical: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
   },
 
   loadMoreRepliesText: {
-    fontSize: 12,
-    color: colors.gray_text,
-    fontWeight: "500",
+    fontSize: 13,
+    color: colors.gold_deep,
+    fontWeight: "600",
   },
 
   // 回复输入容器

@@ -229,7 +229,7 @@ export default function SocialScreen() {
   const [replyText, setReplyText] = useState("");
   const [commentReplies, setCommentReplies] = useState<Record<string, any[]>>({});
   const [loadingReplies, setLoadingReplies] = useState<Set<string>>(new Set());
-  const [expandedReplies, setExpandedReplies] = useState<Set<string>>(new Set());
+  const [visibleRepliesCount, setVisibleRepliesCount] = useState<Record<string, number>>({});
 
   useEffect(() => {
     const fetchPostsData = async () => {
@@ -351,20 +351,16 @@ export default function SocialScreen() {
     Keyboard.dismiss();
   };
 
-  // 简化版的回复展开功能
-  const toggleReplyExpansion = (commentId: string) => {
-    setExpandedReplies(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(commentId)) {
-        newSet.delete(commentId);
-      } else {
-        newSet.add(commentId);
-        // 展开时加载回复
-        if (!commentReplies[commentId]) {
-          loadCommentReplies(commentId);
-        }
-      }
-      return newSet;
+  // 显示更多回复
+  const showMoreReplies = (commentId: string) => {
+    setVisibleRepliesCount(prev => {
+      const currentCount = prev[commentId] || 3;
+      const totalReplies = commentReplies[commentId]?.length || 0;
+      const newCount = Math.min(currentCount + 10, totalReplies); // 每次增加10个
+      return {
+        ...prev,
+        [commentId]: newCount
+      };
     });
   };
 
@@ -380,10 +376,15 @@ export default function SocialScreen() {
 
     setLoadingReplies(prev => new Set(prev).add(commentId));
     try {
-      const repliesData = await getCommentReplies(commentId, 20, 0); // 一次加载20个回复，按需显示
+      const repliesData = await getCommentReplies(commentId, 20, 0); // 一次加载20个回复
       setCommentReplies(prev => ({
         ...prev,
         [commentId]: repliesData.replies
+      }));
+      // 初始设置显示3个回复
+      setVisibleRepliesCount(prev => ({
+        ...prev,
+        [commentId]: Math.min(3, repliesData.replies.length)
       }));
     } catch (error) {
       console.error('获取回复失败:', error);
@@ -412,6 +413,16 @@ export default function SocialScreen() {
           desc: replyText
         }]
       }));
+
+      // 更新可见回复计数，确保新回复可见
+      setVisibleRepliesCount(prev => {
+        const currentCount = prev[commentId] || 3;
+        const newTotalCount = (prev[commentId] || 0) + 1;
+        return {
+          ...prev,
+          [commentId]: Math.max(currentCount, newTotalCount)
+        };
+      });
 
       // 更新选中帖子的评论数据以保持同步
       if (selectedPostForComments) {
@@ -1378,7 +1389,7 @@ export default function SocialScreen() {
                             {/* Replies */}
                             {commentReplies[comment.id] && commentReplies[comment.id].length > 0 && (
                               <View style={commentModalStyles.repliesContainer}>
-                                {commentReplies[comment.id].slice(0, expandedReplies.has(comment.id) ? undefined : 3).map((reply: any, index: number) => (
+                                {commentReplies[comment.id].slice(0, visibleRepliesCount[comment.id] || 3).map((reply: any, index: number) => (
                                   <View key={reply.commentLogId || index} style={commentModalStyles.replyItem}>
                                     <View style={commentModalStyles.replyAvatar}>
                                       <Text style={commentModalStyles.replyAvatarText}>👤</Text>
@@ -1390,16 +1401,14 @@ export default function SocialScreen() {
                                   </View>
                                 ))}
 
-                                {commentReplies[comment.id].length > 3 && (
+                                {/* 查看更多回复按钮 */}
+                                {commentReplies[comment.id].length > (visibleRepliesCount[comment.id] || 3) && (
                                   <TouchableOpacity
                                     style={commentModalStyles.loadMoreReplies}
-                                    onPress={() => toggleReplyExpansion(comment.id)}
+                                    onPress={() => showMoreReplies(comment.id)}
                                   >
                                     <Text style={commentModalStyles.loadMoreRepliesText}>
-                                      {expandedReplies.has(comment.id)
-                                        ? '收起回复'
-                                        : `查看更多回复 (${commentReplies[comment.id].length - 3}条)`
-                                      }
+                                      查看更多回复 ({commentReplies[comment.id].length - (visibleRepliesCount[comment.id] || 3)}条)
                                     </Text>
                                   </TouchableOpacity>
                                 )}
