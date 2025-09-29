@@ -43,27 +43,6 @@ export const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
-  backIcon: { fontSize: 24, color: colors.black },
-  floatingPostButton: {
-    position: "absolute",
-    bottom: 50,
-    right: 25,
-    zIndex: 25,
-  },
-  cameraIcon: {
-    width: 56,
-    height: 56,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: colors.green_deep,
-    borderRadius: 28,
-    elevation: 5,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.5,
-  },
-  cameraIconImage: { width: 28, height: 28, resizeMode: "contain" },
 
   createPostSection: {
     width: "90%",
@@ -215,10 +194,10 @@ export const styles = StyleSheet.create({
   commentBox: {
     flexDirection: "row",
     alignItems: "flex-end",
-    backgroundColor: '#f8f9fa',
+    backgroundColor: "#f8f9fa",
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#e9ecef',
+    borderColor: "#e9ecef",
     paddingHorizontal: 4,
     paddingVertical: 4,
   },
@@ -230,7 +209,7 @@ export const styles = StyleSheet.create({
     borderRadius: 16,
     marginRight: 8,
     color: colors.black,
-    backgroundColor: '#ffffff',
+    backgroundColor: "#ffffff",
     maxHeight: 80,
     minHeight: 40,
   },
@@ -239,8 +218,8 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 16,
     backgroundColor: colors.gray_light,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     minWidth: 60,
   },
   commentPostButtonActive: {
@@ -257,10 +236,10 @@ export const styles = StyleSheet.create({
 
   // 评论区域整体包装器
   commentSectionWrapper: {
-    backgroundColor: '#ffffff',
+    backgroundColor: "#ffffff",
     borderTopWidth: 1,
-    borderTopColor: '#e9ecef',
-    maxHeight: '70%', // 保留最大高度限制以防内容过多
+    borderTopColor: "#e9ecef",
+    maxHeight: "70%", // 保留最大高度限制以防内容过多
   },
 
   // 评论列表滚动视图
@@ -278,47 +257,24 @@ export const styles = StyleSheet.create({
   // 空评论容器
   emptyCommentsContainer: {
     paddingVertical: 40,
-    alignItems: 'center',
+    alignItems: "center",
   },
 
   emptyCommentsText: {
     fontSize: 15,
-    color: '#6c757d',
-    fontStyle: 'italic',
+    color: "#6c757d",
+    fontStyle: "italic",
   },
 
   // 固定在底部的输入框包装器
   commentInputWrapper: {
-    backgroundColor: '#ffffff',
+    backgroundColor: "#ffffff",
     borderTopWidth: 1,
-    borderTopColor: '#e9ecef',
+    borderTopColor: "#e9ecef",
     paddingHorizontal: 16,
     paddingVertical: 12,
   },
 
-  commentSection: {
-    paddingHorizontal: 16,
-    paddingBottom: 12,
-    maxHeight: 400, // 限制评论区域最大高度，使其可滚动
-  },
-  commentRow: {
-    flexDirection: "row",
-    marginBottom: 10,
-  },
-  commentUser: {
-    fontWeight: "600",
-    color: colors.gray_deep,
-    marginRight: 4,
-  },
-  commentText: {
-    color: colors.gray_deep,
-    flexShrink: 1,
-  },
-  noCommentText: {
-    color: colors.gray_text,
-    fontStyle: "italic",
-    marginBottom: 8,
-  },
   // 评论容器
   commentContainer: {
     marginBottom: 12,
@@ -327,13 +283,13 @@ export const styles = StyleSheet.create({
 
   // 评论卡片 - 优化设计
   commentCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: "#ffffff",
     borderRadius: 16,
     marginBottom: 16,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#e9ecef',
-    shadowColor: '#000',
+    borderColor: "#e9ecef",
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 4,
@@ -350,7 +306,7 @@ export const styles = StyleSheet.create({
     marginTop: 12,
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: '#e9ecef',
+    borderTopColor: "#e9ecef",
   },
 
   // 回复滚动容器
@@ -361,15 +317,15 @@ export const styles = StyleSheet.create({
 
   // 展开回复按钮 - 优化样式
   expandReplyButton: {
-    alignSelf: 'center',
+    alignSelf: "center",
     paddingHorizontal: 20,
     paddingVertical: 10,
     marginTop: 12,
-    backgroundColor: '#ffffff',
+    backgroundColor: "#ffffff",
     borderRadius: 16,
     borderWidth: 1.5,
     borderColor: colors.gold_deep,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
@@ -379,37 +335,37 @@ export const styles = StyleSheet.create({
   expandReplyButtonText: {
     fontSize: 13,
     color: colors.gold_deep,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 
   // 加载回复按钮
   loadRepliesButton: {
-    alignSelf: 'flex-start',
+    alignSelf: "flex-start",
     paddingHorizontal: 12,
     paddingVertical: 6,
     marginTop: 8,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: "#f8f9fa",
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#e9ecef',
+    borderColor: "#e9ecef",
   },
 
   loadRepliesButtonText: {
     fontSize: 12,
-    color: '#6c757d',
-    fontWeight: '500',
+    color: "#6c757d",
+    fontWeight: "500",
   },
 
   // 加载中状态
   loadingReplies: {
     paddingVertical: 8,
-    alignItems: 'center',
+    alignItems: "center",
   },
 
   loadingRepliesText: {
     fontSize: 12,
-    color: '#6c757d',
-    fontStyle: 'italic',
+    color: "#6c757d",
+    fontStyle: "italic",
   },
 
   // 回复按钮
@@ -569,11 +525,11 @@ export const styles = StyleSheet.create({
     paddingVertical: 12,
     marginTop: 16,
     marginBottom: 8,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: "#f8f9fa",
     borderRadius: 20,
     borderWidth: 1.5,
     borderColor: colors.gold_deep,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
@@ -584,7 +540,7 @@ export const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.gold_deep,
     fontWeight: "600",
-    textAlign: 'center',
+    textAlign: "center",
   },
   previewContainer: {
     marginTop: 10,
@@ -607,7 +563,6 @@ export const styles = StyleSheet.create({
     height: 24,
     alignItems: "center",
     justifyContent: "center",
-    
   },
   removeImageText: {
     color: "#fff",
@@ -615,22 +570,22 @@ export const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   loadingContainer: {
-  flex: 1,
-  justifyContent: 'center',
-  alignItems: 'center',
-  backgroundColor: '#F9F5EC',
-},
-emptyContainer: {
-  flex: 1,
-  justifyContent: 'center',
-  alignItems: 'center',
-  paddingVertical: 100,
-},
-emptyText: {
-  fontSize: 16,
-  color: '#666',
-  textAlign: 'center',
-},
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#F9F5EC",
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 100,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: "#666",
+    textAlign: "center",
+  },
 });
 
 // 给 Button 用的
@@ -884,8 +839,8 @@ export const commentModalStyles = StyleSheet.create({
     backgroundColor: colors.white,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    height: "80%",
-    maxHeight: "80%",
+    minHeight: "65%",
+    maxHeight: "85%",
     display: "flex",
     flexDirection: "column",
   },
@@ -896,13 +851,13 @@ export const commentModalStyles = StyleSheet.create({
     justifyContent: "center",
     paddingVertical: 16,
     paddingHorizontal: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
+    borderBottomWidth: 0.5,
+    borderBottomColor: colors.gold_deep,
     position: "relative",
   },
 
   modalTitle: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: "600",
     color: colors.black,
   },
@@ -922,7 +877,7 @@ export const commentModalStyles = StyleSheet.create({
   modalHandle: {
     width: 36,
     height: 4,
-    backgroundColor: "#d1d5db",
+    backgroundColor: colors.gold_deep,
     borderRadius: 2,
     alignSelf: "center",
     marginTop: 8,
@@ -942,7 +897,7 @@ export const commentModalStyles = StyleSheet.create({
     paddingHorizontal: 4,
     alignItems: "flex-start",
     borderBottomWidth: 0.5,
-    borderBottomColor: "#f0f0f0",
+    borderBottomColor: colors.gold_light,
   },
 
   commentAvatar: {
@@ -1072,8 +1027,8 @@ export const commentModalStyles = StyleSheet.create({
   replyInputContainer: {
     marginTop: 12,
     paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: "#f0f0f0",
+    borderTopWidth: 0.8,
+    borderTopColor: colors.gold_light,
   },
 
   replyInputWrapper: {
@@ -1102,7 +1057,7 @@ export const commentModalStyles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 8,
-    backgroundColor: "#e9ecef",
+    backgroundColor: colors.gray_light,
   },
 
   replyActionButtonActive: {
@@ -1110,7 +1065,7 @@ export const commentModalStyles = StyleSheet.create({
   },
 
   replyActionButtonDisabled: {
-    backgroundColor: "#f0f0f0",
+    backgroundColor: colors.gray_light,
   },
 
   replyActionText: {
@@ -1124,7 +1079,7 @@ export const commentModalStyles = StyleSheet.create({
   },
 
   replyActionTextDisabled: {
-    color: "#ccc",
+    color: colors.gray_nav,
   },
 
   // 加载回复按钮
@@ -1164,7 +1119,7 @@ export const commentModalStyles = StyleSheet.create({
     paddingVertical: 16,
     paddingBottom: 24,
     borderTopWidth: 1,
-    borderTopColor: "#f0f0f0",
+    borderTopColor: colors.gold_light,
     backgroundColor: colors.white,
     minHeight: 60,
   },

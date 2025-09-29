@@ -301,45 +301,31 @@ export default function SocialScreen() {
   const handleAddComment = () => {
     if (!commentText.trim() || !selectedPostForComments) return;
 
+    const newComment = {
+      id: Date.now().toString(),
+      user: "Me",
+      text: commentText,
+      isDesigner: false,
+      replyTo: null,
+    };
+
+    // 先更新选中的帖子数据，避免闪烁
+    const updatedSelectedPost = {
+      ...selectedPostForComments,
+      comments: selectedPostForComments.comments + 1,
+      commentsList: [...selectedPostForComments.commentsList, newComment],
+    };
+
+    setSelectedPostForComments(updatedSelectedPost);
+
+    // 然后更新主列表
     setPosts((prev) =>
       prev.map((p) =>
         p.id === selectedPostForComments.id
-          ? {
-              ...p,
-              comments: p.comments + 1,
-              commentsList: [
-                ...p.commentsList,
-                {
-                  id: Date.now().toString(),
-                  user: "Me",
-                  text: commentText,
-                  isDesigner: false,
-                  replyTo: null,
-                },
-              ],
-            }
+          ? updatedSelectedPost
           : p
       )
     );
-
-    // 更新选中的帖子数据
-    const updatedPost = posts.find(p => p.id === selectedPostForComments.id);
-    if (updatedPost) {
-      setSelectedPostForComments({
-        ...updatedPost,
-        comments: updatedPost.comments + 1,
-        commentsList: [
-          ...updatedPost.commentsList,
-          {
-            id: Date.now().toString(),
-            user: "Me",
-            text: commentText,
-            isDesigner: false,
-            replyTo: null,
-          },
-        ],
-      });
-    }
 
     setCommentText("");
   };
@@ -1283,8 +1269,8 @@ export default function SocialScreen() {
         <TouchableWithoutFeedback onPress={handleCloseCommentModal}>
           <View style={commentModalStyles.overlay}>
             <KeyboardAvoidingView
-              behavior={Platform.OS === "ios" ? "padding" : "height"}
-              keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
+              behavior={Platform.OS === "ios" ? "padding" : undefined}
+              keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
               style={{ flex: 1, justifyContent: "flex-end" }}
             >
               <TouchableWithoutFeedback>
@@ -1337,10 +1323,10 @@ export default function SocialScreen() {
                                   <Text style={commentModalStyles.commentReplyButton}>回复</Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity
-                                  style={commentModalStyles.commentLikeButton}
-                                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                                  // style={commentModalStyles.commentLikeButton}
+                                  // hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                                 >
-                                  <Text style={commentModalStyles.commentLikeIcon}>♡</Text>
+                                  {/* <Text style={commentModalStyles.commentLikeIcon}>♡</Text> */}
                                 </TouchableOpacity>
                               </View>
 
