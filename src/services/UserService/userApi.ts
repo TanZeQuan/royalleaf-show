@@ -5,6 +5,9 @@ const BASE_URL = "http://192.168.0.241:8080/royal";
 // 创建 axios 实例
 const api = axios.create({
   baseURL: BASE_URL,
+  headers: {
+    "Content-Type": "application/json"
+  },
   timeout: 10000,
 });
 
@@ -111,13 +114,13 @@ export const profileResetPassword = async ({
 };
 
 // ====================== 用户资料 ======================
-export const viewProfile = async (user_id: string) => {
+export const viewProfile = async (userId: string) => {
   try {
-    const response = await api.post("/view_profile", { user_id });
-    return response.data;
+    const { data } = await api.post("/view_profile", { user_id: userId });
+    return data; // { success: true, data: {...} }
   } catch (error: any) {
-    console.error("View Profile error:", error.response?.data || error.message);
-    throw error;
+    console.error("❌ viewProfile Error:", error.response?.data || error.message);
+    return { success: false, message: "网络错误" };
   }
 };
 
@@ -177,5 +180,6 @@ export const viewFiles = async (user_id: string) => {
     throw error;
   }
 };
+
 
 export default api;

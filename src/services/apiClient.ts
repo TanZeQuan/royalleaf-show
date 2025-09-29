@@ -14,7 +14,7 @@ if (Platform.OS === "android") {
 
 const api = axios.create({
   baseURL, // 只到端口，不带 /rl
-  headers: { "Content-Type": "application/json" },
+  headers: { "Content-Type": "application/json" }, // use formdata
   timeout: 10000,
 });
 

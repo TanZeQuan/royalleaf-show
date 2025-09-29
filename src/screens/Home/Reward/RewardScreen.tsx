@@ -112,15 +112,12 @@ export default function RewardScreen() {
     };
   }, [navigation]);
 
-
   const handleRedeem = () => {
     if (!voucherCode) {
       showCustomNotification("错误", "请输入优惠券代码");
       return;
     }
-
     showCustomNotification("兑换成功", `您已成功兑换优惠券: ${voucherCode}`);
-
     setMyVouchers([
       ...myVouchers,
       {
