@@ -462,4 +462,10 @@ export const styles = StyleSheet.create({
     fontSize: 12,
     color: colors.gray_text,
   },
+  loadingText: {
+  textAlign: 'center',
+  color: colors.gray_text,
+  fontSize: 16,
+  marginVertical: 20,
+}
 });
