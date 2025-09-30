@@ -4,12 +4,12 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useHideTabBar } from "hooks/useHideTabBar";
 import React, { useState } from "react";
 import {
-    Image,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { colors } from "styles";
@@ -154,6 +154,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: "rgba(215, 167, 64, 0.1)",
+    backgroundColor:colors.gold_light,
   },
   backButton: {
     width: 35,
