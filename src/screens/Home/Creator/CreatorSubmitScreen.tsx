@@ -75,8 +75,12 @@ const MySubmissionsScreen = () => {
     useEffect(() => {
         requestPermissions();
         loadEntries();
-        fetchActivities();
     }, []);
+
+    // Fetch activities when component mounts or category changes
+    useEffect(() => {
+        fetchActivities();
+    }, [params?.selectedCategory]);
 
     useEffect(() => {
         filterEntries();
@@ -107,6 +111,7 @@ const MySubmissionsScreen = () => {
     const fetchActivities = async () => {
         setActivitiesLoading(true);
         try {
+            // 首先获取所有开放的活动
             const response = await fetch('http://192.168.0.122:8080/royal/api/votes/submission-open', {
                 method: 'GET',
                 headers: {
@@ -114,13 +119,34 @@ const MySubmissionsScreen = () => {
                 }
             });
 
+            console.log('Selected category:', params?.selectedCategory);
+            console.log('Category name:', params?.categoryName);
+
             if (response.ok) {
                 const result = await response.json();
+                console.log('API Response:', result);
+
                 if (result.success && result.data) {
-                    setAvailableActivities(result.data);
+                    let activities = result.data;
+
+                    // 如果有选中的分类，进行前端过滤
+                    if (params?.selectedCategory) {
+                        // 根据分类过滤活动
+                        activities = activities.filter((activity: any) => {
+                            // 假设活动对象有 category 或 categoryId 字段
+                            return activity.category === params.selectedCategory ||
+                                   activity.categoryId === params.selectedCategory ||
+                                   activity.cateId === params.selectedCategory;
+                        });
+                        console.log('Filtered activities:', activities);
+                    }
+
+                    setAvailableActivities(activities);
                     // 默认选择第一个活动
-                    if (result.data.length > 0) {
-                        setSelectedActivity(result.data[0].id.toString());
+                    if (activities.length > 0) {
+                        setSelectedActivity(activities[0].id.toString());
+                    } else {
+                        setSelectedActivity('');
                     }
                 } else {
                     console.error('No available activities');
@@ -727,8 +753,10 @@ const MySubmissionsScreen = () => {
                                             padding: 16,
                                             alignItems: 'center',
                                         }}>
-                                            <Text style={{fontSize: 14, color: colors.gray_text, textAlign: 'center'}}>暂无可用投稿活动</Text>
-                                            <Text style={{fontSize: 12, color: colors.gray_text, textAlign: 'center', marginTop: 4}}>当前没有开放的投稿活动，请稍后再试</Text>
+                                            <Text style={{fontSize: 14, color: colors.gray_text, textAlign: 'center'}}>
+                                                暂无 "{params?.categoryName}" 分类的投稿活动
+                                            </Text>
+                                            <Text style={{fontSize: 12, color: colors.gray_text, textAlign: 'center', marginTop: 4}}>当前没有该分类的开放投稿活动，请稍后再试</Text>
                                         </View>
                                     )}
                                 </View>
