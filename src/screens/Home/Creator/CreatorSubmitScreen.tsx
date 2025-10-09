@@ -5,25 +5,25 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import * as ImagePicker from "expo-image-picker";
 import React, { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
-  Alert,
-  FlatList,
-  Image,
-  Keyboard,
-  Modal,
-  Platform,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  TouchableWithoutFeedback,
-  View
+    ActivityIndicator,
+    Alert,
+    FlatList,
+    Image,
+    Keyboard,
+    Modal,
+    Platform,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    TouchableWithoutFeedback,
+    View
 } from "react-native";
 import {
-  SafeAreaView,
-  useSafeAreaInsets,
+    SafeAreaView,
+    useSafeAreaInsets,
 } from "react-native-safe-area-context";
 import { colors } from "styles";
 import { CreatorStackParamList } from "../../../navigation/stacks/HomeNav/CreatorStack";
@@ -58,6 +58,12 @@ const MySubmissionsScreen = () => {
     const [notificationTitle, setNotificationTitle] = useState("");
     const [notificationMessage, setNotificationMessage] = useState("");
 
+    // 活动选择相关状态
+    const [availableActivities, setAvailableActivities] = useState<any[]>([]);
+    const [selectedActivity, setSelectedActivity] = useState<string>("");
+    const [activitiesLoading, setActivitiesLoading] = useState(false);
+    const [dropdownVisible, setDropdownVisible] = useState(false);
+
     const statusOptions = [
         { value: "all", label: "全部" },
         { value: "pending", label: "待审核" },
@@ -69,6 +75,7 @@ const MySubmissionsScreen = () => {
     useEffect(() => {
         requestPermissions();
         loadEntries();
+        fetchActivities();
     }, []);
 
     useEffect(() => {
@@ -96,6 +103,41 @@ const MySubmissionsScreen = () => {
         }
     };
 
+    // 获取投稿开放的活动
+    const fetchActivities = async () => {
+        setActivitiesLoading(true);
+        try {
+            const response = await fetch('http://192.168.0.122:8080/royal/api/votes/submission-open', {
+                method: 'GET',
+                headers: {
+                    'accept': '*/*'
+                }
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                if (result.success && result.data) {
+                    setAvailableActivities(result.data);
+                    // 默认选择第一个活动
+                    if (result.data.length > 0) {
+                        setSelectedActivity(result.data[0].id.toString());
+                    }
+                } else {
+                    console.error('No available activities');
+                    setAvailableActivities([]);
+                }
+            } else {
+                console.error('Failed to fetch activities:', response.status);
+                setAvailableActivities([]);
+            }
+        } catch (error) {
+            console.error('Error fetching activities:', error);
+            setAvailableActivities([]);
+        } finally {
+            setActivitiesLoading(false);
+        }
+    };
+
     const loadEntries = async () => {
         setIsLoading(true);
         try {
@@ -118,61 +160,6 @@ const MySubmissionsScreen = () => {
                             : undefined,
                     }));
                 }
-            }
-
-            // 添加一些示例数据供演示
-            if (allEntries.length === 0) {
-                const mockEntries: ContestEntry[] = [
-                    {
-                        id: "1",
-                        category: "product_innovation",
-                        categoryName: "产品创新",
-                        image: "https://picsum.photos/400/300?random=1",
-                        title: "智能垃圾分类系统",
-                        description: "基于AI识别的智能垃圾分类解决方案",
-                        status: "approved",
-                        submittedAt: new Date("2024-01-15"),
-                        feedback: "创意很好，符合要求！",
-                        likes: 128,
-                        views: 567,
-                        isPublic: true,
-                        authorName: "当前用户",
-                    },
-                    {
-                        id: "2",
-                        category: "service_optimization",
-                        categoryName: "服务优化",
-                        image: "https://picsum.photos/400/300?random=2",
-                        title: "外卖配送路径优化",
-                        description: "通过算法优化外卖配送路径，提高效率",
-                        status: "rejected",
-                        submittedAt: new Date("2024-01-10"),
-                        feedback: "方案不够具体，缺少技术实现细节，请重新完善后再次提交。",
-                        likes: 45,
-                        views: 234,
-                        isPublic: false,
-                        authorName: "当前用户",
-                    },
-                    {
-                        id: "3",
-                        category: "marketing_strategy",
-                        categoryName: "营销策略",
-                        image: "https://picsum.photos/400/300?random=3",
-                        title: "社交媒体营销策略",
-                        description: "基于数据分析的精准营销方案",
-                        status: "pending",
-                        submittedAt: new Date("2024-01-20"),
-                        likes: 0,
-                        views: 89,
-                        isPublic: true,
-                        authorName: "当前用户",
-                    },
-                ];
-                allEntries = mockEntries;
-                await AsyncStorage.setItem(
-                    "contestEntries",
-                    JSON.stringify(mockEntries)
-                );
             }
 
             setEntries(allEntries);
@@ -200,8 +187,6 @@ const MySubmissionsScreen = () => {
 
         setFilteredEntries(filtered);
     };
-
-    const handleGoBack = () => navigation.goBack();
 
     const showUploadModal = () => {
         setUploadModalVisible(true);
@@ -330,6 +315,14 @@ const MySubmissionsScreen = () => {
             showCustomNotification("提示", "请选择一张图片");
             return;
         }
+        if (availableActivities.length === 0) {
+            showCustomNotification("提示", "当前没有可用的投稿活动");
+            return;
+        }
+        if (!selectedActivity) {
+            showCustomNotification("提示", "请选择投稿活动");
+            return;
+        }
         setUploadModalVisible(false);
         setConfirmModalVisible(true);
     };
@@ -350,6 +343,10 @@ const MySubmissionsScreen = () => {
         setEntryDescription("");
         setIsPublicEntry(true);
         setSelectedImage(null);
+        // 重置为第一个活动（如果有）
+        if (availableActivities.length > 0) {
+            setSelectedActivity(availableActivities[0].id.toString());
+        }
     };
 
     const handleSubmitEntry = async () => {
@@ -358,6 +355,10 @@ const MySubmissionsScreen = () => {
 
         try {
             await new Promise((resolve) => setTimeout(resolve, 1500));
+
+            const selectedActivityObj = availableActivities.find(
+                activity => activity.id.toString() === selectedActivity
+            );
 
             const newEntry: ContestEntry = {
                 id: Date.now().toString(),
@@ -552,21 +553,28 @@ const MySubmissionsScreen = () => {
                 visible={uploadModalVisible}
                 transparent
                 animationType="slide"
-                onRequestClose={() => setUploadModalVisible(false)}
+                onRequestClose={() => {
+                    setUploadModalVisible(false);
+                    setDropdownVisible(false);
+                }}
             >
-                <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-                    <View style={styles.modalOverlay}>
-                        {/* 点击外部关闭 Modal */}
-                        <TouchableOpacity
-                            style={StyleSheet.absoluteFill} // 占满整个屏幕
-                            activeOpacity={1}
-                            onPress={() => {
+                <View style={styles.modalOverlay}>
+                    {/* 点击外部关闭 Modal */}
+                    <TouchableOpacity
+                        style={StyleSheet.absoluteFill}
+                        activeOpacity={1}
+                        onPress={() => {
+                            if (dropdownVisible) {
+                                setDropdownVisible(false);
+                            } else {
                                 setUploadModalVisible(false);
                                 resetEntryForm();
-                            }}
-                        />
+                            }
+                        }}
+                    />
 
-                        {/* Modal 内部内容，点击不会关闭 */}
+                    {/* Modal 内部内容，点击不会关闭 */}
+                    <TouchableWithoutFeedback onPress={() => {}}>
                         <ScrollView style={styles.formModalScroll}>
                             <View style={styles.formModalContent}>
                                 <Text style={styles.modalTitle}>
@@ -589,6 +597,141 @@ const MySubmissionsScreen = () => {
                                         </Text>
                                     </TouchableOpacity>
                                 )}
+
+                                {/* 活动选择器 - Dropdown 方式 */}
+                                <View style={styles.formSection}>
+                                    <Text style={styles.formLabel}>选择投稿活动 *</Text>
+                                    {activitiesLoading ? (
+                                        <View style={{flexDirection: 'row', alignItems: 'center', padding: 12}}>
+                                            <ActivityIndicator size="small" color={colors.gold_deep} />
+                                            <Text style={{marginLeft: 8, color: colors.gray_text}}>加载活动中...</Text>
+                                        </View>
+                                    ) : availableActivities.length > 0 ? (
+                                        <View style={{position: 'relative'}}>
+                                            <TouchableOpacity
+                                                style={{
+                                                    backgroundColor: colors.white,
+                                                    borderWidth: 1,
+                                                    borderColor: colors.gold_deep,
+                                                    borderRadius: 8,
+                                                    paddingHorizontal: 12,
+                                                    paddingVertical: 12,
+                                                    flexDirection: 'row',
+                                                    justifyContent: 'space-between',
+                                                    alignItems: 'center',
+                                                }}
+                                                onPress={() => setDropdownVisible(!dropdownVisible)}
+                                            >
+                                                <Text style={{fontSize: 16, color: colors.black}}>
+                                                    {availableActivities.find(a => a.id.toString() === selectedActivity)?.name || '请选择活动'}
+                                                </Text>
+                                                <Ionicons
+                                                    name={dropdownVisible ? "chevron-up" : "chevron-down"}
+                                                    size={20}
+                                                    color={colors.gray_text}
+                                                />
+                                            </TouchableOpacity>
+
+                                            {/* 下拉菜单 - 直接在选择器下方 */}
+                                            {dropdownVisible && (
+                                                <View style={{
+                                                    position: 'absolute',
+                                                    top: 50,
+                                                    left: 0,
+                                                    right: 0,
+                                                    backgroundColor: colors.white,
+                                                    borderWidth: 1,
+                                                    borderColor: colors.gold_deep,
+                                                    borderRadius: 8,
+                                                    maxHeight: 180,
+                                                    zIndex: 999999,
+                                                    elevation: 999,
+                                                    shadowColor: '#000',
+                                                    shadowOffset: { width: 0, height: 4 },
+                                                    shadowOpacity: 0.3,
+                                                    shadowRadius: 8,
+                                                }}>
+                                                    <ScrollView
+                                                        showsVerticalScrollIndicator={false}
+                                                        nestedScrollEnabled={true}
+                                                    >
+                                                        {availableActivities.map((activity) => (
+                                                            <TouchableOpacity
+                                                                key={activity.id}
+                                                                style={{
+                                                                    paddingHorizontal: 16,
+                                                                    paddingVertical: 14,
+                                                                    borderBottomWidth: activity.id === availableActivities[availableActivities.length - 1].id ? 0 : 1,
+                                                                    borderBottomColor: colors.gold_light + '50',
+                                                                    backgroundColor: selectedActivity === activity.id.toString()
+                                                                        ? colors.gold_light + '40'
+                                                                        : colors.white,
+                                                                }}
+                                                                onPress={() => {
+                                                                    setSelectedActivity(activity.id.toString());
+                                                                    setDropdownVisible(false);
+                                                                }}
+                                                            >
+                                                                <Text style={{
+                                                                    fontSize: 15,
+                                                                    fontWeight: selectedActivity === activity.id.toString() ? '600' : '400',
+                                                                    color: colors.black,
+                                                                    marginBottom: 4,
+                                                                }}>
+                                                                    {activity.name}
+                                                                </Text>
+                                                                <Text style={{
+                                                                    fontSize: 12,
+                                                                    color: colors.gray_text,
+                                                                    marginBottom: 2,
+                                                                }}>
+                                                                    {activity.desc}
+                                                                </Text>
+                                                                <Text style={{
+                                                                    fontSize: 10,
+                                                                    color: colors.gray_text,
+                                                                    fontStyle: 'italic',
+                                                                }}>
+                                                                    截止: {new Date(activity.submitStop).toLocaleDateString('zh-CN')}
+                                                                </Text>
+                                                            </TouchableOpacity>
+                                                        ))}
+                                                    </ScrollView>
+                                                </View>
+                                            )}
+
+                                            {/* 显示选中活动的详细信息 - 始终显示 */}
+                                            {selectedActivity && (
+                                                <View style={{
+                                                    backgroundColor: colors.gold_light + '20',
+                                                    borderRadius: 8,
+                                                    padding: 12,
+                                                    marginTop: 8,
+                                                }}>
+                                                    <Text style={{fontSize: 14, fontWeight: '600', color: colors.black, marginBottom: 4}}>
+                                                        {availableActivities.find(a => a.id.toString() === selectedActivity)?.name}
+                                                    </Text>
+                                                    <Text style={{fontSize: 12, color: colors.gray_text, marginBottom: 4}}>
+                                                        {availableActivities.find(a => a.id.toString() === selectedActivity)?.desc}
+                                                    </Text>
+                                                    <Text style={{fontSize: 11, color: colors.gray_text, fontStyle: 'italic'}}>
+                                                        投稿截止: {new Date(availableActivities.find(a => a.id.toString() === selectedActivity)?.submitStop).toLocaleDateString('zh-CN')}
+                                                    </Text>
+                                                </View>
+                                            )}
+                                        </View>
+                                    ) : (
+                                        <View style={{
+                                            backgroundColor: colors.gold_light + '20',
+                                            borderRadius: 8,
+                                            padding: 16,
+                                            alignItems: 'center',
+                                        }}>
+                                            <Text style={{fontSize: 14, color: colors.gray_text, textAlign: 'center'}}>暂无可用投稿活动</Text>
+                                            <Text style={{fontSize: 12, color: colors.gray_text, textAlign: 'center', marginTop: 4}}>当前没有开放的投稿活动，请稍后再试</Text>
+                                        </View>
+                                    )}
+                                </View>
 
                                 <View style={styles.formSection}>
                                     <Text style={styles.formLabel}>创意标题 *</Text>
@@ -622,6 +765,7 @@ const MySubmissionsScreen = () => {
                                         style={[styles.modalButton, styles.cancelButton]}
                                         onPress={() => {
                                             setUploadModalVisible(false);
+                                            setDropdownVisible(false);
                                             resetEntryForm();
                                         }}
                                     >
@@ -636,8 +780,8 @@ const MySubmissionsScreen = () => {
                                 </View>
                             </View>
                         </ScrollView>
-                    </View>
-                </TouchableWithoutFeedback>
+                    </TouchableWithoutFeedback>
+                </View>
             </Modal>
 
             {/* 图片来源选择弹窗 */}
