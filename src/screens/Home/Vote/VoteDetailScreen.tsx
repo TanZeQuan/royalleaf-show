@@ -55,45 +55,62 @@ const VoteDetailScreen = () => {
 
   // 获取产品详情和评论
   useEffect(() => {
-    const fetchProductDetailsAndComments = async () => {
-      if (!initialProduct && productId) {
-        try {
-          setLoading(true);
-          
-          // 并行获取产品详情和评论
-          const [productDetails, commentsData] = await Promise.all([
-            voteActivityService.getVoteProductDetails(productId),
-            voteActivityService.getComments(productId)
-          ]);
-          
-          if (productDetails) {
-            setProduct(productDetails);
-            setVoteCount(productDetails.voted);
-          }
-          
-          if (commentsData && commentsData.length > 0) {
-            setComments(commentsData);
-            console.log("成功加载评论数据:", commentsData.length, "条");
-          }
-          
-        } catch (error) {
-          console.error("获取数据出错:", error);
-        } finally {
-          setLoading(false);
-        }
-      } else if (initialProduct) {
-        // 如果从导航传入了 initialProduct，单独获取评论
-        try {
-          const commentsData = await voteActivityService.getComments(productId);
-          if (commentsData && commentsData.length > 0) {
-            setComments(commentsData);
-            console.log("成功加载评论数据:", commentsData.length, "条");
-          }
-        } catch (error) {
-          console.error("获取评论出错:", error);
-        }
+   const fetchProductDetailsAndComments = async () => {
+  if (!initialProduct && productId) {
+    try {
+      setLoading(true);
+      
+      console.log("🔄 开始获取产品详情和评论...", { productId });
+      
+      const [productDetails, commentsData] = await Promise.all([
+        voteActivityService.getVoteProductDetails(productId),
+        voteActivityService.getComments(productId)
+      ]);
+      
+      console.log("📦 产品详情结果:", productDetails);
+      console.log("💬 评论数据结果:", commentsData);
+      console.log("评论数据类型:", typeof commentsData);
+      console.log("评论数据长度:", commentsData?.length);
+      
+      if (productDetails) {
+        setProduct(productDetails);
+        setVoteCount(productDetails.voted);
       }
-    };
+      
+      if (commentsData && commentsData.length > 0) {
+        setComments(commentsData);
+        console.log("✅ 成功加载评论数据:", commentsData);
+      } else {
+        console.log("❌ 没有评论数据或数据为空");
+        setComments([]);
+      }
+      
+    } catch (error) {
+      console.error("❌ 获取数据出错:", error);
+    } finally {
+      setLoading(false);
+    }
+  } else if (initialProduct) {
+    // 如果从导航传入了 initialProduct，单独获取评论
+    try {
+      console.log("🔄 单独获取评论...", { productId });
+      const commentsData = await voteActivityService.getComments(productId);
+      
+      console.log("💬 单独获取的评论数据:", commentsData);
+      console.log("评论数据长度:", commentsData?.length);
+      
+      if (commentsData && commentsData.length > 0) {
+        setComments(commentsData);
+        console.log("✅ 成功加载评论数据:", commentsData.length, "条");
+      } else {
+        console.log("❌ 没有评论数据");
+        setComments([]);
+      }
+    } catch (error) {
+      console.error("❌ 获取评论出错:", error);
+    }
+  }
+};
 
     fetchProductDetailsAndComments();
   }, [productId, initialProduct]);

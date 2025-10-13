@@ -12,10 +12,18 @@ export interface RouteParams {
 }
 
 export interface Comment {
-  id: string;
-  user: string;
-  text: string;
-  timeAgo: string;
+  id: string | number;  // 支持 string 或 number
+  commentId?: string;   // 可选
+  subId?: string;       // 可选
+  user: string;         // 必需 - 用户显示名称
+  userId?: string;      // 可选 - 保留原始
+  text: string;         // 必需 - 评论内容
+  timeAgo: string;      // 必需 - 相对时间
+  desc?: string;        // 可选 - 保留原始 desc
+  createdAt?: string;   // 可选 - 添加原始时间
+  isDelete?: number;
+  modifyAt?: string;
+  deleted?: boolean;
   isDesigner?: boolean;
   replyTo?: string;
   replyText?: string;
@@ -137,16 +145,17 @@ export const voteActivityService = {
     }
   },
 
-  // ✅ 新增：获取评论列表
   getComments: async (subId: string): Promise<Comment[]> => {
     try {
-      const response = await api.get<ApiResponse<Comment[]>>(
+      const response = await api.get<ApiResponse<any[]>>(
         `${API_BASE_URL}/api/votes/submit/comments/submission/${subId}`
       );
 
-      if (response.data.success) {
-        console.log("获取评论成功:", response.data.data.length, "条评论");
-        return response.data.data;
+      if (response.data.success && response.data.data) {
+        // 使用 transformComment 函数转换后端数据为前端格式
+        const transformedComments = response.data.data.map(transformComment);
+        console.log("获取评论成功:", transformedComments.length, "条评论");
+        return transformedComments;
       }
       return [];
     } catch (error) {
@@ -155,7 +164,6 @@ export const voteActivityService = {
     }
   },
 
-  // ✅ 检查用户是否已投票
   checkUserVote: async (votesId: string): Promise<boolean> => {
     try {
       const user = await getUserData();
@@ -171,4 +179,39 @@ export const voteActivityService = {
       return false;
     }
   },
+};
+
+// 计算相对时间
+const getTimeAgo = (dateString: string): string => {
+  try {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+    if (diffInSeconds < 60) return '刚刚';
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}分钟前`;
+    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}小时前`;
+    return `${Math.floor(diffInSeconds / 86400)}天前`;
+  } catch (error) {
+    return '未知时间';
+  }
+};
+
+// 转换评论数据
+const transformComment = (apiComment: any): Comment => {
+  return {
+    id: apiComment.id,
+    commentId: apiComment.commentId,
+    subId: apiComment.subId,
+    userId: apiComment.userId,
+    user: apiComment.userId, // 先用 userId 作为显示名
+    text: apiComment.desc || apiComment.text || '',
+    desc: apiComment.desc,
+    timeAgo: getTimeAgo(apiComment.createdAt),
+    createdAt: apiComment.createdAt,
+    isDelete: apiComment.isDelete,
+    modifyAt: apiComment.modifyAt,
+    deleted: apiComment.deleted,
+    isDesigner: apiComment.isDesigner || false
+  };
 };
