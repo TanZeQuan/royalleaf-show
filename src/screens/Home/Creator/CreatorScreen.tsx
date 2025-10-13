@@ -68,8 +68,6 @@ const CreatorStack = () => {
       selectedCategory: categoryId,
       categoryName: category?.title || '通用',
     });
-
-
   };
 
   return (

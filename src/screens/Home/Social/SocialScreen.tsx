@@ -23,7 +23,7 @@ import {
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
 import { HomeStackParamList } from "../../../navigation/stacks/HomeNav/HomeStack";
-import { getAllPostsWithComments, getCommentReplies, postCommentReply } from "../../../services/SocialService/SocialScreenApi"; // 新增导入
+import { getAllPostsWithComments, getCommentReplies, postCommentReply, likeComment, unlikePost, likePost, createPost, deletePost, updateWrappedPost, updatePost } from "../../../services/SocialService/SocialScreenApi"; // 新增导入
 import {
   commentModalStyles,
   newStyles,
@@ -32,6 +32,7 @@ import {
   styles,
   topicStyles,
 } from "../Social/SocialStyles";
+import { getUserData } from "../../../utils/storage";
 import { Comment } from "./TopicSlice";
 
 const { width: screenWidth } = Dimensions.get("window");
@@ -201,6 +202,25 @@ export default function SocialScreen() {
   const navigation = useNavigation<SocialScreenNavigationProp>();
   const [posts, setPosts] = useState<any[]>([]); // 初始为空数组
   const [newPostText, setNewPostText] = useState("");
+
+  // 获取当前用户信息
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const userData = await getUserData();
+        if (userData) {
+          console.log("✅ Loaded user from storage:", userData);
+          setUser(userData);
+        } else {
+          console.warn("⚠️ No user data found in storage");
+        }
+      } catch (error) {
+        console.error("❌ Failed to load user:", error);
+      }
+    })();
+  }, []);
   const [showCreatePost, setShowCreatePost] = useState(false);
   const [showCommentModal, setShowCommentModal] = useState(false);
   const [selectedPostForComments, setSelectedPostForComments] = useState<any>(null);
@@ -275,18 +295,59 @@ export default function SocialScreen() {
     };
   }, [navigation]);
 
-  const handleLike = (postId: string) => {
-    setPosts((prev) =>
-      prev.map((p) =>
-        p.id === postId
-          ? {
+  // 在 SocialScreen 组件中修复 handleLike 函数
+  const handleLike = async (postId: string) => {
+    const originalPosts = [...posts];
+    const post = posts.find(p => p.id === postId);
+
+    if (!post) return;
+
+    try {
+      // 乐观更新：立即更新UI
+      setPosts((prev) =>
+        prev.map((p) =>
+          p.id === postId
+            ? {
               ...p,
               isLiked: !p.isLiked,
               likes: p.isLiked ? p.likes - 1 : p.likes + 1,
             }
-          : p
-      )
-    );
+            : p
+        )
+      );
+
+      // 修复：调用正确的帖子点赞API
+      if (post.isLiked) {
+        await unlikePost(postId); // 取消点赞
+      } else {
+        await likePost(postId);   // 点赞
+      }
+
+    } catch (error: any) {
+      console.error('点赞失败:', error);
+
+      // 出错时恢复原始状态
+      setPosts(originalPosts);
+
+      // 只在非网络错误时显示提示
+      if (!error.message?.includes('Network request failed')) {
+        Alert.alert('错误', '点赞失败，请稍后重试');
+      }
+    }
+  };
+
+  const handleCommentLike = async (commentId: string) => {
+    try {
+      // 调用评论点赞API
+      await likeComment(commentId);
+
+      // 如果需要更新本地评论的点赞状态，可以在这里处理
+      // 这取决于你的UI是否需要显示评论的点赞数
+
+    } catch (error) {
+      console.error('评论点赞失败:', error);
+      Alert.alert('错误', '评论点赞失败，请稍后重试');
+    }
   };
 
   const handleComment = (postId: string) => {
@@ -444,38 +505,54 @@ export default function SocialScreen() {
     }
   };
 
-  const handleCreatePost = () => {
-    if (!newPostImage) {
-      setShowPhotoRequired(true);
+  const handleCreatePost = async () => {
+    if (!newPostText.trim() && !newPostImage) {
+      Alert.alert("提示", "请填写内容或添加图片");
       return;
     }
 
-    const newPost = {
-      id: Date.now().toString(),
-      username: "Me",
-      avatar: "🧑🏻",
-      image: { uri: newPostImage },
-      caption: newPostText,
-      likes: 0,
-      comments: 0,
-      timeAgo: "刚刚",
-      isLiked: false,
-      isSaved: false,
-      commentsList: [],
-    };
+    try {
+      const postData = {
+        title: newPostText.trim() || "无标题",
+        content: newPostText.trim(),
+        author: user?.user_id || "unknown", // ✅ 用用户ID
+      };
 
-    setPosts((prev) => [newPost, ...prev]);
-    setNewPostText("");
-    setNewPostImage(null);
-    setShowCreatePost(false);
-    setShowPhotoRequired(false);
-  };
+      console.log("📦 postData before API:", postData);
 
-  const handleCloseCreatePost = () => {
-    setShowCreatePost(false);
-    setNewPostText(""); // 清空文字
-    setNewPostImage(null); // 清空图片
-    setShowPhotoRequired(false); // 清空提示
+      const response = await createPost(postData);
+      console.log("✅ Post created:", response);
+
+      // ✅ 确保用户名保持
+      const newPost = {
+        id: Date.now().toString(),
+        user_id: user?.user_id || "",
+        username: user?.username || "匿名用户", // ✅ 优先使用 AsyncStorage 中的用户名
+        avatar: user?.image || "🧑🏻", // ✅ 如果没有头像，就用默认的表情
+        image: newPostImage ? { uri: newPostImage } : null,
+        caption: newPostText.trim(),
+        likes: 0,
+        comments: 0,
+        timeAgo: "刚刚",
+        isLiked: false,
+        isSaved: false,
+        commentsList: [],
+      };
+
+      // 更新前端帖子列表
+      setPosts((prev) => [newPost, ...prev]);
+
+      // 重置输入框
+      setNewPostText("");
+      setNewPostImage(null);
+      setShowCreatePost(false);
+      setShowPhotoRequired(false);
+
+      Alert.alert("成功", "帖子发布成功！");
+    } catch (error: any) {
+      console.error("❌ Failed to create post:", error);
+      Alert.alert("错误", error.message || "发布失败，请稍后再试");
+    }
   };
 
   // 拍照
@@ -607,9 +684,22 @@ export default function SocialScreen() {
     }
   };
 
-  const confirmDelete = () => {
-    if (postToDelete) {
+  const confirmDelete = async () => {
+    if (!postToDelete) return;
+
+    try {
+      // 🔥 调用后端 API 删除帖子
+      await deletePost(postToDelete);
+      console.log(`✅ 已从后端删除帖子 ${postToDelete}`);
+
+      // ✅ 前端同步移除
       setPosts((prev) => prev.filter((p) => p.id !== postToDelete));
+
+      Alert.alert("成功", "帖子已删除！");
+    } catch (err) {
+      console.error("❌ 删除帖子失败:", err);
+      Alert.alert("错误", "删除失败，请稍后再试");
+    } finally {
       setShowDeleteDropdown(false);
       setPostToDelete(null);
     }
@@ -632,16 +722,30 @@ export default function SocialScreen() {
     }
   };
 
-  const confirmEdit = () => {
+  const confirmEdit = async () => {
     if (editingPostId && editPostText.trim()) {
-      setPosts((prev) =>
-        prev.map((p) =>
-          p.id === editingPostId ? { ...p, caption: editPostText } : p
-        )
-      );
-      Alert.alert("编辑成功", "帖子已更新");
-      setEditingPostId(null);
-      setEditPostText("");
+      try {
+        const postData = { content: editPostText.trim() };
+
+        // 调用后端接口
+        const res = await updatePost(editingPostId, postData);
+        console.log("✅ 更新成功:", res);
+
+        // 同步更新前端 UI
+        setPosts((prev) =>
+          prev.map((p) =>
+            p.id === editingPostId ? { ...p, caption: editPostText } : p
+          )
+        );
+
+        Alert.alert("编辑成功", "帖子已更新");
+      } catch (err) {
+        console.error("❌ 更新帖子失败:", err);
+        Alert.alert("错误", "更新帖子失败，请稍后再试");
+      } finally {
+        setEditingPostId(null);
+        setEditPostText("");
+      }
     }
   };
 
@@ -701,7 +805,7 @@ export default function SocialScreen() {
               <View style={styles.createPostSection}>
                 {/* 关闭按钮绝对定位 */}
                 <TouchableOpacity
-                  onPress={handleCloseCreatePost}
+                  onPress={handleCreatePost}
                   style={styles.closeButtonAbsolute}
                 >
                   <Text style={styles.closeButtonText}>×</Text>
@@ -1323,99 +1427,101 @@ export default function SocialScreen() {
                                   <Text style={commentModalStyles.commentReplyButton}>回复</Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity
-                                  // style={commentModalStyles.commentLikeButton}
-                                  // hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                                  onPress={() => handleCommentLike(comment.id)}
+                                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                                 >
-                                  {/* <Text style={commentModalStyles.commentLikeIcon}>♡</Text> */}
+                                  <Text style={commentModalStyles.commentLikeIcon}>
+                                    {comment.isLiked ? '❤️' : '♡'}
+                                  </Text>
                                 </TouchableOpacity>
                               </View>
 
-                            {/* Reply Input for this comment */}
-                            {activeReplyCommentId === comment.id && (
-                              <View style={commentModalStyles.replyInputContainer}>
-                                <View style={commentModalStyles.replyInputWrapper}>
-                                  <TextInput
-                                    style={commentModalStyles.replyInput}
-                                    placeholder={`回复 ${comment.user}...`}
-                                    value={replyText}
-                                    onChangeText={setReplyText}
-                                    multiline
-                                    maxLength={500}
-                                  />
-                                  <View style={commentModalStyles.replyActions}>
-                                    <TouchableOpacity
-                                      style={commentModalStyles.replyActionButton}
-                                      onPress={() => {
-                                        setActiveReplyCommentId(null);
-                                        setReplyText("");
-                                      }}
-                                    >
-                                      <Text style={commentModalStyles.replyActionText}>取消</Text>
-                                    </TouchableOpacity>
-                                    <TouchableOpacity
-                                      style={[
-                                        commentModalStyles.replyActionButton,
-                                        commentModalStyles.replyActionButtonActive,
-                                        !replyText.trim() && commentModalStyles.replyActionButtonDisabled
-                                      ]}
-                                      onPress={() => handleSendReply(comment.id)}
-                                      disabled={!replyText.trim()}
-                                    >
-                                      <Text style={[
-                                        commentModalStyles.replyActionText,
-                                        commentModalStyles.replyActionTextActive,
-                                        !replyText.trim() && commentModalStyles.replyActionTextDisabled
-                                      ]}>发送</Text>
-                                    </TouchableOpacity>
+                              {/* Reply Input for this comment */}
+                              {activeReplyCommentId === comment.id && (
+                                <View style={commentModalStyles.replyInputContainer}>
+                                  <View style={commentModalStyles.replyInputWrapper}>
+                                    <TextInput
+                                      style={commentModalStyles.replyInput}
+                                      placeholder={`回复 ${comment.user}...`}
+                                      value={replyText}
+                                      onChangeText={setReplyText}
+                                      multiline
+                                      maxLength={500}
+                                    />
+                                    <View style={commentModalStyles.replyActions}>
+                                      <TouchableOpacity
+                                        style={commentModalStyles.replyActionButton}
+                                        onPress={() => {
+                                          setActiveReplyCommentId(null);
+                                          setReplyText("");
+                                        }}
+                                      >
+                                        <Text style={commentModalStyles.replyActionText}>取消</Text>
+                                      </TouchableOpacity>
+                                      <TouchableOpacity
+                                        style={[
+                                          commentModalStyles.replyActionButton,
+                                          commentModalStyles.replyActionButtonActive,
+                                          !replyText.trim() && commentModalStyles.replyActionButtonDisabled
+                                        ]}
+                                        onPress={() => handleSendReply(comment.id)}
+                                        disabled={!replyText.trim()}
+                                      >
+                                        <Text style={[
+                                          commentModalStyles.replyActionText,
+                                          commentModalStyles.replyActionTextActive,
+                                          !replyText.trim() && commentModalStyles.replyActionTextDisabled
+                                        ]}>发送</Text>
+                                      </TouchableOpacity>
+                                    </View>
                                   </View>
                                 </View>
-                              </View>
-                            )}
+                              )}
 
-                            {/* Replies */}
-                            {commentReplies[comment.id] && commentReplies[comment.id].length > 0 && (
-                              <View style={commentModalStyles.repliesContainer}>
-                                {commentReplies[comment.id].slice(0, visibleRepliesCount[comment.id] || 3).map((reply: any, index: number) => (
-                                  <View key={reply.commentLogId || index} style={commentModalStyles.replyItem}>
-                                    <View style={commentModalStyles.replyAvatar}>
-                                      <Text style={commentModalStyles.replyAvatarText}>👤</Text>
+                              {/* Replies */}
+                              {commentReplies[comment.id] && commentReplies[comment.id].length > 0 && (
+                                <View style={commentModalStyles.repliesContainer}>
+                                  {commentReplies[comment.id].slice(0, visibleRepliesCount[comment.id] || 3).map((reply: any, index: number) => (
+                                    <View key={reply.commentLogId || index} style={commentModalStyles.replyItem}>
+                                      <View style={commentModalStyles.replyAvatar}>
+                                        <Text style={commentModalStyles.replyAvatarText}>👤</Text>
+                                      </View>
+                                      <View style={commentModalStyles.replyContent}>
+                                        <Text style={commentModalStyles.replyUser}>{reply.userId || 'User'}</Text>
+                                        <Text style={commentModalStyles.replyText}>{reply.desc}</Text>
+                                      </View>
                                     </View>
-                                    <View style={commentModalStyles.replyContent}>
-                                      <Text style={commentModalStyles.replyUser}>{reply.userId || 'User'}</Text>
-                                      <Text style={commentModalStyles.replyText}>{reply.desc}</Text>
-                                    </View>
-                                  </View>
-                                ))}
+                                  ))}
 
-                                {/* 查看更多回复按钮 */}
-                                {commentReplies[comment.id].length > (visibleRepliesCount[comment.id] || 3) && (
-                                  <TouchableOpacity
-                                    style={commentModalStyles.loadMoreReplies}
-                                    onPress={() => showMoreReplies(comment.id)}
-                                  >
-                                    <Text style={commentModalStyles.loadMoreRepliesText}>
-                                      查看更多回复 ({commentReplies[comment.id].length - (visibleRepliesCount[comment.id] || 3)}条)
-                                    </Text>
-                                  </TouchableOpacity>
-                                )}
-                              </View>
-                            )}
+                                  {/* 查看更多回复按钮 */}
+                                  {commentReplies[comment.id].length > (visibleRepliesCount[comment.id] || 3) && (
+                                    <TouchableOpacity
+                                      style={commentModalStyles.loadMoreReplies}
+                                      onPress={() => showMoreReplies(comment.id)}
+                                    >
+                                      <Text style={commentModalStyles.loadMoreRepliesText}>
+                                        查看更多回复 ({commentReplies[comment.id].length - (visibleRepliesCount[comment.id] || 3)}条)
+                                      </Text>
+                                    </TouchableOpacity>
+                                  )}
+                                </View>
+                              )}
 
-                            {/* Load replies button */}
-                            {!commentReplies[comment.id] && !loadingReplies.has(comment.id) && (
-                              <TouchableOpacity
-                                style={commentModalStyles.loadRepliesButton}
-                                onPress={() => loadCommentReplies(comment.id)}
-                              >
-                                <Text style={commentModalStyles.loadRepliesButtonText}>查看回复</Text>
-                              </TouchableOpacity>
-                            )}
+                              {/* Load replies button */}
+                              {!commentReplies[comment.id] && !loadingReplies.has(comment.id) && (
+                                <TouchableOpacity
+                                  style={commentModalStyles.loadRepliesButton}
+                                  onPress={() => loadCommentReplies(comment.id)}
+                                >
+                                  <Text style={commentModalStyles.loadRepliesButtonText}>查看回复</Text>
+                                </TouchableOpacity>
+                              )}
 
-                            {loadingReplies.has(comment.id) && (
-                              <View style={commentModalStyles.loadingReplies}>
-                                <Text style={commentModalStyles.loadingRepliesText}>加载回复中...</Text>
-                              </View>
-                            )}
+                              {loadingReplies.has(comment.id) && (
+                                <View style={commentModalStyles.loadingReplies}>
+                                  <Text style={commentModalStyles.loadingRepliesText}>加载回复中...</Text>
+                                </View>
+                              )}
                             </View>
                           </View>
                         </TouchableWithoutFeedback>

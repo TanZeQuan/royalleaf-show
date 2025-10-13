@@ -260,7 +260,7 @@ const styles = StyleSheet.create({
   // Level Card with background
   levelCard: {
     width: width * 0.88, // 105% of screen width
-    padding: 18,
+    padding: 10,
     margin: 5,
     marginTop: 60,
   },

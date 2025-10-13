@@ -151,12 +151,13 @@ export default function ProfileInfoScreen() {
         if (uploadResult.success) imageUrl = uploadResult.data.link;
       }
 
+      // ✅ 这里改了：后端要求 name 必填，我们自动传一个默认值（例如用户名或 "User"）
       const payload: any = {
-        user_id: currentUserId,                          // 必填
-        username: formData.username?.trim() || formData.username || "",
-        name: formData.name?.trim() || formData.name || "",
+        user_id: currentUserId,
+        username: formData.username?.trim() || "",
+        name: formData.username?.trim() || "User", // 👈 自动填充
         image: imageUrl || avatar || "",
-        address: formData.address?.trim() || formData.address || "",
+        address: formData.address?.trim() || "",
         gender: [0, 1, 2].includes(formData.gender) ? formData.gender : 0,
         dob: selectedDate ? formatDate(selectedDate) : formData.dob || "1900-01-01",
       };
@@ -166,7 +167,7 @@ export default function ProfileInfoScreen() {
       const response = await editProfile(payload);
 
       if (response.success) {
-        // 更新本地数据
+        // 更新本地缓存
         const stored = await AsyncStorage.getItem("userData");
         if (stored) {
           const userData = JSON.parse(stored);
@@ -236,13 +237,6 @@ export default function ProfileInfoScreen() {
             onChangeText={(text: string) => setFormData({ ...formData, username: text })}
             placeholder="输入用户名"
             label="用户名"
-            iconName="person-outline"
-          />
-          <InputField
-            value={formData.name}
-            onChangeText={(text: string) => setFormData({ ...formData, name: text })}
-            placeholder="输入您的姓名"
-            label="姓名 *"
             iconName="person-outline"
           />
           <InputField
@@ -413,7 +407,18 @@ const styles = StyleSheet.create({
     backgroundColor: "#F9F5EC",
   },
   backButton: {
-    padding: 4,
+    padding: 5,
+    width: 35,
+    height: 35,
+    borderRadius: 20,
+    backgroundColor: "#fff",
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   headerTitle: {
     fontSize: 18,

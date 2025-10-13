@@ -6,6 +6,7 @@ import React, { useEffect, useState, useLayoutEffect } from "react";
 import { Image, Platform, StatusBar, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import QRCode from "react-native-qrcode-svg";
 import { ProfileStackParamList } from "../../../navigation/stacks/ProfileNav/ProfileStack";
+
 type ProfileScreenNavigationProp = NativeStackNavigationProp<
   ProfileStackParamList,
   "Profile"

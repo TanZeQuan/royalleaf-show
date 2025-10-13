@@ -69,22 +69,31 @@ export default function ResetPasswordScreen() {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const storedUserId = await AsyncStorage.getItem("user_id");
-        if (!storedUserId) {
+        const storedUser = await AsyncStorage.getItem("userData");
+        if (!storedUser) {
           Alert.alert("请先登录");
           navigation.goBack();
           return;
         }
 
+        const parsedUser = JSON.parse(storedUser);
+        const user_id = parsedUser.user_id || parsedUser.id;
+
+        if (!user_id) {
+          Alert.alert("用户信息不完整");
+          navigation.goBack();
+          return;
+        }
+
         // 可选：用 viewProfile 验证用户是否存在
-        const res = await viewProfile(storedUserId);
+        const res = await viewProfile(user_id);
         if (!res.success) {
           Alert.alert(res.message || "用户信息获取失败");
           navigation.goBack();
           return;
         }
 
-        setUserId(storedUserId);
+        setUserId(user_id);
       } catch (err) {
         console.error("Error getting user info:", err);
         Alert.alert("获取用户信息失败，请重试");
@@ -110,7 +119,7 @@ export default function ResetPasswordScreen() {
       if (!storedUser) return;
 
       const parsedUser = JSON.parse(storedUser);
-      const user_id = parsedUser.user_id;
+      const user_id = parsedUser.user_id || parsedUser.id;
 
       const res = await profileResetPassword({
         user_id,
@@ -134,7 +143,6 @@ export default function ResetPasswordScreen() {
       setLoading(false); // 结束加载
     }
   };
-
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -192,33 +200,54 @@ export default function ResetPasswordScreen() {
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: "#F9F5EC" },
-  container: { flex: 1, padding: 20 },
-  header: { flexDirection: "row", alignItems: "center", marginBottom: 30 },
-  backButton: { padding: 5 },
-  headerTitle: { flex: 1, textAlign: "center", fontSize: 18, fontWeight: "600" },
+  container: { flex: 1, padding: 24 },
+  header: { flexDirection: "row", alignItems: "center", marginBottom: 40 },
+  backButton: {
+    padding: 5, width: 35,
+    height: 35,
+    borderRadius: 20,
+    backgroundColor: "#fff",
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  headerTitle: { flex: 1, textAlign: "center", fontSize: 16, fontWeight: "500", color: "#2C2C2C" },
   headerSpacer: { width: 24 },
-  inputSection: { marginBottom: 30 },
-  inputContainer: { marginBottom: 15 },
+  inputSection: { marginBottom: 24 },
+  inputContainer: { marginBottom: 16 },
   inputWrapper: {
     flexDirection: "row",
     alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 8,
-    paddingHorizontal: 10,
+    borderWidth: 0,
+    borderRadius: 25,
+    paddingHorizontal: 20,
     backgroundColor: "#fff",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
   },
-  lockIconContainer: { paddingRight: 8 },
-  textInput: { flex: 1, height: 44, color: "#333" },
-  eyeIcon: { paddingLeft: 8 },
+  lockIconContainer: { paddingRight: 12 },
+  textInput: { flex: 1, height: 52, color: "#333", fontSize: 14 },
+  eyeIcon: { paddingLeft: 12 },
   resetButton: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#4CAF50",
-    paddingVertical: 12,
-    borderRadius: 8,
+    backgroundColor: "#D4AF37",
+    paddingVertical: 14,
+    borderRadius: 25,
+    shadowColor: "#D4AF37",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
-  resetButtonText: { color: "#fff", fontWeight: "600", fontSize: 16 },
+  resetButtonText: { color: "#fff", fontWeight: "600", fontSize: 15 },
   lockButtonIcon: { marginLeft: 8 },
 });

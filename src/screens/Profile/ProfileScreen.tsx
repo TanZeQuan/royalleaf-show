@@ -194,7 +194,7 @@ export default function ProfileScreen() {
             <View style={styles.statDivider} />
             <View style={styles.statItem}>
               <Text style={styles.statNumber} numberOfLines={1}>
-                {user?.crown ?? 0}
+                {user?.crown ?? 30}
               </Text>
               <Text style={styles.statLabel} numberOfLines={1}>
                 皇冠
@@ -268,7 +268,7 @@ export default function ProfileScreen() {
               </ImageBackground>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.card} activeOpacity={0.8}>
+            <TouchableOpacity style={styles.card} activeOpacity={0.8} onPress={() => navigation.navigate("VoteStack")}>
               <ImageBackground
                 source={require("assets/images/profile-card-bg.png")}
                 style={styles.cardBackground}
@@ -287,7 +287,7 @@ export default function ProfileScreen() {
           </View>
 
           <View style={styles.cardRow}>
-            <TouchableOpacity style={styles.card} activeOpacity={0.8}>
+            <TouchableOpacity style={styles.card} activeOpacity={0.8} onPress={() => navigation.navigate("CreatorStack")}>
               <ImageBackground
                 source={require("assets/images/profile-card-bg.png")}
                 style={styles.cardBackground}
@@ -304,7 +304,7 @@ export default function ProfileScreen() {
               </ImageBackground>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.card} activeOpacity={0.8}>
+            <TouchableOpacity style={styles.card} activeOpacity={0.8} onPress={() => navigation.navigate("Social")}>
               <ImageBackground
                 source={require("assets/images/profile-card-bg.png")}
                 style={styles.cardBackground}
@@ -315,6 +315,7 @@ export default function ProfileScreen() {
                   source={require("assets/images/profile-leaf.png")}
                   style={styles.cardIcon}
                 />
+                
                 <Text style={styles.cardTitle} numberOfLines={2}>
                   茶会
                 </Text>
@@ -422,13 +423,13 @@ const styles = StyleSheet.create({
     alignItems: "center"
   },
   statNumber: {
-    fontSize: scale(16),
+    fontSize: scale(18),
     fontWeight: "600",
     color: "#333",
     marginBottom: verticalScale(4),
   },
   statLabel: {
-    fontSize: scale(11),
+    fontSize: scale(13),
     color: "#999",
     textAlign: 'center',
   },

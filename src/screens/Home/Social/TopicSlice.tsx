@@ -25,6 +25,7 @@ export interface Post {
 }
 
 export interface Comment {
+  isLiked: any;
   id: string;
   user: string;
   text: string;

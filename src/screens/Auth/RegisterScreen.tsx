@@ -1,4 +1,3 @@
-
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import React, { useCallback, useState } from "react";
@@ -440,27 +439,6 @@ export default function RegisterScreen({ navigation, onRegister }: RegisterScree
     await performRegistration();
   }, [formData, uiState, validateForm]);
 
-  // Quick fill button for testing
-  const handleQuickFill = () => {
-    const timestamp = Date.now();
-    setFormData({
-      name: "Test User",
-      username: `testuser${timestamp}`,
-      phone: `+601234${String(timestamp).slice(-5)}`,
-      email: `test${timestamp}@example.com`,
-      password: "TestPass123!",
-      confirmPassword: "TestPass123!",
-      birthday: "01/01/1990",
-      location: "Kuala Lumpur",
-      referralCode: "",
-    });
-    setUiState(prev => ({
-      ...prev,
-      agreeToTerms: true,
-      selectedDate: new Date(1990, 0, 1)
-    }));
-  };
-
   // Render components
   const renderHeader = () => (
     <View style={styles.header}>
@@ -472,15 +450,6 @@ export default function RegisterScreen({ navigation, onRegister }: RegisterScree
         <Ionicons name="arrow-back" size={normalize(SIZES.iconSize)} color={COLORS.text} />
       </TouchableOpacity>
       <Text style={styles.headerTitle}>创建账号</Text>
-      {__DEV__ && (
-        <TouchableOpacity
-          style={styles.quickFillButton}
-          onPress={handleQuickFill}
-          activeOpacity={0.6}
-        >
-          <Text style={styles.quickFillText}>Quick Fill</Text>
-        </TouchableOpacity>
-      )}
     </View>
   );
 

@@ -112,7 +112,7 @@ export default function BubbleTeaHomepage() {
 
             <View style={styles.walletDivider} />
 
-            <TouchableOpacity style={styles.qrIcon}>
+            <TouchableOpacity style={styles.qrIcon} onPress={() => navigation.navigate("Scan" as never)}>
               <Ionicons name="qr-code-outline" size={32} color={colors.black} />
             </TouchableOpacity>
           </View>
