@@ -2,7 +2,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import React, { useLayoutEffect, useState } from "react";
+import React, { useEffect, useLayoutEffect, useState } from "react";
 import {
   Image,
   ImageBackground,
@@ -17,67 +17,25 @@ import {
 } from "react-native";
 import { colors } from "styles";
 import { HomeStackParamList } from "../../../navigation/stacks/HomeNav/HomeStack";
-import { Voucher } from "../../Home/Reward/RewardSlice";
+import { convertToVoucher, fetchAllCoupons } from "../../../services/RewardService/RewardApi";
+import { Voucher, HistoryItem } from "../../Home/Reward/RewardSlice";
 import { styles } from "../../Home/Reward/RewardStyle";
 
 type RewardScreenNavProp = NativeStackNavigationProp<HomeStackParamList, "Reward">;
+
 export default function RewardScreen() {
   const navigation = useNavigation<RewardScreenNavProp>();
 
-  // State Management
+   // State Management
   const [activeTab, setActiveTab] = useState("redeem");
   const [voucherCode, setVoucherCode] = useState("");
   const [crownPoints, setCrownPoints] = useState(30);
   const [voucherToUse, setVoucherToUse] = useState<Voucher | null>(null);
-  const [myVouchers, setMyVouchers] = useState([
-    {
-      id: 1,
-      code: "折扣券",
-      value: "RM 5",
-      amount: "5",
-      date: "13/07/2025",
-      expired: false,
-      status: "active",
-    },
-    {
-      id: 2,
-      code: "折扣券",
-      value: "RM 10",
-      amount: "10",
-      date: "13/07/2025",
-      expired: false,
-      status: "active",
-    },
-  ]);
-  const [expiredVouchers, setExpiredVouchers] = useState<Voucher[]>([
-    {
-      id: 3,
-      code: "过期券",
-      value: "RM 10",
-      amount: "5",
-      date: "01/01/2024",
-      expired: true,
-      status: "expired",
-    },
-  ]);
-  const [crownHistory, setCrownHistory] = useState([
-    {
-      id: 1,
-      action: "参与投票",
-      date: "13/07/2025",
-      points: "+50",
-      balance: 30,
-    },
-  ]);
-  const [exchangeHistory, setExchangeHistory] = useState([
-    {
-      id: 1,
-      item: "RM 5折扣券",
-      date: "13/07/2025",
-      points: "-100",
-      balance: 30,
-    },
-  ]);
+  const [availableVouchers, setAvailableVouchers] = useState<Voucher[]>([]);
+  const [myVouchers, setMyVouchers] = useState<Voucher[]>([]);
+  const [expiredVouchers, setExpiredVouchers] = useState<Voucher[]>([]);
+  const [crownHistory, setCrownHistory] = useState<HistoryItem[]>([]);
+  const [exchangeHistory, setExchangeHistory] = useState<HistoryItem[]>([]);
   const [showExchangeConfirm, setShowExchangeConfirm] = useState(false);
   const [pendingExchange, setPendingExchange] = useState<{
     points: number;
@@ -85,7 +43,30 @@ export default function RewardScreen() {
     voucherValue: string;
     amount: string;
   } | null>(null);
+  const [loading, setLoading] = useState(false);
 
+  // 新增：获取可用优惠券
+  useEffect(() => {
+    if (activeTab === "redeem") {
+      loadAvailableCoupons();
+    }
+  }, [activeTab]);
+
+  const loadAvailableCoupons = async () => {
+    try {
+      setLoading(true);
+      const coupons = await fetchAllCoupons();
+      const convertedVouchers = coupons.map(convertToVoucher);
+      setAvailableVouchers(convertedVouchers);
+    } catch (error) {
+      console.error('Failed to load coupons:', error);
+      showCustomNotification("错误", "获取优惠券失败");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 原有的 useLayoutEffect 保持不变
   useLayoutEffect(() => {
     navigation.getParent()?.setOptions({
       tabBarStyle: { display: "none" },
@@ -97,7 +78,7 @@ export default function RewardScreen() {
           backgroundColor: "#F9F5EC",
           height: 80,
           paddingTop: 2,
-          paddingBottom: Platform.OS === "ios" ? 10 : 8, // 调小底部间距
+          paddingBottom: Platform.OS === "ios" ? 10 : 8,
           shadowColor: "#000",
           shadowOffset: { width: 0, height: -1 },
           shadowOpacity: 0.1,
@@ -133,7 +114,7 @@ export default function RewardScreen() {
     setVoucherCode("");
   };
 
-  const handleExchange = (
+   const handleExchange = (
     points: number,
     voucherCode: string,
     voucherValue: string,
@@ -144,7 +125,6 @@ export default function RewardScreen() {
       return;
     }
 
-    // 设置待兑换的信息并显示确认弹窗
     setPendingExchange({ points, voucherCode, voucherValue, amount });
     setShowExchangeConfirm(true);
   };
@@ -179,7 +159,6 @@ export default function RewardScreen() {
       showCustomNotification("兑换成功", `您已成功兑换 ${voucherValue}`);
     }
 
-    // 重置状态
     setShowExchangeConfirm(false);
     setPendingExchange(null);
   };
@@ -187,18 +166,9 @@ export default function RewardScreen() {
   const handleVoucherCardPress = (
     voucherCode: string,
     voucherValue: string,
-    amount: string
+    amount: string,
+    pointsNeeded: number
   ) => {
-    // 根据优惠券代码确定需要的积分
-    let pointsNeeded = 0;
-    if (voucherCode === "RM 5") {
-      pointsNeeded = 100;
-    } else if (voucherCode === "RM 10") {
-      pointsNeeded = 180;
-    } else {
-      pointsNeeded = 50; // 默认值
-    }
-
     handleExchange(pointsNeeded, voucherCode, voucherValue, amount);
   };
 
@@ -207,15 +177,14 @@ export default function RewardScreen() {
     <ImageBackground
       source={require("assets/images/voucher.png")}
       style={[styles.amountContainer]}
-      // style={[styles.amountContainer, expired && styles.expiredAmountContainer]}
       imageStyle={{ borderRadius: 8 }}
-      resizeMode="contain" // 保持比例缩小
+      resizeMode="contain"
     >
       <Text style={styles.currencySymbol}>RM {amount}</Text>
     </ImageBackground>
   );
 
-  const renderRedeemTab = () => (
+   const renderRedeemTab = () => (
     <ScrollView style={styles.tabContent}>
       <View style={styles.crownSection}>
         <View style={styles.crownContainer}>
@@ -255,7 +224,7 @@ export default function RewardScreen() {
         onChangeText={setVoucherCode}
         onBlur={() => {
           if (!voucherCode) {
-            setVoucherCode(""); // 确保 placeholder 回来
+            setVoucherCode("");
           }
         }}
       />
@@ -265,54 +234,49 @@ export default function RewardScreen() {
 
       <View style={styles.voucherContainer}>
         <Text style={styles.voucherTitle}>可用优惠券</Text>
-        <TouchableOpacity
-          style={styles.voucherCard}
-          onPress={() => handleVoucherCardPress("RM 5", "RM 5 折扣券", "5")}
-        >
-          <View style={styles.voucherCardContent}>
-            {renderVoucherAmount("5")}
-            <View style={styles.divider} />
-            <View style={styles.voucherDetails}>
-              <Text style={styles.voucherCode}>折扣券</Text>
-              <Text style={styles.voucherValue}>RM 5</Text>
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <Text style={styles.pointsNeeded}>100 </Text>
-                <Image
-                  source={require("assets/images/crown.png")}
-                  style={styles.crown}
-                />
+        
+        {loading ? (
+          <Text style={styles.loadingText}>加载中...</Text>
+        ) : availableVouchers.length > 0 ? (
+          availableVouchers.map((voucher) => (
+            <TouchableOpacity
+              key={voucher.id}
+              style={styles.voucherCard}
+              onPress={() => handleVoucherCardPress(
+                voucher.code, 
+                voucher.value, 
+                voucher.amount,
+                voucher.pointsNeeded ?? 0
+              )}
+            >
+              <View style={styles.voucherCardContent}>
+                {renderVoucherAmount(voucher.amount)}
+                <View style={styles.divider} />
+                <View style={styles.voucherDetails}>
+                  <Text style={styles.voucherCode}>{voucher.code}</Text>
+                  <Text style={styles.voucherValue}>{voucher.value}</Text>
+                  <View style={{ flexDirection: "row", alignItems: "center" }}>
+                    <Text style={styles.pointsNeeded}>
+                      {voucher.pointsNeeded ?? 0}{" "}
+                    </Text>
+                    <Image
+                      source={require("assets/images/crown.png")}
+                      style={styles.crown}
+                    />
+                  </View>
+                  <Text style={styles.terms}>*条款与条件适用</Text>
+                </View>
               </View>
-              <Text style={styles.terms}>*条款与条件适用</Text>
-            </View>
-          </View>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.voucherCard}
-          onPress={() => handleVoucherCardPress("RM10", "RM10 折扣券", "10")}
-        >
-          <View style={styles.voucherCardContent}>
-            {renderVoucherAmount("10")}
-            <View style={styles.divider} />
-            <View style={styles.voucherDetails}>
-              <Text style={styles.voucherCode}>折扣券</Text>
-              <Text style={styles.voucherValue}>RM 10</Text>
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <Text style={styles.pointsNeeded}>100 </Text>
-                <Image
-                  source={require("assets/images/crown.png")}
-                  style={styles.crown}
-                />
-              </View>
-              <Text style={styles.terms}>*条款与条件适用</Text>
-            </View>
-          </View>
-        </TouchableOpacity>
+            </TouchableOpacity>
+          ))
+        ) : (
+          <Text style={styles.noRecords}>暂无可用优惠券</Text>
+        )}
       </View>
     </ScrollView>
   );
 
-  const renderMyVouchersTab = () => (
+   const renderMyVouchersTab = () => (
     <ScrollView style={styles.tabContent}>
       <View style={styles.voucherContainer}>
         <Text style={styles.sectionTitle}>兑换优惠券</Text>
@@ -324,7 +288,7 @@ export default function RewardScreen() {
           onChangeText={setVoucherCode}
           onBlur={() => {
             if (!voucherCode) {
-              setVoucherCode(""); // 确保 placeholder 回来
+              setVoucherCode("");
             }
           }}
         />
@@ -339,7 +303,6 @@ export default function RewardScreen() {
                 style={styles.voucherCardContent}
                 onPress={() => setVoucherToUse(voucher)}
               >
-                {/* <View style={styles.voucherCardContent}> */}
                 {renderVoucherAmount(voucher.amount, voucher.expired)}
                 <View style={styles.divider} />
                 <View style={styles.voucherDetails}>
@@ -363,15 +326,13 @@ export default function RewardScreen() {
     </ScrollView>
   );
 
-  const renderExpiredVouchersTab = () => (
+   const renderExpiredVouchersTab = () => (
     <ScrollView style={styles.tabContent}>
       <Text style={styles.sectionTitle}>过期优惠券</Text>
       {expiredVouchers.length > 0 ? (
         expiredVouchers.map((voucher) => (
           <View key={voucher.id} style={[styles.voucherCard]}>
-            {/* 遮罩层 */}
             {voucher.expired && <View style={styles.overlay} />}
-
             <View style={styles.voucherCardContent}>
               {renderVoucherAmount(voucher.amount, true)}
               <View style={[styles.divider, styles.expiredDivider]} />
@@ -392,7 +353,7 @@ export default function RewardScreen() {
     </ScrollView>
   );
 
-  const [showNotification, setShowNotification] = useState(false);
+   const [showNotification, setShowNotification] = useState(false);
   const [notificationTitle, setNotificationTitle] = useState("");
   const [notificationMessage, setNotificationMessage] = useState("");
   const showCustomNotification = (title: string, message: string) => {
@@ -400,11 +361,11 @@ export default function RewardScreen() {
     setNotificationMessage(message);
     setShowNotification(true);
 
-    // 3秒后自动关闭
     setTimeout(() => {
       setShowNotification(false);
     }, 3000);
   };
+
 
   return (
     <View style={styles.container}>
@@ -525,7 +486,7 @@ export default function RewardScreen() {
         </TouchableWithoutFeedback>
       </Modal>
 
-      <View style={styles.tabBar}>
+       <View style={styles.tabBar}>
         <TouchableOpacity
           style={[styles.tab, activeTab === "redeem" && styles.activeTab]}
           onPress={() => setActiveTab("redeem")}
@@ -579,4 +540,4 @@ export default function RewardScreen() {
       {activeTab === "expired" && renderExpiredVouchersTab()}
     </View>
   );
-};
+}

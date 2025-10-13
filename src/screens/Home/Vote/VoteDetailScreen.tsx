@@ -44,42 +44,93 @@ const VoteDetailScreen = () => {
   const [voteCount, setVoteCount] = useState(initialProduct?.voted || 0);
   const [hasVoted, setHasVoted] = useState(false);
   const [commentText, setCommentText] = useState("");
-  const [replyText, setReplyText] = useState("");
-  const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [showNotification, setShowNotification] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [notificationTitle, setNotificationTitle] = useState("");
   const [notificationMessage, setNotificationMessage] = useState("");
   const [commentsDisplayCount, setCommentsDisplayCount] = useState(10);
-
-  // 获取产品详情
-  useEffect(() => {
-    const fetchProductDetails = async () => {
-      if (!initialProduct && productId) {
-        try {
-          setLoading(true);
-          const productDetails =
-            await voteActivityService.getVoteProductDetails(productId);
-          if (productDetails) {
-            setProduct(productDetails);
-            setVoteCount(productDetails.voted);
-          }
-        } catch (error) {
-          console.error("获取产品详情出错:", error);
-        } finally {
-          setLoading(false);
-        }
-      }
-    };
-
-    fetchProductDetails();
-  }, [productId, initialProduct]);
-
-  // 模拟评论数据
-  const allComments: Comment[] = [];
-  const [comments, setComments] = useState<Comment[]>(allComments);
+  const [comments, setComments] = useState<Comment[]>([]);
   const displayedComments = comments.slice(0, commentsDisplayCount);
   const hasMoreComments = comments.length > commentsDisplayCount;
+
+  // 获取产品详情和评论
+  useEffect(() => {
+   const fetchProductDetailsAndComments = async () => {
+  if (!initialProduct && productId) {
+    try {
+      setLoading(true);
+      
+      console.log("🔄 开始获取产品详情和评论...", { productId });
+      
+      const [productDetails, commentsData] = await Promise.all([
+        voteActivityService.getVoteProductDetails(productId),
+        voteActivityService.getComments(productId)
+      ]);
+      
+      console.log("📦 产品详情结果:", productDetails);
+      console.log("💬 评论数据结果:", commentsData);
+      console.log("评论数据类型:", typeof commentsData);
+      console.log("评论数据长度:", commentsData?.length);
+      
+      if (productDetails) {
+        setProduct(productDetails);
+        setVoteCount(productDetails.voted);
+      }
+      
+      if (commentsData && commentsData.length > 0) {
+        setComments(commentsData);
+        console.log("✅ 成功加载评论数据:", commentsData);
+      } else {
+        console.log("❌ 没有评论数据或数据为空");
+        setComments([]);
+      }
+      
+    } catch (error) {
+      console.error("❌ 获取数据出错:", error);
+    } finally {
+      setLoading(false);
+    }
+  } else if (initialProduct) {
+    // 如果从导航传入了 initialProduct，单独获取评论
+    try {
+      console.log("🔄 单独获取评论...", { productId });
+      const commentsData = await voteActivityService.getComments(productId);
+      
+      console.log("💬 单独获取的评论数据:", commentsData);
+      console.log("评论数据长度:", commentsData?.length);
+      
+      if (commentsData && commentsData.length > 0) {
+        setComments(commentsData);
+        console.log("✅ 成功加载评论数据:", commentsData.length, "条");
+      } else {
+        console.log("❌ 没有评论数据");
+        setComments([]);
+      }
+    } catch (error) {
+      console.error("❌ 获取评论出错:", error);
+    }
+  }
+};
+
+    fetchProductDetailsAndComments();
+  }, [productId, initialProduct]);
+
+  // 刷新评论函数
+  const refreshComments = async () => {
+    if (!productId) return;
+    
+    try {
+      const commentsData = await voteActivityService.getComments(productId);
+      if (commentsData) {
+        setComments(commentsData);
+        console.log("评论数据已刷新:", commentsData.length, "条");
+        showCustomNotification("刷新成功", "评论列表已更新");
+      }
+    } catch (error) {
+      console.error("刷新评论出错:", error);
+      showCustomNotification("刷新失败", "无法获取最新评论");
+    }
+  };
 
   // 显示通知
   const showCustomNotification = (title: string, message: string) => {
@@ -172,12 +223,16 @@ const VoteDetailScreen = () => {
   };
 
   // 添加评论
-  const handleAddComment = () => {
+  const handleAddComment = async () => {
     if (!commentText.trim()) {
       showCustomNotification("提示", "请输入评论内容");
       return;
     }
 
+    // 这里应该调用提交评论的API
+    // await voteActivityService.submitComment(productId, commentText.trim());
+    
+    // 暂时使用本地状态更新，实际应该等API成功后再刷新
     const newComment: Comment = {
       id: Date.now().toString(),
       user: "我",
@@ -188,29 +243,6 @@ const VoteDetailScreen = () => {
     setComments((prev) => [newComment, ...prev]);
     setCommentText("");
     showCustomNotification("发表成功", "您的评论已发表");
-  };
-
-  // 添加回复
-  const handleAddReply = (user: string) => {
-    if (!replyText.trim()) {
-      showCustomNotification("提示", "请输入回复内容");
-      return;
-    }
-
-    const newReply: Comment = {
-      id: Date.now().toString(),
-      user: "设计师小美",
-      text: replyText.trim(),
-      timeAgo: "刚刚",
-      isDesigner: true,
-      replyTo: user,
-      replyText: comments.find((c) => c.user === user)?.text || "",
-    };
-
-    setComments((prev) => [newReply, ...prev]);
-    setReplyText("");
-    setReplyingTo(null);
-    showCustomNotification("回复成功", "您的回复已发表");
   };
 
   const handleLoadMore = () => {
@@ -348,85 +380,22 @@ const VoteDetailScreen = () => {
 
         {/* Comments Section */}
         <View style={styles.commentsSection}>
-          <Text style={styles.sectionTitle}>评论区 ({comments.length})</Text>
+          <View style={styles.commentsHeader}>
+            <Text style={styles.sectionTitle}>评论区 ({comments.length})</Text>
+          </View>
+          
           {displayedComments.length > 0 ? (
             <>
               {displayedComments.map((comment) => (
                 <View
                   key={comment.id}
-                  style={[
-                    styles.commentItem,
-                    comment.isDesigner && styles.designerComment,
-                  ]}
+                  style={styles.commentItem}
                 >
-                  {comment.isDesigner && comment.replyTo ? (
-                    <View style={styles.replyComment}>
-                      <View style={styles.replyHeader}>
-                        <View style={styles.designerBadge}>
-                          <Ionicons
-                            name="checkmark-circle"
-                            size={12}
-                            color={colors.white}
-                          />
-                          <Text style={styles.designerBadgeText}>设计师</Text>
-                        </View>
-                        <Text style={styles.commentUser}>{comment.user}</Text>
-                        <Text style={styles.commentTime}>{comment.timeAgo}</Text>
-                      </View>
-                      <View style={styles.replyOriginal}>
-                        <Text style={styles.replyToText}>
-                          回复 {comment.replyTo}:
-                        </Text>
-                        <Text style={styles.replyOriginalText}>
-                          "{comment.replyText}"
-                        </Text>
-                      </View>
-                      <Text style={styles.commentText}>{comment.text}</Text>
-                    </View>
-                  ) : (
-                    <View>
-                      <View style={styles.commentHeader}>
-                        <Text style={styles.commentUser}>{comment.user}</Text>
-                        <Text style={styles.commentTime}>{comment.timeAgo}</Text>
-                      </View>
-                      <Text style={styles.commentText}>{comment.text}</Text>
-                      {comment.user !== "我" && !comment.isDesigner && (
-                        <TouchableOpacity
-                          style={styles.replyButton}
-                          onPress={() =>
-                            setReplyingTo(
-                              replyingTo === comment.user ? null : comment.user
-                            )
-                          }
-                        >
-                          <Text style={styles.replyButtonText}>
-                            {replyingTo === comment.user ? "取消回复" : "回复"}
-                          </Text>
-                        </TouchableOpacity>
-                      )}
-                    </View>
-                  )}
-                  {replyingTo === comment.user && (
-                    <View style={styles.replyInputContainer}>
-                      <TextInput
-                        style={styles.replyInput}
-                        placeholder={`回复 ${comment.user}...`}
-                        value={replyText}
-                        onChangeText={setReplyText}
-                        multiline
-                        maxLength={100}
-                      />
-                      <TouchableOpacity
-                        style={[
-                          styles.replySubmitButton,
-                          replyText.trim() && styles.replySubmitButtonActive,
-                        ]}
-                        onPress={() => handleAddReply(comment.user)}
-                      >
-                        <Text style={styles.replySubmitButtonText}>发送</Text>
-                      </TouchableOpacity>
-                    </View>
-                  )}
+                  <View style={styles.commentHeader}>
+                    <Text style={styles.commentUser}>{comment.user}</Text>
+                    <Text style={styles.commentTime}>{comment.timeAgo}</Text>
+                  </View>
+                  <Text style={styles.commentText}>{comment.text}</Text>
                 </View>
               ))}
               {hasMoreComments && (

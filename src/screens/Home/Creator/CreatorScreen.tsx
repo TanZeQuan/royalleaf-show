@@ -2,8 +2,9 @@ import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useHideTabBar } from "hooks/useHideTabBar";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -19,14 +20,10 @@ import { colors } from "styles";
 
 // 导入导航类型
 import { CreatorStackParamList } from "@navigation/stacks/HomeNav/CreatorStack";
+// 导入投票服务，复用相同的分类 API
+import { Category, voteService } from "../../../services/VoteService/voteMainApi";
 
 type CreatorNavigationProp = NativeStackNavigationProp<CreatorStackParamList>;
-
-interface CreatorCategory {
-  id: string;
-  title: string;
-  description: string;
-}
 
 const CreatorStack = () => {
   const insets = useSafeAreaInsets();
@@ -34,39 +31,35 @@ const CreatorStack = () => {
   // ✅ 自动隐藏底部导航栏
   useHideTabBar(true);
 
-  const categories: CreatorCategory[] = [
-    {
-      id: "drinks",
-      title: "饮料专场",
-      description: "分享您的饮料创新想法",
-    },
-    {
-      id: "packaging",
-      title: "包装专场",
-      description: "提出您心里最佳的包装设计",
-    },
-    {
-      id: "logo",
-      title: "Logo专场",
-      description: "创新最佳Logo",
-    },
-    {
-      id: "decoration",
-      title: "装修专场",
-      description: "创造您喜爱的装修风格",
-    },
-  ];
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // 获取分类数据
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const data = await voteService.getCategories();
+        setCategories(data);
+      } catch (error) {
+        console.error("Failed to fetch categories:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   const handleGoBack = () => navigation.goBack();
 
   const handleCategorySelect = (categoryId: string) => {
     // 找到选中的分类对象
-    const category = categories.find(cat => cat.id === categoryId);
+    const category = categories.find(cat => cat.cateId === categoryId);
 
     navigation.navigate("CreatorSubmit", {
       entries: [], // 如果还没数据，先传空数组
       selectedCategory: categoryId,
-      categoryName: category?.title || '通用',
+      categoryName: category?.name || '通用',
     });
   };
 
@@ -87,23 +80,30 @@ const CreatorStack = () => {
         <View style={styles.placeholder} />
       </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        <Text style={styles.subtitle}>选择一个领域提交您的创意想法</Text>
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={colors.gold_deep} />
+          <Text style={styles.loadingText}>加载分类中...</Text>
+        </View>
+      ) : (
+        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+          <Text style={styles.subtitle}>选择一个领域提交您的创意想法</Text>
 
-        {categories.map((cat) => (
-          <TouchableOpacity
-            key={cat.id}
-            style={styles.categoryCard}
-            onPress={() => handleCategorySelect(cat.id)}
-          >
-            <View style={styles.categoryInfo}>
-              <Text style={styles.categoryTitle}>{cat.title}</Text>
-              <Text style={styles.categoryDescription}>{cat.description}</Text>
-            </View>
-            <Text style={styles.arrowIcon}>→</Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
+          {categories.map((cat) => (
+            <TouchableOpacity
+              key={cat.id}
+              style={styles.categoryCard}
+              onPress={() => handleCategorySelect(cat.cateId)}
+            >
+              <View style={styles.categoryInfo}>
+                <Text style={styles.categoryTitle}>{cat.name}</Text>
+                <Text style={styles.categoryDescription}>{cat.desc}</Text>
+              </View>
+              <Text style={styles.arrowIcon}>→</Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      )}
     </SafeAreaView>
   );
 };
@@ -193,6 +193,18 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: colors.gold_deep,
     fontWeight: "bold",
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 40,
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: colors.gray_text,
+    textAlign: "center",
   },
 });
 
