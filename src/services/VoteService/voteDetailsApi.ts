@@ -1,6 +1,6 @@
 // voteDetailsApi.ts
-import api from "../apiClient";
 import { getUserData } from "../../utils/storage"; // 🔑 引入存储工具
+import api from "../apiClient";
 
 const API_BASE_URL = "http://192.168.0.122:8080/royal";
 
@@ -19,6 +19,10 @@ export interface Comment {
   isDesigner?: boolean;
   replyTo?: string;
   replyText?: string;
+  upvotes?: number;
+  downvotes?: number;
+  hasVoted?: boolean;
+  voteType?: "upvote" | "downvote";
 }
 
 export interface ItemData {
@@ -71,6 +75,7 @@ export interface VoteProductDetails extends VoteProduct {
     name: string;
     desc: string;
   };
+  comments?: Comment[];
 }
 
 export interface ApiResponse<T> {
@@ -113,20 +118,40 @@ export const voteActivityService = {
     }
   },
 
-  // ✅ 获取投票产品详情
+  // ✅ 获取投票产品详情（不包含评论）
   getVoteProductDetails: async (subId: string): Promise<VoteProductDetails | null> => {
     try {
       const response = await api.get<ApiResponse<VoteProductDetails>>(
-        `${API_BASE_URL}/votes/submit/records/${subId}`
+        `${API_BASE_URL}/api/votes/submit/records/${subId}`
       );
 
       if (response.data.success) {
-        return response.data.data;
+        const productDetails = response.data.data;
+        console.log("获取产品详情成功:", productDetails);
+        return productDetails;
       }
       return null;
     } catch (error) {
       console.error("获取投票产品详情出错:", error);
       return null;
+    }
+  },
+
+  // ✅ 新增：获取评论列表
+  getComments: async (subId: string): Promise<Comment[]> => {
+    try {
+      const response = await api.get<ApiResponse<Comment[]>>(
+        `${API_BASE_URL}/api/votes/submit/comments/submission/${subId}`
+      );
+
+      if (response.data.success) {
+        console.log("获取评论成功:", response.data.data.length, "条评论");
+        return response.data.data;
+      }
+      return [];
+    } catch (error) {
+      console.error("获取评论出错:", error);
+      return [];
     }
   },
 

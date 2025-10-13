@@ -15,13 +15,13 @@ export const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: colors.gold_light,
     backgroundColor: colors.gold_light,
-    fontSize:20,
+    fontSize: 20,
   },
   backButton: {
     width: 35,
     height: 35,
     borderRadius: 20,
-    backgroundColor:colors.white,
+    backgroundColor: colors.white,
     alignItems: "center",
     justifyContent: "center",
     shadowColor: "#000",
@@ -141,32 +141,86 @@ export const styles = StyleSheet.create({
     textAlign: "right",
     marginBottom: 10,
   },
-  commentsSection: { paddingHorizontal: 20, marginBottom: 24 },
+  commentsSection: {
+    paddingHorizontal: 20,
+    marginBottom: 24,
+  },
+
+  commentsHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+
+  refreshButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    backgroundColor: colors.white,
+    borderWidth: 1,
+    borderColor: colors.green_deep,
+    borderRadius: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+
+  refreshText: {
+    fontSize: 12,
+    color: colors.green_deep,
+    marginLeft: 4,
+    fontWeight: "600",
+  },
+
   commentItem: {
     backgroundColor: theme.colors.white,
-    padding: 16,
-    borderRadius: 8,
+    padding: 18,
+    borderRadius: 12,
     marginBottom: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 3,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.gold_deep,
   },
+
   commentHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 8,
+    marginBottom: 10,
   },
+
   commentUser: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: "bold",
     color: theme.colors.gold_deep,
-    marginRight: 10,
+    marginRight: 8,
   },
-  commentTime: { fontSize: 12, color: theme.colors.gray_text },
-  commentText: { fontSize: 16, color: theme.colors.black, lineHeight: 22 },
+
+  commentTime: {
+    fontSize: 12,
+    color: theme.colors.gray_text,
+  },
+
+  commentText: {
+    fontSize: 15,
+    color: colors.black, // 黑色字体
+    lineHeight: 24,
+  },
+
   noCommentsText: {
     fontSize: 16,
     color: theme.colors.gray_text,
     textAlign: "center",
-    paddingVertical: 24,
+    paddingVertical: 40,
+    fontStyle: "italic",
   },
   bottomSpacing: { height: 40 },
   // 模态框样式
@@ -258,8 +312,7 @@ export const styles = StyleSheet.create({
     color: theme.colors.black,
     textAlign: "center",
   },
-  // 在 VoteDetailCSS.ts 中添加以下样式
-
+  // 设计师信息样式
   designerSection: {
     marginHorizontal: 16,
     marginBottom: 20,
@@ -296,113 +349,6 @@ export const styles = StyleSheet.create({
     lineHeight: 18,
   },
 
-  designerComment: {
-    backgroundColor: colors.gold_light,
-    borderLeftColor: colors.gold_deep,
-    borderLeftWidth: 3,
-  },
-
-  designerBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: colors.gold_deep,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-    marginRight: 8,
-  },
-
-  designerBadgeText: {
-    fontSize: 10,
-    color: colors.white,
-    fontWeight: "600",
-    marginLeft: 2,
-  },
-
-  replyComment: {
-    width: "100%",
-  },
-
-  replyHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 8,
-  },
-
-  replyOriginal: {
-    backgroundColor: colors.white,
-    padding: 8,
-    borderRadius: 4,
-    marginBottom: 8,
-    borderLeftWidth: 2,
-    borderLeftColor: colors.gold_deep,
-  },
-
-  replyToText: {
-    fontSize: 12,
-    color: colors.gray_deep,
-    fontWeight: "500",
-    marginBottom: 2,
-  },
-
-  replyOriginalText: {
-    fontSize: 12,
-    color: colors.gray_deep,
-    fontStyle: "italic",
-  },
-
-  replyButton: {
-    alignSelf: "flex-start",
-    marginTop: 8,
-  },
-
-  replyButtonText: {
-    fontSize: 12,
-    color: colors.gray_text,
-    fontWeight: "500",
-  },
-
-  replyInputContainer: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    marginTop: 8,
-    backgroundColor: colors.primary_bg,
-    padding: 8,
-    borderRadius: 8,
-  },
-
-  replyInput: {
-    flex: 1,
-    fontSize: 14,
-    color: colors.black,
-    padding: 8,
-    backgroundColor: colors.white,
-    borderRadius: 4,
-    minHeight: 40,
-    maxHeight: 80,
-  },
-
-  replySubmitButton: {
-    marginLeft: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    backgroundColor: colors.gray_nav,
-    borderRadius: 4,
-    justifyContent: "center",
-    alignItems: "center",
-    minWidth: 50,
-  },
-
-  replySubmitButtonActive: {
-    backgroundColor: colors.green_deep,
-  },
-
-  replySubmitButtonText: {
-    color: colors.white,
-    fontSize: 12,
-    fontWeight: "bold",
-  },
-
   loadMoreButton: {
     flexDirection: "row",
     justifyContent: "center",
@@ -419,7 +365,7 @@ export const styles = StyleSheet.create({
     marginRight: 4,
     fontWeight: "semibold",
   },
-    centerContainer: {
+  centerContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
