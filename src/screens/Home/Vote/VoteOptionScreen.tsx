@@ -65,8 +65,8 @@ const FilterPopout: React.FC<{
         return "投票数";
       case "latest":
         return "最新";
-      case "likes":
-        return "点赞数";
+      // case "likes":
+      //   return "点赞数";
       default:
         return value;
     }
@@ -92,7 +92,8 @@ const FilterPopout: React.FC<{
 
           <View style={filterStyles.optionGroup}>
             <Text style={filterStyles.optionLabel}>排序方式</Text>
-            {["votes", "latest", "likes"].map((option) => (
+            {["votes", "latest"].map((option) => (
+              // {["votes", "latest", "likes"].map((option) => (
               <TouchableOpacity
                 key={option}
                 style={filterStyles.option}
@@ -338,8 +339,8 @@ const VoteImagesScreen = () => {
         ? "投票数"
         : currentFilter.sortBy === "name"
         ? "名称"
-        : currentFilter.sortBy === "likes"
-        ? "点赞数"
+        // : currentFilter.sortBy === "likes"
+        // ? "点赞数"
         : "最新";
     const orderText = currentFilter.order === "desc" ? "降序" : "升序";
     return `${sortText} ${orderText}`;
