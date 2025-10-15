@@ -32,6 +32,8 @@ type VoteImagesNavigationProp = NativeStackNavigationProp<any>;
 interface RouteParams {
   category: string;
   categoryName: string;
+  activity: VoteActivity;
+  votesId: string;
 }
 
 interface FilterOptions {
@@ -158,7 +160,7 @@ const VoteImagesScreen = () => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<VoteImagesNavigationProp>();
   const route = useRoute();
-  const { category, categoryName } = route.params as RouteParams;
+  const { category, categoryName, activity, votesId } = route.params as RouteParams;
 
   const [showFilter, setShowFilter] = useState(false);
   const [currentFilter, setCurrentFilter] = useState<FilterOptions>({
@@ -167,67 +169,37 @@ const VoteImagesScreen = () => {
   });
 
   // 新增状态
-  const [voteActivities, setVoteActivities] = useState<VoteActivity[]>([]);
   const [voteProducts, setVoteProducts] = useState<VoteProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedActivity, setSelectedActivity] = useState<VoteActivity | null>(
-    null
+    activity || null
   );
-  const [productsLoading, setProductsLoading] = useState(false);
 
-  // 获取投票活动数据
+  // 获取指定活动的投票产品
   useEffect(() => {
-    const fetchVoteData = async () => {
+    const fetchVoteProducts = async () => {
       try {
         setLoading(true);
 
-        // 使用 API 服务获取进行中的投票活动
-        const activities = await voteActivityService.getVotingActivities();
-
-        // 过滤当前分类的活动
-        const filteredActivities = activities.filter(
-          (activity) => activity.category === category
-        );
-        setVoteActivities(filteredActivities);
-
-        // 如果有活动，默认选择第一个并获取对应的产品
-        if (filteredActivities.length > 0) {
-          setSelectedActivity(filteredActivities[0]);
-          await fetchVoteProducts(filteredActivities[0].votesId);
-        } else {
-          setVoteProducts([]);
-          setLoading(false);
-        }
+        // 直接使用传入的 votesId 获取产品
+        const products = await voteActivityService.getVoteProducts(votesId);
+        setVoteProducts(products);
       } catch (error) {
         console.error("获取投票数据出错:", error);
+        setVoteProducts([]);
+      } finally {
         setLoading(false);
       }
     };
 
-    fetchVoteData();
-  }, [category]);
+    fetchVoteProducts();
+  }, [votesId]);
 
-  // 获取特定投票活动的产品数据
-  const fetchVoteProducts = async (votesId: string) => {
-    try {
-      setProductsLoading(true);
-
-      // 使用 API 服务获取产品数据
-      const products = await voteActivityService.getVoteProducts(votesId);
-      setVoteProducts(products);
-    } catch (error) {
-      console.error("获取投票产品出错:", error);
-      setVoteProducts([]);
-    } finally {
-      setLoading(false);
-      setProductsLoading(false);
-    }
-  };
-
-  // 处理活动选择
-  const handleActivityPress = async (activity: VoteActivity) => {
-    setSelectedActivity(activity);
-    await fetchVoteProducts(activity.votesId);
+  // 获取产品排名（按投票数从高到低）
+  const getProductRank = (product: VoteProduct): number => {
+    const sortedByVotes = [...voteProducts].sort((a, b) => b.voted - a.voted);
+    const rank = sortedByVotes.findIndex(p => p.subId === product.subId) + 1;
+    return rank;
   };
 
   // 获取筛选后的产品
@@ -273,6 +245,29 @@ const VoteImagesScreen = () => {
     }
 
     return filteredProducts;
+  };
+
+  // 获取排名徽章颜色
+  const getRankBadgeColor = (rank: number) => {
+    switch (rank) {
+      case 1:
+        return "#FFD700"; // 金色
+      case 2:
+        return "#C0C0C0"; // 银色
+      case 3:
+        return "#CD7F32"; // 铜色
+      case 4:
+      case 5:
+        return colors.gold_deep; // 其他前5名用金黄色
+      default:
+        return "transparent";
+    }
+  };
+
+  // 获取排名文字
+  const getRankText = (rank: number): string => {
+    const rankTexts = ["第一名", "第二名", "第三名", "第四名", "第五名"];
+    return rank >= 1 && rank <= 5 ? rankTexts[rank - 1] : "";
   };
 
   // 应用筛选
@@ -381,109 +376,77 @@ const VoteImagesScreen = () => {
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* 投票活动选择区域 */}
-        {voteActivities.length > 0 && (
-          <View style={styles.activitiesSection}>
-            <Text style={styles.sectionTitle}>进行中的投票活动</Text>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              style={styles.activitiesScroll}
-            >
-              {voteActivities.map((activity) => (
-                <TouchableOpacity
-                  key={activity.id}
-                  style={[
-                    styles.activityCard,
-                    selectedActivity?.id === activity.id &&
-                      styles.activityCardSelected,
-                  ]}
-                  onPress={() => handleActivityPress(activity)}
-                  activeOpacity={0.8}
-                >
-                  <Text style={styles.activityName}>{activity.name}</Text>
-                  <Text style={styles.activityPeriod}>
-                    {new Date(activity.votedAt).toLocaleDateString()} -{" "}
-                    {new Date(activity.votedStop).toLocaleDateString()}
+        <Text style={styles.subtitle}>选择您想投票的选项</Text>
+
+        <View style={styles.imagesGrid}>
+          {filteredProducts.map((product, index) => {
+            const rank = getProductRank(product);
+            const isTopFive = rank <= 5;
+
+            return (
+              <TouchableOpacity
+                key={product.subId}
+                style={[
+                  styles.imageCard,
+                  index % 2 === 0 ? styles.leftCard : styles.rightCard,
+                ]}
+                onPress={() => handleImagePress(product)}
+              >
+                <View style={styles.imageContainer}>
+                  <Image
+                    source={{ uri: product.image }}
+                    style={styles.voteImage}
+                    resizeMode="cover"
+                  />
+
+                  {/* 排名徽章 - 只显示前5名 */}
+                  {isTopFive && (
+                    <View style={[styles.rankBadge, { backgroundColor: getRankBadgeColor(rank) }]}>
+                      <Text style={styles.rankText}>{getRankText(rank)}</Text>
+                    </View>
+                  )}
+
+                  <View style={styles.imageOverlay}>
+                    <Text style={styles.imageName}>{product.name}</Text>
+                  </View>
+                </View>
+
+                {/* 设计师信息和互动区域 */}
+                <View style={styles.infoContainer}>
+                  <Text style={styles.designerName}>
+                    设计师: {product.userId}
                   </Text>
-                  {/* {selectedActivity?.id === activity.id && (
-                    <View style={styles.selectedIndicator} />
-                  )} */}
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </View>
-        )}
-
-        {/* 产品加载状态 */}
-        {productsLoading && (
-          <View style={styles.centerContainer}>
-            <Text style={styles.centerText}>加载产品中...</Text>
-          </View>
-        )}
-
-        {!productsLoading && (
-          <>
-            <Text style={styles.subtitle}>选择您想投票的选项</Text>
-
-            <View style={styles.imagesGrid}>
-              {filteredProducts.map((product, index) => (
-                <TouchableOpacity
-                  key={product.subId}
-                  style={[
-                    styles.imageCard,
-                    index % 2 === 0 ? styles.leftCard : styles.rightCard,
-                  ]}
-                  onPress={() => handleImagePress(product)}
-                >
-                  <View style={styles.imageContainer}>
-                    <Image
-                      source={{ uri: product.image }}
-                      style={styles.voteImage}
-                      resizeMode="cover"
-                    />
-                    <View style={styles.imageOverlay}>
-                      <Text style={styles.imageName}>{product.name}</Text>
+                  <View style={styles.statsContainer}>
+                    <View style={styles.statItem}>
+                      <Ionicons
+                        name="ticket"
+                        size={14}
+                        color={colors.gold_deep}
+                      />
+                      <Text style={styles.statText}>{product.voted}</Text>
                     </View>
+                    <TouchableOpacity
+                      style={styles.voteButton}
+                      onPress={() => handleImagePress(product)}
+                    >
+                      <Ionicons
+                        name="checkmark-circle"
+                        size={16}
+                        color={colors.white}
+                      />
+                      <Text style={styles.voteButtonText}>投票</Text>
+                    </TouchableOpacity>
                   </View>
+                </View>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
 
-                  {/* 设计师信息和互动区域 */}
-                  <View style={styles.infoContainer}>
-                    <Text style={styles.designerName}>
-                      设计师: {product.userId}
-                    </Text>
-                    <View style={styles.statsContainer}>
-                      <View style={styles.statItem}>
-                        <Ionicons
-                          name="trophy"
-                          size={14}
-                          color={colors.yellow}
-                        />
-                        <Text style={styles.statText}>{product.voted}</Text>
-                      </View>
-                      <TouchableOpacity
-                        style={styles.voteButton}
-                        onPress={() => handleImagePress(product)}
-                      >
-                        <Ionicons
-                          name="checkmark-circle"
-                          size={16}
-                          color={colors.white}
-                        />
-                        <Text style={styles.voteButtonText}>投票</Text>
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-                </TouchableOpacity>
-              ))}
-            </View>
-
-            {filteredProducts.length === 0 && (
-              <View style={styles.emptyContainer}>
-                <Text style={styles.emptyText}>暂无投票产品</Text>
-              </View>
-            )}
-          </>
+        {filteredProducts.length === 0 && (
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>暂无投票产品</Text>
+          </View>
         )}
       </ScrollView>
     </SafeAreaView>
@@ -554,57 +517,6 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
   },
-  // 新增的活动选择区域样式
-  activitiesSection: {
-    marginBottom: 30,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    // fontWeight: "bold",
-    color: colors.gray_deep,
-    marginBottom: 16,
-    textAlign: "center", // ✅ 加这个
-  },
-  activitiesScroll: {
-    flexGrow: 0,
-  },
-  activityCard: {
-    backgroundColor: colors.white,
-    padding: 16,
-    borderRadius: 12,
-    marginRight: 12,
-    minWidth: 150,
-    shadowColor: colors.gold_deep,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 3,
-    position: "relative",
-  },
-  activityCardSelected: {
-    backgroundColor: colors.gold_light,
-    borderWidth: 2,
-    borderColor: colors.gold_deep,
-  },
-  activityName: {
-    fontSize: 14,
-    fontWeight: "bold",
-    color: colors.black,
-    marginBottom: 4,
-  },
-  activityPeriod: {
-    fontSize: 12,
-    color: colors.gray_text,
-  },
-  // selectedIndicator: {
-  //   position: "absolute",
-  //   top: 8,
-  //   right: 8,
-  //   width: 8,
-  //   height: 8,
-  //   borderRadius: 4,
-  //   backgroundColor: colors.gold_deep,
-  // },
   subtitle: {
     fontSize: 16,
     color: colors.gray_deep,
@@ -638,6 +550,32 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     position: "relative",
+  },
+  rankBadge: {
+    position: "absolute",
+    top: 8,
+    left: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 10,
+    borderWidth: 2,
+    borderColor: colors.white,
+    shadowColor: colors.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 5,
+  },
+  rankText: {
+    fontSize: 11,
+    fontWeight: "bold",
+    color: colors.white,
+    textShadowColor: "rgba(0, 0, 0, 0.5)",
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
   },
   voteImage: {
     width: "100%",

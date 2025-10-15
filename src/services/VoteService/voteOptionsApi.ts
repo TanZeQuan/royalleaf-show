@@ -43,6 +43,7 @@ export interface ApiResponse<T> {
   timestamp: number;
 }
 
+
 export const voteActivityService = {
   // 获取进行中的投票活动
   getVotingActivities: async (): Promise<VoteActivity[]> => {
