@@ -1,69 +1,12 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
-// ================================
-// 数据类型定义
-// ================================
-
-export interface ContestEntry {
-  id: string;
-  category: string;
-  categoryName: string;
-  image: string;
-  title: string;
-  description: string;
-  status: "pending" | "approved" | "rejected";
-  submittedAt: Date;
-  feedback?: string;
-  likes: number;
-  views: number;
-  isPublic: boolean;
-  authorName?: string;
-  authorId?: string;
-  activityId?: string;
-  activityName?: string;
-}
-
-export interface Activity {
-  id: number;
-  name: string;
-  desc: string;
-  submitStart: string;
-  submitStop: string;
-  voteStart: string;
-  voteStop: string;
-  status: "active" | "inactive" | "ended";
-  coverImage?: string;
-  participantsCount?: number;
-  submissionsCount?: number;
-}
-
-export interface RouteParams {
-  entries?: ContestEntry[];
-  selectedCategory?: string;
-  categoryName?: string;
-}
-
-export interface SubmissionRequest {
-  activityId: string;
-  title: string;
-  description: string;
-  image: string;
-  isPublic: boolean;
-  category?: string;
-}
-
-export interface ApiResponse<T> {
-  success: boolean;
-  data?: T;
-  message?: string;
-  error?: string;
-}
+import { Activity, ApiResponse, ContestEntry, SubmissionRequest } from "./CreatorSlice";
 
 // ================================
 // API 配置
 // ================================
 
 const API_BASE_URL = 'http://192.168.0.122:8080/royal/api';
+
 
 const API_ENDPOINTS = {
   ACTIVITIES_SUBMISSION_OPEN: '/votes/submission-open',
@@ -173,7 +116,6 @@ class CreatorStorage {
         JSON.stringify(entries.map(entry => ({
           ...entry,
           submittedAt: entry.submittedAt.toISOString(),
-          reviewedAt: entry.reviewedAt ? entry.reviewedAt.toISOString() : undefined,
         })))
       );
     } catch (error) {

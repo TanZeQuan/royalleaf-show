@@ -9,7 +9,6 @@ import {
     Alert,
     FlatList,
     Image,
-    Keyboard,
     Modal,
     Platform,
     ScrollView,
@@ -562,7 +561,7 @@ const MySubmissionsScreen = () => {
                 contentContainerStyle={styles.listContainer}
                 ListEmptyComponent={
                     <View style={styles.emptyContainer}>
-                        <Text style={styles.emptyIcon}>📝</Text>
+                        {/* <Text style={styles.emptyIcon}>📝</Text> */}
                         <Text style={styles.emptyTitle}>暂无创意投稿</Text>
                         <Text style={styles.emptyMessage}>
                             {params?.selectedCategory
@@ -872,7 +871,7 @@ const MySubmissionsScreen = () => {
                         <View style={styles.confirmModalContent}>
                             <Text style={styles.confirmTitle}>确认提交</Text>
                             <Text style={styles.confirmNote}>
-                                提交后将进入审核流程，请耐心等待结果。通过审核后，其他会员就能浏览、投票和评论你的创意！
+                                提交后将进入审核流程，请耐心等待。通过审核后，其他会员就能浏览、投票和评论你的创意！
                             </Text>
                             <View style={styles.confirmButtons}>
                                 <TouchableOpacity
@@ -916,10 +915,10 @@ const MySubmissionsScreen = () => {
 
                         {/* Modal 内部内容，点击不会关闭 */}
                         <View style={styles.successModalContent}>
-                            <Text style={styles.successIcon}>🎉</Text>
+                            {/* <Text style={styles.successIcon}>🎉</Text> */}
                             <Text style={styles.successTitle}>提交成功！</Text>
                             <Text style={styles.successMessage}>
-                                您的创意已提交，请耐心等待审核结果！{"\n"}
+                                您的创意已提交，请耐心等待审核！{"\n"}
                                 你的创意很快就能被大家看见！
                             </Text>
                             <TouchableOpacity
