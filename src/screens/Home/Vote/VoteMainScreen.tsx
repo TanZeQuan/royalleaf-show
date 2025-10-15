@@ -63,7 +63,7 @@ const VoteMainScreen = () => {
   }, []);
 
   const handleCategoryPress = (category: Category) => {
-    navigation.navigate("VoteOption", {
+    navigation.navigate("VoteActivity", {
       category: category.cateId,
       categoryName: category.name,
     });
@@ -84,12 +84,12 @@ const VoteMainScreen = () => {
           </TouchableOpacity>
           <Text style={styles.headerTitle}>投票</Text>
           <View style={styles.placeholder} />
-          <TouchableOpacity style={styles.rankBtn} activeOpacity={0.7}>
+          {/* <TouchableOpacity style={styles.rankBtn} activeOpacity={0.7}>
             <Image
               source={require("assets/icons/ranking-i.png")}
               style={{ width: 20, height: 20, resizeMode: "contain" }}
             />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
         <View style={styles.centerContainer}>
           <ActivityIndicator size="large" color={colors.primary_bg} />
