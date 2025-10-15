@@ -174,6 +174,7 @@ const VoteImagesScreen = () => {
   const [selectedActivity, setSelectedActivity] = useState<VoteActivity | null>(
     activity || null
   );
+  const [randomProducts, setRandomProducts] = useState<VoteProduct[]>([]);
 
   // 获取指定活动的投票产品
   useEffect(() => {
@@ -184,9 +185,14 @@ const VoteImagesScreen = () => {
         // 直接使用传入的 votesId 获取产品
         const products = await voteActivityService.getVoteProducts(votesId);
         setVoteProducts(products);
+        
+        // 初始化随机排序的其他产品
+        const otherProducts = getOtherProducts(products);
+        setRandomProducts(shuffleArray([...otherProducts]));
       } catch (error) {
         console.error("获取投票数据出错:", error);
         setVoteProducts([]);
+        setRandomProducts([]);
       } finally {
         setLoading(false);
       }
@@ -195,6 +201,38 @@ const VoteImagesScreen = () => {
     fetchVoteProducts();
   }, [votesId]);
 
+  // 获取前五名产品（按投票数从高到低）
+  const getTopFiveProducts = (): VoteProduct[] => {
+    if (!voteProducts.length) return [];
+    
+    const sortedByVotes = [...voteProducts].sort((a, b) => b.voted - a.voted);
+    return sortedByVotes.slice(0, 5);
+  };
+
+  // 获取其他产品（除了前五名）
+  const getOtherProducts = (products: VoteProduct[] = voteProducts): VoteProduct[] => {
+    if (!products.length) return [];
+    
+    const topFiveIds = new Set(getTopFiveProducts().map(p => p.subId));
+    return products.filter(product => !topFiveIds.has(product.subId));
+  };
+
+  // 数组随机排序函数
+  const shuffleArray = <T,>(array: T[]): T[] => {
+    const newArray = [...array];
+    for (let i = newArray.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+    }
+    return newArray;
+  };
+
+  // 刷新随机排序
+  const refreshRandomOrder = () => {
+    const otherProducts = getOtherProducts();
+    setRandomProducts(shuffleArray([...otherProducts]));
+  };
+
   // 获取产品排名（按投票数从高到低）
   const getProductRank = (product: VoteProduct): number => {
     const sortedByVotes = [...voteProducts].sort((a, b) => b.voted - a.voted);
@@ -202,16 +240,14 @@ const VoteImagesScreen = () => {
     return rank;
   };
 
-  // 获取筛选后的产品
-  const getFilteredProducts = () => {
-    if (!voteProducts.length) return [];
+  // 获取筛选后的产品（现在只应用于前五名）
+  const getFilteredTopFive = () => {
+    let topFive = getTopFiveProducts();
 
-    let filteredProducts = [...voteProducts];
-
-    // 应用排序
+    // 对前五名应用排序
     switch (currentFilter.sortBy) {
       case "votes":
-        filteredProducts.sort((a, b) => {
+        topFive.sort((a, b) => {
           return currentFilter.order === "desc"
             ? b.voted - a.voted
             : a.voted - b.voted;
@@ -219,7 +255,7 @@ const VoteImagesScreen = () => {
         break;
 
       case "name":
-        filteredProducts.sort((a, b) => {
+        topFive.sort((a, b) => {
           return currentFilter.order === "desc"
             ? b.name.localeCompare(a.name)
             : a.name.localeCompare(b.name);
@@ -227,7 +263,7 @@ const VoteImagesScreen = () => {
         break;
 
       case "latest":
-        filteredProducts.sort((a, b) => {
+        topFive.sort((a, b) => {
           const timeA = new Date(a.createdAt).getTime();
           const timeB = new Date(b.createdAt).getTime();
           return currentFilter.order === "desc" ? timeB - timeA : timeA - timeB;
@@ -235,8 +271,7 @@ const VoteImagesScreen = () => {
         break;
 
       case "likes":
-        // 如果没有likes字段，可以用voted代替或默认排序
-        filteredProducts.sort((a, b) => {
+        topFive.sort((a, b) => {
           return currentFilter.order === "desc"
             ? b.voted - a.voted
             : a.voted - b.voted;
@@ -244,7 +279,7 @@ const VoteImagesScreen = () => {
         break;
     }
 
-    return filteredProducts;
+    return topFive;
   };
 
   // 获取排名徽章颜色
@@ -276,7 +311,8 @@ const VoteImagesScreen = () => {
     setShowFilter(false);
   };
 
-  const filteredProducts = getFilteredProducts();
+  const topFiveProducts = getFilteredTopFive();
+  const otherProductsCount = getOtherProducts().length;
 
   // 在 VoteOptionScreen.tsx 中更新 handleImagePress 函数
   const handleImagePress = (product: VoteProduct) => {
@@ -307,6 +343,69 @@ const VoteImagesScreen = () => {
         : "最新";
     const orderText = currentFilter.order === "desc" ? "降序" : "升序";
     return `${sortText} ${orderText}`;
+  };
+
+  // 渲染产品卡片
+  const renderProductCard = (product: VoteProduct, index: number, isTopFive: boolean = false) => {
+    const rank = getProductRank(product);
+
+    return (
+      <TouchableOpacity
+        key={product.subId}
+        style={[
+          styles.imageCard,
+          index % 2 === 0 ? styles.leftCard : styles.rightCard,
+        ]}
+        onPress={() => handleImagePress(product)}
+      >
+        <View style={styles.imageContainer}>
+          <Image
+            source={{ uri: product.image }}
+            style={styles.voteImage}
+            resizeMode="cover"
+          />
+
+          {/* 排名徽章 - 只显示前5名 */}
+          {isTopFive && (
+            <View style={[styles.rankBadge, { backgroundColor: getRankBadgeColor(rank) }]}>
+              <Text style={styles.rankText}>{getRankText(rank)}</Text>
+            </View>
+          )}
+
+          <View style={styles.imageOverlay}>
+            <Text style={styles.imageName}>{product.name}</Text>
+          </View>
+        </View>
+
+        {/* 设计师信息和互动区域 */}
+        <View style={styles.infoContainer}>
+          <Text style={styles.designerName}>
+            设计师: {product.userId}
+          </Text>
+          <View style={styles.statsContainer}>
+            <View style={styles.statItem}>
+              <Ionicons
+                name="ticket"
+                size={14}
+                color={colors.gold_deep}
+              />
+              <Text style={styles.statText}>{product.voted}</Text>
+            </View>
+            <TouchableOpacity
+              style={styles.voteButton}
+              onPress={() => handleImagePress(product)}
+            >
+              <Ionicons
+                name="checkmark-circle"
+                size={16}
+                color={colors.white}
+              />
+              <Text style={styles.voteButtonText}>投票</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </TouchableOpacity>
+    );
   };
 
   if (loading) {
@@ -378,72 +477,42 @@ const VoteImagesScreen = () => {
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         <Text style={styles.subtitle}>选择您想投票的选项</Text>
 
-        <View style={styles.imagesGrid}>
-          {filteredProducts.map((product, index) => {
-            const rank = getProductRank(product);
-            const isTopFive = rank <= 5;
+        {/* 前五名区域 */}
+        {topFiveProducts.length > 0 && (
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>🏆 排行榜前五名</Text>
+            </View>
+            <View style={styles.imagesGrid}>
+              {topFiveProducts.map((product, index) => 
+                renderProductCard(product, index, true)
+              )}
+            </View>
+          </View>
+        )}
 
-            return (
-              <TouchableOpacity
-                key={product.subId}
-                style={[
-                  styles.imageCard,
-                  index % 2 === 0 ? styles.leftCard : styles.rightCard,
-                ]}
-                onPress={() => handleImagePress(product)}
+        {/* 其他产品区域 */}
+        {randomProducts.length > 0 && (
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>🎲 其他参赛作品</Text>
+              <TouchableOpacity 
+                style={styles.refreshButton}
+                onPress={refreshRandomOrder}
               >
-                <View style={styles.imageContainer}>
-                  <Image
-                    source={{ uri: product.image }}
-                    style={styles.voteImage}
-                    resizeMode="cover"
-                  />
-
-                  {/* 排名徽章 - 只显示前5名 */}
-                  {isTopFive && (
-                    <View style={[styles.rankBadge, { backgroundColor: getRankBadgeColor(rank) }]}>
-                      <Text style={styles.rankText}>{getRankText(rank)}</Text>
-                    </View>
-                  )}
-
-                  <View style={styles.imageOverlay}>
-                    <Text style={styles.imageName}>{product.name}</Text>
-                  </View>
-                </View>
-
-                {/* 设计师信息和互动区域 */}
-                <View style={styles.infoContainer}>
-                  <Text style={styles.designerName}>
-                    设计师: {product.userId}
-                  </Text>
-                  <View style={styles.statsContainer}>
-                    <View style={styles.statItem}>
-                      <Ionicons
-                        name="ticket"
-                        size={14}
-                        color={colors.gold_deep}
-                      />
-                      <Text style={styles.statText}>{product.voted}</Text>
-                    </View>
-                    <TouchableOpacity
-                      style={styles.voteButton}
-                      onPress={() => handleImagePress(product)}
-                    >
-                      <Ionicons
-                        name="checkmark-circle"
-                        size={16}
-                        color={colors.white}
-                      />
-                      <Text style={styles.voteButtonText}>投票</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
+                <Ionicons name="refresh" size={16} color={colors.white} />
+                <Text style={styles.refreshText}>换一批</Text>
               </TouchableOpacity>
-            );
-          })}
-        </View>
+            </View>
+            <View style={styles.imagesGrid}>
+              {randomProducts.map((product, index) => 
+                renderProductCard(product, index, false)
+              )}
+            </View>
+          </View>
+        )}
 
-        {filteredProducts.length === 0 && (
+        {voteProducts.length === 0 && (
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyText}>暂无投票产品</Text>
           </View>
@@ -453,7 +522,6 @@ const VoteImagesScreen = () => {
   );
 };
 
-// ... 样式部分保持不变 ...
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -522,6 +590,35 @@ const styles = StyleSheet.create({
     color: colors.gray_deep,
     marginBottom: 24,
     textAlign: "center",
+  },
+  section: {
+    marginBottom: 30,
+  },
+  sectionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 16,
+    paddingHorizontal: 4,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: colors.black,
+  },
+  refreshButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colors.gold_deep,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+  },
+  refreshText: {
+    fontSize: 12,
+    color: colors.white,
+    fontWeight: "600",
+    marginLeft: 4,
   },
   imagesGrid: {
     flexDirection: "row",
