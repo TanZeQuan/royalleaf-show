@@ -5,6 +5,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 // ================================
 
 export interface ContestEntry {
+  reviewedAt: any;
   id: string;
   category: string;
   categoryName: string;

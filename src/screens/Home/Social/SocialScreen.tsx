@@ -507,7 +507,11 @@ export default function SocialScreen() {
 
   const handleCreatePost = async () => {
     if (!newPostText.trim() && !newPostImage) {
-      Alert.alert("提示", "请填写内容或添加图片");
+      // ✅ 没有内容也自动关闭发布框并重置状态
+      setShowCreatePost(false);
+      setShowPhotoRequired(false);
+      setNewPostText("");
+      setNewPostImage(null);
       return;
     }
 
@@ -515,7 +519,7 @@ export default function SocialScreen() {
       const postData = {
         title: newPostText.trim() || "无标题",
         content: newPostText.trim(),
-        author: user?.user_id || "unknown", // ✅ 用用户ID
+        author: user?.user_id || "unknown",
       };
 
       console.log("📦 postData before API:", postData);
@@ -523,12 +527,11 @@ export default function SocialScreen() {
       const response = await createPost(postData);
       console.log("✅ Post created:", response);
 
-      // ✅ 确保用户名保持
       const newPost = {
         id: Date.now().toString(),
         user_id: user?.user_id || "",
-        username: user?.username || "匿名用户", // ✅ 优先使用 AsyncStorage 中的用户名
-        avatar: user?.image || "🧑🏻", // ✅ 如果没有头像，就用默认的表情
+        username: user?.username || "匿名用户",
+        avatar: user?.image || "🧑🏻",
         image: newPostImage ? { uri: newPostImage } : null,
         caption: newPostText.trim(),
         likes: 0,
@@ -539,10 +542,8 @@ export default function SocialScreen() {
         commentsList: [],
       };
 
-      // 更新前端帖子列表
       setPosts((prev) => [newPost, ...prev]);
 
-      // 重置输入框
       setNewPostText("");
       setNewPostImage(null);
       setShowCreatePost(false);
@@ -554,6 +555,7 @@ export default function SocialScreen() {
       Alert.alert("错误", error.message || "发布失败，请稍后再试");
     }
   };
+
 
   // 拍照
   const handleTakePhoto = async () => {
