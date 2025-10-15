@@ -8,7 +8,6 @@ import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Dimensions,
-  Image,
   ImageBackground,
   ScrollView,
   StatusBar,
@@ -114,7 +113,7 @@ const VoteMainScreen = () => {
         </TouchableOpacity>
         <Text style={styles.headerTitle}>投票</Text>
         <View style={styles.placeholder} />
-        <TouchableOpacity
+        {/* <TouchableOpacity
           style={styles.rankBtn}
           activeOpacity={0.7}
           onPress={() => navigation.navigate("Ranking")}
@@ -123,7 +122,7 @@ const VoteMainScreen = () => {
             source={require("assets/icons/ranking-i.png")}
             style={{ width: 20, height: 20, resizeMode: "contain" }}
           />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
 
       <ScrollView
@@ -136,7 +135,7 @@ const VoteMainScreen = () => {
         <View style={styles.categoriesContainer}>
           {categories.map((category, index) => (
             <TouchableOpacity
-              key={category.id}
+              key={category.cateId ?? index}
               style={[
                 styles.categoryWrapper,
                 {
@@ -187,7 +186,7 @@ const styles = StyleSheet.create({
     // minHeight: verticalScale(60),
     borderBottomColor: colors.gold_light,
     backgroundColor: colors.gold_light,
-    fontSize:20,
+    fontSize: 20,
   },
   backButton: {
     width: 35,
@@ -216,10 +215,11 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   headerTitle: {
+    flex: 1, // ⬅️ 让标题占中间
+    textAlign: "center",
     fontSize: moderateScale(19),
     fontWeight: "bold",
     color: colors.black,
-    marginLeft: 80,
   },
   placeholder: {
     width: scale(32),
