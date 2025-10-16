@@ -1,8 +1,6 @@
 // voteDetailsApi.ts
+const API_BASE_URL = "http://192.168.0.122:8080/royal/api";
 import { getUserData } from "../../utils/storage"; // 🔑 引入存储工具
-import api from "../apiClient";
-
-const API_BASE_URL = "http://192.168.0.122:8080/royal";
 
 export interface RouteParams {
   productId: string;
@@ -33,6 +31,25 @@ export interface Comment {
   voteType?: "upvote" | "downvote";
 }
 
+export interface CommentRequest {
+  subId: string;
+  userId: string;
+  desc: string;
+}
+
+export interface CommentResponse {
+  success: boolean;
+  message: string;
+  data?: {
+    id: string;
+    subId: string;
+    userId: string;
+    desc: string;
+    createdAt: string;
+  };
+  timestamp: number;
+}
+
 export interface ItemData {
   image: any;
   name?: string;
@@ -45,21 +62,11 @@ export interface ItemData {
 export interface VoteRequest {
   votesId: string;
   targetSubId: string;
-  name: string;
-  desc: string;
-  image: string;
-  isStatus: number;
-  approveBy: string;
-}
-
-// 或者创建一个专门用于提交投票的接口
-export interface SubmitVoteRequest {
-  votesId: string;
-  userId: string;
-  listing: {
-    targetSubId: string;
-    timestamp: string;
-  };
+  name?: string;
+  desc?: string;
+  image?: string;
+  isStatus?: number;
+  approveBy?: string;
 }
 
 export interface VoteResponse {
@@ -104,103 +111,170 @@ export interface ApiResponse<T> {
   timestamp: number;
 }
 
-export const voteActivityService = {
-  // ✅ 提交投票 - 修复版本
-  submitVote: async (
-    voteData: VoteRequest
-  ): Promise<{ success: boolean; message: string }> => {
-    try {
-      const user = await getUserData();
-      if (!user) {
-        return { success: false, message: "用户未登录" };
-      }
+// 提交投票函数
+export const submitVoteFetch = async (voteData: VoteRequest) => {
+  try {
+    const user = await getUserData();
+    if (!user) return { success: false, message: "用户未登录" };
 
-      // 🔧 构建符合后端要求的请求体
-      const payload = {
-        votesId: voteData.votesId,
-        userId: user.user_id,
-        listing: {
-          targetSubId: voteData.targetSubId,
-          timestamp: new Date().toISOString(), // 使用当前时间
-        },
+    const payload = {
+      votesId: voteData.votesId,
+      userId: user.user_id,
+      targetSubId: voteData.targetSubId
+    };
+
+    console.log("🔄 提交投票数据:", payload);
+    console.log("🌐 请求URL:", `${API_BASE_URL}/votes/submit/cast`);
+
+    // 添加超时控制
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10秒超时
+
+    const response = await fetch(`${API_BASE_URL}/votes/submit/cast`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "*/*",
+      },
+      body: JSON.stringify(payload),
+      signal: controller.signal
+    });
+
+    clearTimeout(timeoutId);
+
+    console.log("🌐 Response status:", response.status);
+
+    const data = await response.json();
+    console.log("✅ 投票响应:", data);
+
+    return {
+      success: data.success,
+      message: data.message,
+    };
+  } catch (error: any) {
+    console.error("❌ 投票出错:", error);
+    
+    // 更详细的错误信息
+    if (error.name === 'AbortError') {
+      return { success: false, message: "请求超时，请检查网络连接" };
+    } else if (error.message === 'Network request failed') {
+      return { success: false, message: "网络连接失败，请检查网络设置" };
+    }
+    
+    return {
+      success: false,
+      message: error.message || "投票失败",
+    };
+  }
+};
+
+// 获取投票产品详情
+export const getVoteProductDetails = async (subId: string): Promise<VoteProductDetails | null> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/votes/submit/records/${subId}`);
+    const data = await response.json();
+
+    if (data.success) {
+      const productDetails = data.data;
+      console.log("获取产品详情成功:", productDetails);
+      return productDetails;
+    }
+    return null;
+  } catch (error) {
+    console.error("获取投票产品详情出错:", error);
+    return null;
+  }
+};
+
+// 获取评论
+export const getComments = async (subId: string): Promise<Comment[]> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/votes/submit/comments/submission/${subId}`);
+    const data = await response.json();
+
+    if (data.success && data.data) {
+      const transformedComments = data.data.map(transformComment);
+      console.log("获取评论成功:", transformedComments.length, "条评论");
+      return transformedComments;
+    }
+    return [];
+  } catch (error) {
+    console.error("获取评论出错:", error);
+    return [];
+  }
+};
+
+// 提交评论函数
+export const submitComment = async (commentData: CommentRequest): Promise<CommentResponse> => {
+  try {
+    const user = await getUserData();
+    if (!user) {
+      return { 
+        success: false, 
+        message: "用户未登录",
+        timestamp: Date.now()
       };
+    }
 
-      console.log("提交投票数据:", payload);
+    const payload = {
+      subId: commentData.subId,
+      userId: user.user_id,
+      desc: commentData.desc
+    };
 
-      // 🔧 使用正确的 API 端点
-      const response = await api.post<ApiResponse<VoteResponse>>(
-        `${API_BASE_URL}/api/votes/history`, // 注意端点路径
-        payload
-      );
+    console.log("🔄 提交评论数据:", payload);
+    console.log("🌐 请求URL:", `${API_BASE_URL}/votes/submit/comments`);
 
-      return {
-        success: response.data.success,
-        message: response.data.message,
+    // 添加超时控制
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+    const response = await fetch(`${API_BASE_URL}/votes/submit/comments`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "*/*",
+      },
+      body: JSON.stringify(payload),
+      signal: controller.signal
+    });
+
+    clearTimeout(timeoutId);
+
+    console.log("🌐 Response status:", response.status);
+
+    const data = await response.json();
+    console.log("✅ 评论提交响应:", data);
+
+    return {
+      success: data.success,
+      message: data.message,
+      data: data.data,
+      timestamp: data.timestamp || Date.now()
+    };
+  } catch (error: any) {
+    console.error("❌ 提交评论出错:", error);
+    
+    if (error.name === 'AbortError') {
+      return { 
+        success: false, 
+        message: "请求超时，请检查网络连接",
+        timestamp: Date.now()
       };
-    } catch (error: any) {
-      console.error("投票出错:", error);
-      return {
-        success: false,
-        message: error.response?.data?.message || "投票失败，请稍后重试",
+    } else if (error.message === 'Network request failed') {
+      return { 
+        success: false, 
+        message: "网络连接失败，请检查网络设置",
+        timestamp: Date.now()
       };
     }
-  },
-
-  // ✅ 获取投票产品详情（不包含评论）
-  getVoteProductDetails: async (
-    subId: string
-  ): Promise<VoteProductDetails | null> => {
-    try {
-      const response = await api.get<ApiResponse<VoteProductDetails>>(
-        `${API_BASE_URL}/api/votes/submit/records/${subId}`
-      );
-
-      if (response.data.success) {
-        const productDetails = response.data.data;
-        console.log("获取产品详情成功:", productDetails);
-        return productDetails;
-      }
-      return null;
-    } catch (error) {
-      console.error("获取投票产品详情出错:", error);
-      return null;
-    }
-  },
-
-  getComments: async (subId: string): Promise<Comment[]> => {
-    try {
-      const response = await api.get<ApiResponse<any[]>>(
-        `${API_BASE_URL}/api/votes/submit/comments/submission/${subId}`
-      );
-
-      if (response.data.success && response.data.data) {
-        // 使用 transformComment 函数转换后端数据为前端格式
-        const transformedComments = response.data.data.map(transformComment);
-        console.log("获取评论成功:", transformedComments.length, "条评论");
-        return transformedComments;
-      }
-      return [];
-    } catch (error) {
-      console.error("获取评论出错:", error);
-      return [];
-    }
-  },
-
-  checkUserVote: async (votesId: string): Promise<boolean> => {
-    try {
-      const user = await getUserData();
-      if (!user) return false;
-
-      const response = await api.get<ApiResponse<{ hasVoted: boolean }>>(
-        `${API_BASE_URL}/votes/check-vote/${votesId}/${user.user_id}`
-      );
-
-      return response.data.data?.hasVoted || false;
-    } catch (error) {
-      console.error("检查投票状态出错:", error);
-      return false;
-    }
-  },
+    
+    return {
+      success: false,
+      message: error.message || "评论提交失败",
+      timestamp: Date.now()
+    };
+  }
 };
 
 // 计算相对时间
@@ -227,7 +301,7 @@ const transformComment = (apiComment: any): Comment => {
     commentId: apiComment.commentId,
     subId: apiComment.subId,
     userId: apiComment.userId,
-    user: apiComment.userId, // 先用 userId 作为显示名
+    user: apiComment.username || `${apiComment.userId.substring(0, 6)}`, // 使用 username，如果没有就生成友好名称
     text: apiComment.desc || apiComment.text || "",
     desc: apiComment.desc,
     timeAgo: getTimeAgo(apiComment.createdAt),
