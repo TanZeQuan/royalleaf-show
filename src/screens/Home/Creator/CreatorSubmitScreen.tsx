@@ -25,8 +25,8 @@ import {
     useSafeAreaInsets,
 } from "react-native-safe-area-context";
 import { colors } from "styles";
-import { getUserData } from "../../../utils/storage";
 import { CreatorStackParamList } from "../../../navigation/stacks/HomeNav/CreatorStack";
+import { getUserData } from "../../../utils/storage";
 import styles from "../../Home/Creator/CreatorStyles";
 import { ContestEntry, RouteParams } from "../Creator/CreatorSlice";
 import { creatorAPI } from "./CreatorService";
@@ -166,32 +166,78 @@ const MySubmissionsScreen = () => {
     };
 
     const loadEntries = async () => {
+        console.log('==========================================');
+        console.log('🚀🚀🚀 loadEntries CALLED 🚀🚀🚀');
+        console.log('==========================================');
+
         setIsLoading(true);
         try {
             let allEntries: ContestEntry[] = [];
 
-            if (params?.entries) {
+            // 优先从路由参数获取（仅当有数据时）
+            if (params?.entries && params.entries.length > 0) {
+                console.log('📦 Loading entries from route params');
                 allEntries = params.entries.map((entry: any) => ({
                     ...entry,
                     submittedAt: new Date(entry.submittedAt),
                     reviewedAt: entry.reviewedAt ? new Date(entry.reviewedAt) : undefined,
                 }));
             } else {
-                const storedEntries = await AsyncStorage.getItem("contestEntries");
-                if (storedEntries) {
-                    allEntries = JSON.parse(storedEntries).map((entry: any) => ({
-                        ...entry,
-                        submittedAt: new Date(entry.submittedAt),
-                        reviewedAt: entry.reviewedAt
-                            ? new Date(entry.reviewedAt)
-                            : undefined,
-                    }));
+                // 从后端API获取用户投稿记录
+                console.log('🔍 Fetching user data from storage...');
+                const userData = await getUserData();
+                console.log('👤 User data:', userData);
+
+                if (userData && userData.user_id) {
+                    console.log('✅ User ID found:', userData.user_id);
+                    console.log('📡 Calling API to get user entries...');
+
+                    const result = await creatorAPI.getUserEntries(userData.user_id);
+
+                    console.log('📥 API Response:', result);
+                    console.log('📊 Data type:', typeof result.data, 'Is array:', Array.isArray(result.data));
+
+                    if (result.success && result.data && Array.isArray(result.data)) {
+                        console.log('✅ Successfully received', result.data.length, 'entries');
+
+                        // 将后端数据转换为前端格式
+                        allEntries = result.data.map((item: any) => ({
+                            id: item.subId,
+                            category: params?.selectedCategory || "general",
+                            categoryName: params?.categoryName || "通用",
+                            image: item.image,
+                            title: item.name,
+                            description: item.desc,
+                            status: item.isStatus === 1 ? "pending" :
+                                    item.isStatus === 2 ? "approved" :
+                                    item.isStatus === 3 ? "rejected" : "pending",
+                            submittedAt: new Date(item.createdAt),
+                            reviewedAt: item.modifyAt ? new Date(item.modifyAt) : undefined,
+                            likes: item.voted || 0,
+                            views: 0,
+                            isPublic: true,
+                            authorName: userData.username || "当前用户",
+                            authorId: userData.user_id,
+                            activityId: item.votesId,
+                            activityName: "",
+                        }));
+
+                        console.log('✅ Mapped entries:', allEntries);
+                    } else {
+                        console.log('❌ Failed to get entries or data is not an array');
+                        if (!result.success) {
+                            console.log('❌ Error:', result.error);
+                        }
+                    }
+                } else {
+                    console.log('❌ No user data or user_id not found');
                 }
             }
 
+            console.log('📋 Final entries count:', allEntries.length);
             setEntries(allEntries);
         } catch (error) {
-            console.error("Error loading entries:", error);
+            console.error("❌ Error loading entries:", error);
         } finally {
             setIsLoading(false);
         }
@@ -420,39 +466,14 @@ const MySubmissionsScreen = () => {
             console.log('API Result:', result);
 
             if (result.success && result.data) {
-                // 构建新的投稿记录
-                const newEntry: ContestEntry = {
-                    id: result.data.subId || Date.now().toString(),
-                    category: params?.selectedCategory || "general",
-                    categoryName: params?.categoryName || "通用",
-                    image: result.data.image || selectedImage!,
-                    title: result.data.name || entryTitle,
-                    description: result.data.desc || entryDescription,
-                    status: result.data.isStatus === 1 ? "pending" :
-                            result.data.isStatus === 2 ? "approved" :
-                            result.data.isStatus === 3 ? "rejected" : "pending",
-                    submittedAt: new Date(result.data.createdAt || new Date()),
-                    likes: result.data.voted || 0,
-                    views: 0,
-                    isPublic: isPublicEntry,
-                    authorName: userData.username || "当前用户",
-                    authorId: userData.user_id,
-                    activityId: selectedActivityObj.votesId,
-                    activityName: selectedActivityObj.name,
-                };
-
-                // 保存到本地列表
-                const updatedEntries = [...entries, newEntry];
-                setEntries(updatedEntries);
-                await AsyncStorage.setItem(
-                    "contestEntries",
-                    JSON.stringify(updatedEntries)
-                );
-
+                // 提交成功后，重新从后端加载数据
                 setSuccessModalVisible(true);
                 resetEntryForm();
+
+                // 重新加载投稿列表
+                await loadEntries();
             } else {
-                Alert.alert("提交失败", result.error || "创意提交失败，请稍后重试");
+                Alert.alert("提交失败", result.error || "创意提交失败,请稍后重试");
             }
         } catch (error) {
             console.error('Submit error:', error);

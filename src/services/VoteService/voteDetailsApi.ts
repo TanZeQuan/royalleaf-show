@@ -12,15 +12,15 @@ export interface RouteParams {
 }
 
 export interface Comment {
-  id: string | number;  // 支持 string 或 number
-  commentId?: string;   // 可选
-  subId?: string;       // 可选
-  user: string;         // 必需 - 用户显示名称
-  userId?: string;      // 可选 - 保留原始
-  text: string;         // 必需 - 评论内容
-  timeAgo: string;      // 必需 - 相对时间
-  desc?: string;        // 可选 - 保留原始 desc
-  createdAt?: string;   // 可选 - 添加原始时间
+  id: string | number; // 支持 string 或 number
+  commentId?: string; // 可选
+  subId?: string; // 可选
+  user: string; // 必需 - 用户显示名称
+  userId?: string; // 可选 - 保留原始
+  text: string; // 必需 - 评论内容
+  timeAgo: string; // 必需 - 相对时间
+  desc?: string; // 可选 - 保留原始 desc
+  createdAt?: string; // 可选 - 添加原始时间
   isDelete?: number;
   modifyAt?: string;
   deleted?: boolean;
@@ -50,6 +50,16 @@ export interface VoteRequest {
   image: string;
   isStatus: number;
   approveBy: string;
+}
+
+// 或者创建一个专门用于提交投票的接口
+export interface SubmitVoteRequest {
+  votesId: string;
+  userId: string;
+  listing: {
+    targetSubId: string;
+    timestamp: string;
+  };
 }
 
 export interface VoteResponse {
@@ -95,21 +105,31 @@ export interface ApiResponse<T> {
 }
 
 export const voteActivityService = {
-  // ✅ 提交投票
-  submitVote: async (voteData: VoteRequest): Promise<{ success: boolean; message: string }> => {
+  // ✅ 提交投票 - 修复版本
+  submitVote: async (
+    voteData: VoteRequest
+  ): Promise<{ success: boolean; message: string }> => {
     try {
       const user = await getUserData();
       if (!user) {
         return { success: false, message: "用户未登录" };
       }
 
+      // 🔧 构建符合后端要求的请求体
       const payload = {
-        ...voteData,
-        userId: user.user_id, // 🔑 自动加上 userId
+        votesId: voteData.votesId,
+        userId: user.user_id,
+        listing: {
+          targetSubId: voteData.targetSubId,
+          timestamp: new Date().toISOString(), // 使用当前时间
+        },
       };
 
+      console.log("提交投票数据:", payload);
+
+      // 🔧 使用正确的 API 端点
       const response = await api.post<ApiResponse<VoteResponse>>(
-        `${API_BASE_URL}/votes/submit/cast`,
+        `${API_BASE_URL}/api/votes/history`, // 注意端点路径
         payload
       );
 
@@ -127,7 +147,9 @@ export const voteActivityService = {
   },
 
   // ✅ 获取投票产品详情（不包含评论）
-  getVoteProductDetails: async (subId: string): Promise<VoteProductDetails | null> => {
+  getVoteProductDetails: async (
+    subId: string
+  ): Promise<VoteProductDetails | null> => {
     try {
       const response = await api.get<ApiResponse<VoteProductDetails>>(
         `${API_BASE_URL}/api/votes/submit/records/${subId}`
@@ -188,12 +210,13 @@ const getTimeAgo = (dateString: string): string => {
     const now = new Date();
     const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
-    if (diffInSeconds < 60) return '刚刚';
+    if (diffInSeconds < 60) return "刚刚";
     if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}分钟前`;
-    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}小时前`;
+    if (diffInSeconds < 86400)
+      return `${Math.floor(diffInSeconds / 3600)}小时前`;
     return `${Math.floor(diffInSeconds / 86400)}天前`;
   } catch (error) {
-    return '未知时间';
+    return "未知时间";
   }
 };
 
@@ -205,13 +228,13 @@ const transformComment = (apiComment: any): Comment => {
     subId: apiComment.subId,
     userId: apiComment.userId,
     user: apiComment.userId, // 先用 userId 作为显示名
-    text: apiComment.desc || apiComment.text || '',
+    text: apiComment.desc || apiComment.text || "",
     desc: apiComment.desc,
     timeAgo: getTimeAgo(apiComment.createdAt),
     createdAt: apiComment.createdAt,
     isDelete: apiComment.isDelete,
     modifyAt: apiComment.modifyAt,
     deleted: apiComment.deleted,
-    isDesigner: apiComment.isDesigner || false
+    isDesigner: apiComment.isDesigner || false,
   };
 };

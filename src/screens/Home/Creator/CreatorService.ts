@@ -15,7 +15,7 @@ const API_BASE_URL = "http://192.168.0.122:8080/royal/api";
 const API_ENDPOINTS = {
   ACTIVITIES_SUBMISSION_OPEN: "/votes/submission-open",
   SUBMIT_ENTRY: "/votes/submit/submit", // 修改为实际的提交端点
-  GET_ENTRIES: "/submissions/user",
+  GET_ENTRIES: "/votes/submit/records/user", // 获取用户的投稿记录
   UPDATE_ENTRY: "/submissions",
   DELETE_ENTRY: "/submissions",
 } as const;
@@ -159,10 +159,13 @@ class CreatorAPI {
   }
 
   // 获取用户的投稿记录
-  async getUserEntries(): Promise<ApiResponse<ContestEntry[]>> {
-    return this.makeRequest<ContestEntry[]>(API_ENDPOINTS.GET_ENTRIES, {
-      method: "GET",
-    });
+  async getUserEntries(userId: string): Promise<ApiResponse<any[]>> {
+    return this.makeRequest<any[]>(
+      `${API_ENDPOINTS.GET_ENTRIES}/${userId}`,
+      {
+        method: "GET",
+      }
+    );
   }
 
   // 更新投稿

@@ -34,8 +34,12 @@ const VoteDetailScreen = () => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<VoteDetailNavigationProp>();
   const route = useRoute();
-  const { productId, product: initialProduct, activity, category } =
-    route.params as RouteParams;
+  const {
+    productId,
+    product: initialProduct,
+    activity,
+    category,
+  } = route.params as RouteParams;
 
   const [product, setProduct] = useState<VoteProductDetails | null>(
     initialProduct || null
@@ -55,62 +59,61 @@ const VoteDetailScreen = () => {
 
   // 获取产品详情和评论
   useEffect(() => {
-   const fetchProductDetailsAndComments = async () => {
-  if (!initialProduct && productId) {
-    try {
-      setLoading(true);
-      
-      console.log("🔄 开始获取产品详情和评论...", { productId });
-      
-      const [productDetails, commentsData] = await Promise.all([
-        voteActivityService.getVoteProductDetails(productId),
-        voteActivityService.getComments(productId)
-      ]);
-      
-      console.log("📦 产品详情结果:", productDetails);
-      console.log("💬 评论数据结果:", commentsData);
-      console.log("评论数据类型:", typeof commentsData);
-      console.log("评论数据长度:", commentsData?.length);
-      
-      if (productDetails) {
-        setProduct(productDetails);
-        setVoteCount(productDetails.voted);
+    const fetchProductDetailsAndComments = async () => {
+      if (!initialProduct && productId) {
+        try {
+          setLoading(true);
+
+          console.log("🔄 开始获取产品详情和评论...", { productId });
+
+          const [productDetails, commentsData] = await Promise.all([
+            voteActivityService.getVoteProductDetails(productId),
+            voteActivityService.getComments(productId),
+          ]);
+
+          console.log("📦 产品详情结果:", productDetails);
+          console.log("💬 评论数据结果:", commentsData);
+          console.log("评论数据类型:", typeof commentsData);
+          console.log("评论数据长度:", commentsData?.length);
+
+          if (productDetails) {
+            setProduct(productDetails);
+            setVoteCount(productDetails.voted);
+          }
+
+          if (commentsData && commentsData.length > 0) {
+            setComments(commentsData);
+            console.log("✅ 成功加载评论数据:", commentsData);
+          } else {
+            console.log("❌ 没有评论数据或数据为空");
+            setComments([]);
+          }
+        } catch (error) {
+          console.error("❌ 获取数据出错:", error);
+        } finally {
+          setLoading(false);
+        }
+      } else if (initialProduct) {
+        // 如果从导航传入了 initialProduct，单独获取评论
+        try {
+          console.log("🔄 单独获取评论...", { productId });
+          const commentsData = await voteActivityService.getComments(productId);
+
+          console.log("💬 单独获取的评论数据:", commentsData);
+          console.log("评论数据长度:", commentsData?.length);
+
+          if (commentsData && commentsData.length > 0) {
+            setComments(commentsData);
+            console.log("✅ 成功加载评论数据:", commentsData.length, "条");
+          } else {
+            console.log("❌ 没有评论数据");
+            setComments([]);
+          }
+        } catch (error) {
+          console.error("❌ 获取评论出错:", error);
+        }
       }
-      
-      if (commentsData && commentsData.length > 0) {
-        setComments(commentsData);
-        console.log("✅ 成功加载评论数据:", commentsData);
-      } else {
-        console.log("❌ 没有评论数据或数据为空");
-        setComments([]);
-      }
-      
-    } catch (error) {
-      console.error("❌ 获取数据出错:", error);
-    } finally {
-      setLoading(false);
-    }
-  } else if (initialProduct) {
-    // 如果从导航传入了 initialProduct，单独获取评论
-    try {
-      console.log("🔄 单独获取评论...", { productId });
-      const commentsData = await voteActivityService.getComments(productId);
-      
-      console.log("💬 单独获取的评论数据:", commentsData);
-      console.log("评论数据长度:", commentsData?.length);
-      
-      if (commentsData && commentsData.length > 0) {
-        setComments(commentsData);
-        console.log("✅ 成功加载评论数据:", commentsData.length, "条");
-      } else {
-        console.log("❌ 没有评论数据");
-        setComments([]);
-      }
-    } catch (error) {
-      console.error("❌ 获取评论出错:", error);
-    }
-  }
-};
+    };
 
     fetchProductDetailsAndComments();
   }, [productId, initialProduct]);
@@ -118,7 +121,7 @@ const VoteDetailScreen = () => {
   // 刷新评论函数
   const refreshComments = async () => {
     if (!productId) return;
-    
+
     try {
       const commentsData = await voteActivityService.getComments(productId);
       if (commentsData) {
@@ -177,21 +180,21 @@ const VoteDetailScreen = () => {
     setShowConfirmModal(true);
   };
 
-  // 确认投票 - ✅ 调用真实 API
+  // 确认投票
   const confirmVote = async () => {
     if (!product) return;
 
     try {
-      // 🔹 获取已登录用户
       const user = await getUserData();
       if (!user || !user.user_id) {
         showCustomNotification("错误", "请先登录再投票");
         return;
       }
 
+      // ✅ 构建符合后端要求的投票数据
       const voteData = {
         votesId: product.votesId,
-        userId: user.user_id, // ✅ 使用登录时存储的 user_id
+        userId: user.user_id,
         targetSubId: product.subId,
         name: product.name,
         desc: product.desc,
@@ -231,7 +234,7 @@ const VoteDetailScreen = () => {
 
     // 这里应该调用提交评论的API
     // await voteActivityService.submitComment(productId, commentText.trim());
-    
+
     // 暂时使用本地状态更新，实际应该等API成功后再刷新
     const newComment: Comment = {
       id: Date.now().toString(),
@@ -316,8 +319,12 @@ const VoteDetailScreen = () => {
                 />
               </View>
               <View style={styles.designerDetails}>
-                <Text style={styles.designerName}>{itemData.designer.name}</Text>
-                <Text style={styles.designerDesc}>{itemData.designer.desc}</Text>
+                <Text style={styles.designerName}>
+                  {itemData.designer.name}
+                </Text>
+                <Text style={styles.designerDesc}>
+                  {itemData.designer.desc}
+                </Text>
               </View>
             </View>
           </View>
@@ -383,14 +390,11 @@ const VoteDetailScreen = () => {
           <View style={styles.commentsHeader}>
             <Text style={styles.sectionTitle}>评论区 ({comments.length})</Text>
           </View>
-          
+
           {displayedComments.length > 0 ? (
             <>
               {displayedComments.map((comment) => (
-                <View
-                  key={comment.id}
-                  style={styles.commentItem}
-                >
+                <View key={comment.id} style={styles.commentItem}>
                   <View style={styles.commentHeader}>
                     <Text style={styles.commentUser}>{comment.user}</Text>
                     <Text style={styles.commentTime}>{comment.timeAgo}</Text>
@@ -413,7 +417,9 @@ const VoteDetailScreen = () => {
               )}
             </>
           ) : (
-            <Text style={styles.noCommentsText}>还没有评论，快来抢沙发吧！</Text>
+            <Text style={styles.noCommentsText}>
+              还没有评论，快来抢沙发吧！
+            </Text>
           )}
         </View>
 
@@ -462,7 +468,9 @@ const VoteDetailScreen = () => {
         <View style={styles.notificationOverlay}>
           <View style={styles.notificationContainer}>
             <Text style={styles.notificationTitle}>{notificationTitle}</Text>
-            <Text style={styles.notificationMessage}>{notificationMessage}</Text>
+            <Text style={styles.notificationMessage}>
+              {notificationMessage}
+            </Text>
           </View>
         </View>
       </Modal>
