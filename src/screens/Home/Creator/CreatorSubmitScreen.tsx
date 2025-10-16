@@ -25,9 +25,11 @@ import {
     useSafeAreaInsets,
 } from "react-native-safe-area-context";
 import { colors } from "styles";
+import { getUserData } from "../../../utils/storage";
 import { CreatorStackParamList } from "../../../navigation/stacks/HomeNav/CreatorStack";
 import styles from "../../Home/Creator/CreatorStyles";
 import { ContestEntry, RouteParams } from "../Creator/CreatorSlice";
+import { creatorAPI } from "./CreatorService";
 
 type MySubmissionsNavigationProp =
     NativeStackNavigationProp<CreatorStackParamList>;
@@ -379,37 +381,81 @@ const MySubmissionsScreen = () => {
         setIsSubmitting(true);
 
         try {
-            await new Promise((resolve) => setTimeout(resolve, 1500));
-
+            // 获取选中活动的 votesId
             const selectedActivityObj = availableActivities.find(
                 activity => activity.id.toString() === selectedActivity
             );
 
-            const newEntry: ContestEntry = {
-                id: Date.now().toString(),
-                category: params?.selectedCategory || "general",
-                categoryName: params?.categoryName || "通用",
+            if (!selectedActivityObj) {
+                Alert.alert("错误", "请选择一个活动");
+                setIsSubmitting(false);
+                return;
+            }
+
+            // 使用 storage.ts 的 getUserData() 获取用户信息
+            const userData = await getUserData();
+
+            if (!userData || !userData.user_id) {
+                Alert.alert("错误", "请先登录");
+                setIsSubmitting(false);
+                return;
+            }
+
+            // 准备提交数据 - 包含 votesId, name, desc, image, userId
+            const submissionData: any = {
+                votesId: selectedActivityObj.votesId, // 使用活动的 votesId
+                name: entryTitle,
+                desc: entryDescription,
                 image: selectedImage!,
-                title: entryTitle,
-                description: entryDescription,
-                status: "pending",
-                submittedAt: new Date(),
-                likes: 0,
-                views: 0,
-                isPublic: isPublicEntry,
-                authorName: "当前用户",
+                userId: userData.user_id, // 从 storage 获取的 user_id
             };
 
-            const updatedEntries = [...entries, newEntry];
-            setEntries(updatedEntries);
-            await AsyncStorage.setItem(
-                "contestEntries",
-                JSON.stringify(updatedEntries)
-            );
+            console.log('Submitting to votesId:', submissionData.votesId);
+            console.log('With userId:', submissionData.userId);
+            console.log('User data:', { username: userData.username, user_id: userData.user_id });
 
-            setSuccessModalVisible(true);
-            resetEntryForm();
+            // 调用 API
+            const result = await creatorAPI.submitEntry(submissionData);
+
+            console.log('API Result:', result);
+
+            if (result.success && result.data) {
+                // 构建新的投稿记录
+                const newEntry: ContestEntry = {
+                    id: result.data.subId || Date.now().toString(),
+                    category: params?.selectedCategory || "general",
+                    categoryName: params?.categoryName || "通用",
+                    image: result.data.image || selectedImage!,
+                    title: result.data.name || entryTitle,
+                    description: result.data.desc || entryDescription,
+                    status: result.data.isStatus === 1 ? "pending" :
+                            result.data.isStatus === 2 ? "approved" :
+                            result.data.isStatus === 3 ? "rejected" : "pending",
+                    submittedAt: new Date(result.data.createdAt || new Date()),
+                    likes: result.data.voted || 0,
+                    views: 0,
+                    isPublic: isPublicEntry,
+                    authorName: userData.username || "当前用户",
+                    authorId: userData.user_id,
+                    activityId: selectedActivityObj.votesId,
+                    activityName: selectedActivityObj.name,
+                };
+
+                // 保存到本地列表
+                const updatedEntries = [...entries, newEntry];
+                setEntries(updatedEntries);
+                await AsyncStorage.setItem(
+                    "contestEntries",
+                    JSON.stringify(updatedEntries)
+                );
+
+                setSuccessModalVisible(true);
+                resetEntryForm();
+            } else {
+                Alert.alert("提交失败", result.error || "创意提交失败，请稍后重试");
+            }
         } catch (error) {
+            console.error('Submit error:', error);
             Alert.alert("错误", "创意提交失败，请稍后重试");
         } finally {
             setIsSubmitting(false);

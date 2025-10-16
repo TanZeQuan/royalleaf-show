@@ -29,27 +29,27 @@ export interface RouteParams {
 
 export interface Activity {
   id: number;
+  votesId: string;  // 活动的 votesId，用于投稿
   name: string;
   desc: string;
-  submitStart: string;
-  submitStop: string;
-  voteStart: string;
-  voteStop: string;
-  status: "active" | "inactive" | "ended";
-  coverImage?: string;
-  participantsCount?: number;
-  submissionsCount?: number;
+  category: string;
+  submitAt: string;     // 投稿开始时间
+  submitStop: string;   // 投稿结束时间
+  votedAt: string;      // 投票开始时间
+  votedStop: string;    // 投票结束时间
+  isStatus: number;
+  createdAt: string;
+  modifyAt: string;
+  submissionOpen: boolean;
+  votingOpen: boolean;
 }
 
 export interface SubmissionRequest {
-  votesId: string;  
-  userId: string;   
-  targetSubId: string;  
-  name: string;     
-  desc: string;         
-  image: string;     
-  isStatus?: number;        // 状态 (1: 审核中, 2: 通过, 3: 拒绝) - 可选
-  approveBy?: string;     
+  votesId: string;  // 从 GET submission-open 获取的活动 votesId
+  name: string;     // 作品标题
+  desc: string;     // 作品描述
+  image?: string | { uri: string; name: string; type: string };
+  userId?: string;  // 可选：用户ID（后端可能需要）
 }
 
 export interface ApiResponse<T> {

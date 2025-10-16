@@ -1,19 +1,23 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Activity, ApiResponse, ContestEntry, SubmissionRequest } from "./CreatorSlice";
+import {
+  Activity,
+  ApiResponse,
+  ContestEntry,
+  SubmissionRequest,
+} from "./CreatorSlice";
 
 // ================================
 // API 配置
 // ================================
 
-const API_BASE_URL = 'http://192.168.0.122:8080/royal/api';
-
+const API_BASE_URL = "http://192.168.0.122:8080/royal/api";
 
 const API_ENDPOINTS = {
-  ACTIVITIES_SUBMISSION_OPEN: '/votes/submission-open',
-  SUBMIT_ENTRY: '/submissions',
-  GET_ENTRIES: '/submissions/user',
-  UPDATE_ENTRY: '/submissions',
-  DELETE_ENTRY: '/submissions',
+  ACTIVITIES_SUBMISSION_OPEN: "/votes/submission-open",
+  SUBMIT_ENTRY: "/votes/submit/submit", // 修改为实际的提交端点
+  GET_ENTRIES: "/submissions/user",
+  UPDATE_ENTRY: "/submissions",
+  DELETE_ENTRY: "/submissions",
 } as const;
 
 // ================================
@@ -29,8 +33,8 @@ class CreatorAPI {
       const url = `${API_BASE_URL}${endpoint}`;
       const response = await fetch(url, {
         headers: {
-          'Content-Type': 'application/json',
-          'accept': '*/*',
+          "Content-Type": "application/json",
+          accept: "*/*",
           ...options.headers,
         },
         ...options,
@@ -47,52 +51,138 @@ class CreatorAPI {
       } else {
         return {
           success: false,
-          error: data.message || data.error || '请求失败',
+          error: data.message || data.error || "请求失败",
         };
       }
     } catch (error) {
-      console.error('API Request Error:', error);
+      console.error("API Request Error:", error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : '网络错误',
+        error: error instanceof Error ? error.message : "网络错误",
       };
     }
   }
 
   // 获取开放投稿的活动
   async getSubmissionOpenActivities(): Promise<ApiResponse<Activity[]>> {
-    return this.makeRequest<Activity[]>(API_ENDPOINTS.ACTIVITIES_SUBMISSION_OPEN, {
-      method: 'GET',
-    });
+    return this.makeRequest<Activity[]>(
+      API_ENDPOINTS.ACTIVITIES_SUBMISSION_OPEN,
+      {
+        method: "GET",
+      }
+    );
   }
 
-  // 提交创意作品
-  async submitEntry(submission: SubmissionRequest): Promise<ApiResponse<ContestEntry>> {
-    return this.makeRequest<ContestEntry>(API_ENDPOINTS.SUBMIT_ENTRY, {
-      method: 'POST',
-      body: JSON.stringify(submission),
-    });
+  // 提交创意作品 - 使用 FormData 提交 votesId, name, desc, image
+  async submitEntry(submission: SubmissionRequest): Promise<ApiResponse<any>> {
+    try {
+      const formData = new FormData();
+
+      // ✅ 保留 votesId / userId / name / desc
+      formData.append("votesId", submission.votesId);
+      formData.append("name", submission.name);
+      formData.append("desc", submission.desc);
+      if (submission.userId) {
+        formData.append("userId", submission.userId);
+      }
+
+      // ✅ 改这段 - 只改 image 格式，不动其他
+      if (submission.image) {
+        const imageUri =
+          typeof submission.image === "string"
+            ? submission.image
+            : submission.image.toString();
+        const filename = imageUri.split("/").pop() || `photo_${Date.now()}.jpg`;
+        const ext = filename.split(".").pop()?.toLowerCase();
+        const mimeType =
+          ext === "png"
+            ? "image/png"
+            : ext === "webp"
+            ? "image/webp"
+            : "image/jpeg";
+
+        formData.append("file", {
+          uri: imageUri,
+          name: filename,
+          type: mimeType,
+        } as any);
+
+        console.log("✅ Image details:", {
+          uri: imageUri,
+          name: filename,
+          type: mimeType,
+        });
+      }
+
+      console.log("✅ Submitting FormData fields:", {
+        votesId: submission.votesId,
+        userId: submission.userId || "not provided",
+        name: submission.name,
+        desc: submission.desc,
+      });
+
+      const url = `${API_BASE_URL}${API_ENDPOINTS.SUBMIT_ENTRY}`;
+      console.log("Posting to URL:", url);
+
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          Accept: "*/*",
+          // ❌ 不设 Content-Type，让 RN 自己带 multipart/form-data
+        },
+        body: formData,
+      });
+
+      console.log("Response status:", response.status);
+      const data = await response.json();
+      console.log("Submit Response:", data);
+
+      if (response.ok && data.success) {
+        return {
+          success: true,
+          data: data.data,
+          message: data.message || "提交成功",
+        };
+      } else {
+        return {
+          success: false,
+          error: data.message || data.error || "提交失败",
+        };
+      }
+    } catch (error) {
+      console.error("Submit Entry Error:", error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "网络错误",
+      };
+    }
   }
 
   // 获取用户的投稿记录
   async getUserEntries(): Promise<ApiResponse<ContestEntry[]>> {
     return this.makeRequest<ContestEntry[]>(API_ENDPOINTS.GET_ENTRIES, {
-      method: 'GET',
+      method: "GET",
     });
   }
 
   // 更新投稿
-  async updateEntry(id: string, updates: Partial<SubmissionRequest>): Promise<ApiResponse<ContestEntry>> {
-    return this.makeRequest<ContestEntry>(`${API_ENDPOINTS.UPDATE_ENTRY}/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(updates),
-    });
+  async updateEntry(
+    id: string,
+    updates: Partial<SubmissionRequest>
+  ): Promise<ApiResponse<ContestEntry>> {
+    return this.makeRequest<ContestEntry>(
+      `${API_ENDPOINTS.UPDATE_ENTRY}/${id}`,
+      {
+        method: "PUT",
+        body: JSON.stringify(updates),
+      }
+    );
   }
 
   // 删除投稿
   async deleteEntry(id: string): Promise<ApiResponse<void>> {
     return this.makeRequest<void>(`${API_ENDPOINTS.DELETE_ENTRY}/${id}`, {
-      method: 'DELETE',
+      method: "DELETE",
     });
   }
 }
@@ -103,9 +193,9 @@ class CreatorAPI {
 
 class CreatorStorage {
   private static readonly STORAGE_KEYS = {
-    CONTEST_ENTRIES: 'contestEntries',
-    ACTIVITIES_CACHE: 'activitiesCache',
-    USER_DRAFTS: 'userDrafts',
+    CONTEST_ENTRIES: "contestEntries",
+    ACTIVITIES_CACHE: "activitiesCache",
+    USER_DRAFTS: "userDrafts",
   } as const;
 
   // 保存投稿记录到本地
@@ -113,20 +203,24 @@ class CreatorStorage {
     try {
       await AsyncStorage.setItem(
         this.STORAGE_KEYS.CONTEST_ENTRIES,
-        JSON.stringify(entries.map(entry => ({
-          ...entry,
-          submittedAt: entry.submittedAt.toISOString(),
-        })))
+        JSON.stringify(
+          entries.map((entry) => ({
+            ...entry,
+            submittedAt: entry.submittedAt.toISOString(),
+          }))
+        )
       );
     } catch (error) {
-      console.error('保存投稿记录失败:', error);
+      console.error("保存投稿记录失败:", error);
     }
   }
 
   // 从本地加载投稿记录
   static async loadEntries(): Promise<ContestEntry[]> {
     try {
-      const stored = await AsyncStorage.getItem(this.STORAGE_KEYS.CONTEST_ENTRIES);
+      const stored = await AsyncStorage.getItem(
+        this.STORAGE_KEYS.CONTEST_ENTRIES
+      );
       if (!stored) return [];
 
       const entries = JSON.parse(stored);
@@ -136,7 +230,7 @@ class CreatorStorage {
         reviewedAt: entry.reviewedAt ? new Date(entry.reviewedAt) : undefined,
       }));
     } catch (error) {
-      console.error('加载投稿记录失败:', error);
+      console.error("加载投稿记录失败:", error);
       return [];
     }
   }
@@ -152,14 +246,16 @@ class CreatorStorage {
         })
       );
     } catch (error) {
-      console.error('缓存活动列表失败:', error);
+      console.error("缓存活动列表失败:", error);
     }
   }
 
   // 获取缓存的活动列表
   static async getCachedActivities(): Promise<Activity[]> {
     try {
-      const cached = await AsyncStorage.getItem(this.STORAGE_KEYS.ACTIVITIES_CACHE);
+      const cached = await AsyncStorage.getItem(
+        this.STORAGE_KEYS.ACTIVITIES_CACHE
+      );
       if (!cached) return [];
 
       const { data, timestamp } = JSON.parse(cached);
@@ -171,7 +267,7 @@ class CreatorStorage {
 
       return data;
     } catch (error) {
-      console.error('获取缓存活动列表失败:', error);
+      console.error("获取缓存活动列表失败:", error);
       return [];
     }
   }
@@ -187,7 +283,7 @@ class CreatorStorage {
         })
       );
     } catch (error) {
-      console.error('保存草稿失败:', error);
+      console.error("保存草稿失败:", error);
     }
   }
 
@@ -197,7 +293,7 @@ class CreatorStorage {
       const draft = await AsyncStorage.getItem(this.STORAGE_KEYS.USER_DRAFTS);
       return draft ? JSON.parse(draft) : null;
     } catch (error) {
-      console.error('获取草稿失败:', error);
+      console.error("获取草稿失败:", error);
       return null;
     }
   }
@@ -207,7 +303,7 @@ class CreatorStorage {
     try {
       await AsyncStorage.removeItem(this.STORAGE_KEYS.USER_DRAFTS);
     } catch (error) {
-      console.error('清除草稿失败:', error);
+      console.error("清除草稿失败:", error);
     }
   }
 }
@@ -293,10 +389,10 @@ export class CreatorUtils {
   // 检查活动是否可投稿
   static isActivitySubmissionOpen(activity: Activity): boolean {
     const now = new Date();
-    const submitStart = new Date(activity.submitStart);
+    const submitStart = new Date(activity.submitAt);
     const submitStop = new Date(activity.submitStop);
 
-    return now >= submitStart && now <= submitStop && activity.status === 'active';
+    return now >= submitStart && now <= submitStop && activity.submissionOpen;
   }
 
   // 获取活动剩余时间文本
@@ -310,7 +406,9 @@ export class CreatorUtils {
     }
 
     const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const hours = Math.floor(
+      (timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+    );
 
     if (days > 0) {
       return `还剩 ${days} 天`;
