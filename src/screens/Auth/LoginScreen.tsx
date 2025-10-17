@@ -47,20 +47,20 @@ export default function LoginScreen({ navigation, onLogin }: LoginScreenProps) {
       });
 
       if (response.success) {
-        // 🔹 统一保存
+        // Save all user data from the response, not just a few fields
         const userData = {
-          user_id: response.data?.user_id,    // ✅ 来自 response.data
-          username: response.data?.username,
+          ...response.data,
           token: response.token ?? null,
         };
 
-        // login screen 成功后
-         await AsyncStorage.setItem("userData", JSON.stringify(userData));
+        await AsyncStorage.setItem("userData", JSON.stringify(userData));
 
-        // 👉 保持 onLogin 传 username（如果你只想改 Profile，就不用动 AppNavigator）
-        onLogin(userData.username);
+        // The onLogin prop likely just needs the username to update the app's state
+        if (userData.username) {
+          onLogin(userData.username);
+        }
 
-        Alert.alert("✅ 登录成功", response.message || "欢迎回来！");
+        // No alert on successful login, just navigate
       } else {
         Alert.alert("❌ 登录失败", response.message || "账号或密码错误");
       }
@@ -201,7 +201,7 @@ export default function LoginScreen({ navigation, onLogin }: LoginScreenProps) {
                 <Text style={styles.socialButtonText}>Google</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity
+              {/* <TouchableOpacity
                 style={styles.socialButton}
                 onPress={() => handleSocialLogin("Apple")}
               >
@@ -211,11 +211,11 @@ export default function LoginScreen({ navigation, onLogin }: LoginScreenProps) {
                   resizeMode="contain"
                 />
                 <Text style={styles.socialButtonText}>Apple</Text>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
             </View>
 
             {/* Second row */}
-            <View style={styles.socialButtonsContainer}>
+            {/* <View style={styles.socialButtonsContainer}>
               <TouchableOpacity
                 style={styles.socialButton}
                 onPress={() => handleSocialLogin("Facebook")}
@@ -239,7 +239,7 @@ export default function LoginScreen({ navigation, onLogin }: LoginScreenProps) {
                 />
                 <Text style={styles.socialButtonText}>Instagram</Text>
               </TouchableOpacity>
-            </View>
+            </View> */}
           </View>
 
           {/* Register */}

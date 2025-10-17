@@ -1,6 +1,7 @@
+// screens/VoteDetail/VoteDetailScreen.styles.ts
 import colors from "@styles/colors";
 import { Dimensions, StyleSheet } from "react-native";
-import theme from "../../../styles/theme";
+import theme from "../../../../styles/theme";
 
 const { width } = Dimensions.get("window");
 
@@ -15,7 +16,6 @@ export const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: colors.gold_light,
     backgroundColor: colors.gold_light,
-    fontSize: 20,
   },
   backButton: {
     width: 35,
@@ -30,7 +30,6 @@ export const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
-  backIcon: { fontSize: 20, color: theme.colors.black, fontWeight: "bold" },
   headerTitle: { fontSize: 20, fontWeight: "bold", color: theme.colors.black },
   placeholder: { width: 32 },
   content: { flex: 1 },
@@ -145,37 +144,12 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 20,
     marginBottom: 24,
   },
-
   commentsHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 16,
   },
-
-  refreshButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    backgroundColor: colors.white,
-    borderWidth: 1,
-    borderColor: colors.green_deep,
-    borderRadius: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-
-  refreshText: {
-    fontSize: 12,
-    color: colors.green_deep,
-    marginLeft: 4,
-    fontWeight: "600",
-  },
-
   commentItem: {
     backgroundColor: theme.colors.white,
     padding: 18,
@@ -189,32 +163,27 @@ export const styles = StyleSheet.create({
     borderLeftWidth: 3,
     borderLeftColor: colors.gold_deep,
   },
-
   commentHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 10,
   },
-
   commentUser: {
     fontSize: 15,
     fontWeight: "bold",
     color: theme.colors.gold_deep,
     marginRight: 8,
   },
-
   commentTime: {
     fontSize: 12,
     color: theme.colors.gray_text,
   },
-
   commentText: {
     fontSize: 15,
-    color: colors.black, // 黑色字体
+    color: colors.black,
     lineHeight: 24,
   },
-
   noCommentsText: {
     fontSize: 16,
     color: theme.colors.gray_text,
@@ -223,7 +192,6 @@ export const styles = StyleSheet.create({
     fontStyle: "italic",
   },
   bottomSpacing: { height: 40 },
-  // 模态框样式
   modalOverlay: {
     flex: 1,
     justifyContent: "center",
@@ -278,7 +246,6 @@ export const styles = StyleSheet.create({
     fontWeight: "bold",
     color: theme.colors.black,
   },
-  // 通知样式
   notificationOverlay: {
     flex: 1,
     justifyContent: "center",
@@ -293,10 +260,7 @@ export const styles = StyleSheet.create({
     width: "80%",
     alignItems: "center",
     shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
+    shadowOffset: { width: 0, height: 2, },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
@@ -312,12 +276,10 @@ export const styles = StyleSheet.create({
     color: theme.colors.black,
     textAlign: "center",
   },
-  // 设计师信息样式
   designerSection: {
     marginHorizontal: 16,
     marginBottom: 20,
   },
-
   designerInfo: {
     flexDirection: "row",
     alignItems: "flex-start",
@@ -327,28 +289,26 @@ export const styles = StyleSheet.create({
     borderLeftWidth: 4,
     borderLeftColor: colors.green,
   },
-
   designerAvatar: {
     marginRight: 12,
   },
-
+  designerIcon: {
+      color: colors.green_deep,
+  },
   designerDetails: {
     flex: 1,
   },
-
   designerName: {
     fontSize: 16,
     fontWeight: "600",
     color: colors.black,
     marginBottom: 4,
   },
-
   designerDesc: {
     fontSize: 14,
     color: colors.gray_text,
     lineHeight: 18,
   },
-
   loadMoreButton: {
     flexDirection: "row",
     justifyContent: "center",
@@ -358,12 +318,14 @@ export const styles = StyleSheet.create({
     borderRadius: 8,
     marginTop: 8,
   },
-
   loadMoreText: {
     fontSize: 14,
     color: colors.green_deep,
     marginRight: 4,
-    fontWeight: "semibold",
+    fontWeight: "600",
+  },
+  loadMoreIcon: {
+      color: colors.green_deep,
   },
   centerContainer: {
     flex: 1,

@@ -138,8 +138,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
   },
   entryImage: {
-    width: wp(20),
-    height: wp(20),
+    width: wp(22),
+    height: wp(22),
     borderRadius: wp(2),
     backgroundColor: colors.gray_light,
     marginRight: wp(3),
@@ -154,10 +154,10 @@ const styles = StyleSheet.create({
     marginBottom: hp(0.5),
   },
   entryCategory: {
-    fontSize: scaleFontSize(12),
+    fontSize: scaleFontSize(13),
     color: colors.gold_deep,
     marginBottom: hp(1),
-    fontWeight: "500",
+    fontWeight: "bold",
   },
   statusRow: {
     flexDirection: "row",
@@ -517,6 +517,29 @@ const styles = StyleSheet.create({
     textAlign: "center",
     lineHeight: scaleFontSize(22),
   },
+  // 活动信息容器
+activityInfoContainer: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  marginBottom: 4,
+  backgroundColor: colors.gold_light + '20',
+  paddingHorizontal: 8,
+  paddingVertical: 4,
+  borderRadius: 6,
+  alignSelf: 'flex-start',
+},
+activityLabel: {
+  fontSize: 12,
+  color: colors.gray_text,
+  marginRight: 4,
+  fontWeight: '500',
+},
+activityName: {
+  fontSize: 12,
+  color: colors.gold_deep,
+  fontWeight: '600',
+  flex: 1,
+},
 });
 
 export default styles;

@@ -1,13 +1,20 @@
 // ProfileInfoScreen.tsx
 import Ionicons from "@expo/vector-icons/Ionicons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { editProfile, uploadFile, viewProfile } from "@services/UserService/userApi";
 import * as ImagePicker from "expo-image-picker";
-import React, { useState, useEffect } from "react";
+import { SettingStackParamList } from "navigation/stacks/ProfileNav/SettingStack";
+import React, { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
+  Alert,
   FlatList,
   Image,
   Modal,
+  Platform,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -15,19 +22,12 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-  Platform,
-  ActivityIndicator,
-  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import DateTimePicker from "@react-native-community/datetimepicker";
-import { SettingStackParamList } from "navigation/stacks/ProfileNav/SettingStack";
-import { editProfile, uploadFile } from "@services/UserService/userApi";
 
 interface FormData {
-  username: string;
-  name: string;
+  username: string;  // 用户名（只读，不可修改）
+  name: string;      // 昵称（可编辑）
   email: string;
   phone: string;
   dob: string;
@@ -72,31 +72,70 @@ export default function ProfileInfoScreen() {
   }, []);
 
   const loadUserData = async () => {
+    setIsLoading(true);
     try {
+      // 1. Get user_id from local storage
       const stored = await AsyncStorage.getItem("userData");
-      if (stored) {
-        const userData = JSON.parse(stored);
-        setCurrentUserId(userData.user_id || "");
+      if (!stored) {
+        Alert.alert("错误", "无法获取用户信息，请重新登录。");
+        navigation.goBack();
+        return;
+      }
 
+      const localUserData = JSON.parse(stored);
+      const userId = localUserData.user_id;
+
+      if (!userId) {
+        Alert.alert("错误", "用户ID无效，请重新登录。");
+        navigation.goBack();
+        return;
+      }
+      
+      setCurrentUserId(userId);
+
+      // 2. Fetch latest profile from backend
+      const response = await viewProfile(userId);
+      if (response.success && response.data) {
+        const backendUserData = response.data;
+
+        // 3. Populate form with fresh data
         setFormData({
-          username: userData.username || "",
-          name: userData.name || "",
-          email: userData.email || "",
-          phone: userData.phone || "",
-          address: userData.address || "",
-          gender: userData.gender || 0,
-          dob: userData.dob || "",
+          username: backendUserData.username || "",
+          name: backendUserData.name || "",
+          email: backendUserData.email || "",
+          phone: backendUserData.phone || "",
+          address: backendUserData.address || "",
+          gender: backendUserData.gender || 0,
+          dob: backendUserData.dob || "",
         });
 
-        if (userData.dob) {
-          const dobDate = new Date(userData.dob);
+        if (backendUserData.dob) {
+          const dobDate = new Date(backendUserData.dob);
           if (!isNaN(dobDate.getTime())) setSelectedDate(dobDate);
         }
 
-        if (userData.image) setAvatar(userData.image);
+        if (backendUserData.image) {
+          setAvatar(backendUserData.image);
+        }
+      } else {
+        // Fallback to local data if API fails
+        console.warn("后端资料获取失败，使用本地缓存数据。");
+        setFormData({
+            username: localUserData.username || "",
+            name: localUserData.name || "",
+            email: localUserData.email || "",
+            phone: localUserData.phone || "",
+            address: localUserData.address || "",
+            gender: localUserData.gender || 0,
+            dob: localUserData.dob || "",
+        });
+        if (localUserData.image) setAvatar(localUserData.image);
       }
     } catch (error) {
       console.error("加载用户数据失败:", error);
+      Alert.alert("错误", "加载用户数据时发生网络错误。");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -148,14 +187,16 @@ export default function ProfileInfoScreen() {
       let imageUrl = avatar;
       if (avatarFile) {
         const uploadResult = await uploadFile(currentUserId, avatarFile);
-        if (uploadResult.success) imageUrl = uploadResult.data.link;
+        if (uploadResult.success && uploadResult.data?.url) {
+          imageUrl = uploadResult.data.url;  //  修改了这里 ← 修改为 url，backend返回字段一致
+        }
       }
 
-      // ✅ 这里改了：后端要求 name 必填，我们自动传一个默认值（例如用户名或 "User"）
+      // 准备提交数据 - username 只读不提交，只提交 name（昵称）
       const payload: any = {
         user_id: currentUserId,
-        username: formData.username?.trim() || "",
-        name: formData.username?.trim() || "User", // 👈 自动填充
+        username: formData.username,  // username 保持原值，后端不会修改
+        name: formData.name?.trim() || formData.username || "User", // 昵称可修改
         image: imageUrl || avatar || "",
         address: formData.address?.trim() || "",
         gender: [0, 1, 2].includes(formData.gender) ? formData.gender : 0,
@@ -234,18 +275,24 @@ export default function ProfileInfoScreen() {
         <View style={styles.formSection}>
           <InputField
             value={formData.username}
-            onChangeText={(text: string) => setFormData({ ...formData, username: text })}
-            placeholder="输入用户名"
+            placeholder="用户名"
             label="用户名"
             iconName="person-outline"
+            editable={false}
+          />
+          <InputField
+            value={formData.name}
+            onChangeText={(text: string) => setFormData({ ...formData, name: text })}
+            placeholder="输入您的昵称"
+            label="昵称"
+            iconName="person-circle-outline"
           />
           <InputField
             value={formData.email}
-            onChangeText={(text: string) => setFormData({ ...formData, email: text })}
-            placeholder="输入您的邮箱地址"
+            placeholder="邮箱地址"
             label="邮箱"
             iconName="mail-outline"
-            keyboardType="email-address"
+            editable={false}
           />
           <InputField
             value={formData.phone}
@@ -264,6 +311,7 @@ export default function ProfileInfoScreen() {
             iconName="calendar-outline"
             showArrow
             onPress={() => setShowDatePicker(true)}
+            editable={false}
           />
 
           {/* 性别选择 */}

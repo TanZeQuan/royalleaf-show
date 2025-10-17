@@ -1,8 +1,7 @@
-// VoteDetailScreen.tsx
+// screens/VoteDetail/VoteDetailScreen.tsx
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import colors from "@styles/colors";
 import React, { useEffect, useState } from "react";
 import {
   Image,
@@ -14,10 +13,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import {
-  SafeAreaView,
-  useSafeAreaInsets,
-} from "react-native-safe-area-context";
+import { SafeAreaView } from "react-native-safe-area-context";
 import {
   Comment,
   ItemData,
@@ -27,21 +23,18 @@ import {
   getVoteProductDetails,
   submitComment,
   submitVoteFetch,
-} from "../../../services/VoteService/voteDetailsApi"; // API服务
-import { getUserData } from "../../../utils/storage"; // ✅ 从 AsyncStorage 获取 userData
-import { styles } from "./VoteDetailCSS";
+} from "../../../services/VoteService/voteMainApi";
+import { getUserData } from "../../../utils/storage";
+import { styles } from "./Styles/VoteCSS";
 
 type VoteDetailNavigationProp = NativeStackNavigationProp<any>;
 
 const VoteDetailScreen = () => {
-  const insets = useSafeAreaInsets();
   const navigation = useNavigation<VoteDetailNavigationProp>();
   const route = useRoute();
   const {
     productId,
     product: initialProduct,
-    activity,
-    category,
   } = route.params as RouteParams;
 
   const [product, setProduct] = useState<VoteProductDetails | null>(
@@ -60,76 +53,41 @@ const VoteDetailScreen = () => {
   const displayedComments = comments.slice(0, commentsDisplayCount);
   const hasMoreComments = comments.length > commentsDisplayCount;
 
-  // 获取产品详情和评论
   useEffect(() => {
     const fetchProductDetailsAndComments = async () => {
-      if (!initialProduct && productId) {
-        try {
-          setLoading(true);
+      try {
+        setLoading(true);
+        const [productDetails, commentsData] = await Promise.all([
+          getVoteProductDetails(productId),
+          getComments(productId),
+        ]);
 
-          console.log("🔄 开始获取产品详情和评论...", { productId });
-
-          const [productDetails, commentsData] = await Promise.all([
-            getVoteProductDetails(productId),
-            getComments(productId),
-          ]);
-
-          console.log("📦 产品详情结果:", productDetails);
-          console.log("💬 评论数据结果:", commentsData);
-          console.log("评论数据类型:", typeof commentsData);
-          console.log("评论数据长度:", commentsData?.length);
-
-          if (productDetails) {
-            setProduct(productDetails);
-            setVoteCount(productDetails.voted);
-          }
-
-          if (commentsData && commentsData.length > 0) {
-            setComments(commentsData);
-            console.log("✅ 成功加载评论数据:", commentsData);
-          } else {
-            console.log("❌ 没有评论数据或数据为空");
-            setComments([]);
-          }
-        } catch (error) {
-          console.error("❌ 获取数据出错:", error);
-        } finally {
-          setLoading(false);
+        if (productDetails) {
+          setProduct(productDetails);
+          setVoteCount(productDetails.voted);
         }
-      } else if (initialProduct) {
-        // 如果从导航传入了 initialProduct，单独获取评论
-        try {
-          console.log("🔄 单独获取评论...", { productId });
-          const commentsData = await getComments(productId);
 
-          console.log("💬 单独获取的评论数据:", commentsData);
-          console.log("评论数据长度:", commentsData?.length);
-
-          if (commentsData && commentsData.length > 0) {
-            setComments(commentsData);
-            console.log("✅ 成功加载评论数据:", commentsData.length, "条");
-          } else {
-            console.log("❌ 没有评论数据");
-            setComments([]);
-          }
-        } catch (error) {
-          console.error("❌ 获取评论出错:", error);
+        if (commentsData && commentsData.length > 0) {
+          setComments(commentsData);
+        } else {
+          setComments([]);
         }
+      } catch (error) {
+        console.error("❌ 获取数据出错:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchProductDetailsAndComments();
-  }, [productId, initialProduct]);
+  }, [productId]);
 
-  // 刷新评论函数
   const refreshComments = async () => {
     if (!productId) return;
-
     try {
       const commentsData = await getComments(productId);
       if (commentsData) {
         setComments(commentsData);
-        console.log("评论数据已刷新:", commentsData.length, "条");
         showCustomNotification("刷新成功", "评论列表已更新");
       }
     } catch (error) {
@@ -138,7 +96,6 @@ const VoteDetailScreen = () => {
     }
   };
 
-  // 显示通知
   const showCustomNotification = (title: string, message: string) => {
     setNotificationTitle(title);
     setNotificationMessage(message);
@@ -148,18 +105,13 @@ const VoteDetailScreen = () => {
     }, 3000);
   };
 
-  // 获取 itemData
   const getItemData = (): ItemData => {
     if (!product) {
       return {
         image: require("assets/images/mock.jpg"),
-        designer: {
-          name: "加载中...",
-          desc: "正在获取设计师信息",
-        },
+        designer: { name: "加载中...", desc: "正在获取设计师信息" },
       };
     }
-
     return {
       name: product.name,
       image: product.image
@@ -174,7 +126,6 @@ const VoteDetailScreen = () => {
 
   const itemData = getItemData();
 
-  // 点击投票
   const handleVotePress = () => {
     if (hasVoted) {
       showCustomNotification("提示", "您已经投过票了！");
@@ -183,44 +134,25 @@ const VoteDetailScreen = () => {
     setShowConfirmModal(true);
   };
 
-  // 确认投票
   const confirmVote = async () => {
     if (!product) return;
-
     try {
       const user = await getUserData();
       if (!user || !user.user_id) {
         showCustomNotification("错误", "请先登录再投票");
         return;
       }
-
-      // 验证必需字段
       if (!product.votesId || !product.subId) {
-        console.error("❌ 缺少必需字段:", {
-          votesId: product.votesId,
-          subId: product.subId
-        });
         showCustomNotification("错误", "投票数据不完整");
         return;
       }
-
-      // 简化的投票数据，只包含必需字段
       const voteData = {
         votesId: product.votesId,
-        targetSubId: product.subId, // 使用 product.subId 作为 targetSubId
+        targetSubId: product.subId,
       };
-
-      console.log("🔍 最终提交的数据结构:", JSON.stringify({
-        votesId: voteData.votesId,
-        userId: user.user_id,
-        targetSubId: voteData.targetSubId
-      }, null, 2));
-
-      // 使用 submitVoteFetch 函数
       const response = await submitVoteFetch(voteData);
-
       if (response.success) {
-        setVoteCount(prev => prev + 1);
+        setVoteCount((prev) => prev + 1);
         setHasVoted(true);
         setShowConfirmModal(false);
         showCustomNotification("投票成功", "感谢您的投票！");
@@ -233,56 +165,37 @@ const VoteDetailScreen = () => {
     }
   };
 
-  const cancelVote = () => {
-    setShowConfirmModal(false);
-  };
-
-  // 添加评论
- // 替换原来的 handleAddComment 函数
-const handleAddComment = async () => {
-  if (!commentText.trim()) {
-    showCustomNotification("提示", "请输入评论内容");
-    return;
-  }
-
-  if (!productId) {
-    showCustomNotification("错误", "无法提交评论，缺少产品ID");
-    return;
-  }
-
-  try {
-    const user = await getUserData();
-    if (!user || !user.user_id) {
-      showCustomNotification("错误", "请先登录再发表评论");
+  const handleAddComment = async () => {
+    if (!commentText.trim()) {
+      showCustomNotification("提示", "请输入评论内容");
       return;
     }
-
-    // 调用提交评论API
-    const response = await submitComment({
-      subId: productId,
-      userId: user.user_id,
-      desc: commentText.trim()
-    });
-
-    if (response.success) {
-      // 清空输入框
-      setCommentText("");
-      
-      // 刷新评论列表
-      await refreshComments();
-      
-      showCustomNotification("发表成功", "您的评论已发表");
-    } else {
-      showCustomNotification("发表失败", response.message);
+    if (!productId) {
+      showCustomNotification("错误", "无法提交评论，缺少产品ID");
+      return;
     }
-  } catch (error) {
-    console.error("💥 发表评论出错:", error);
-    showCustomNotification("错误", "评论发表失败，请稍后再试");
-  }
-};
-
-  const handleLoadMore = () => {
-    setCommentsDisplayCount((prev) => prev + 10);
+    try {
+      const user = await getUserData();
+      if (!user || !user.user_id) {
+        showCustomNotification("错误", "请先登录再发表评论");
+        return;
+      }
+      const response = await submitComment({
+        subId: productId,
+        userId: user.user_id,
+        desc: commentText.trim(),
+      });
+      if (response.success) {
+        setCommentText("");
+        await refreshComments();
+        showCustomNotification("发表成功", "您的评论已发表");
+      } else {
+        showCustomNotification("发表失败", response.message);
+      }
+    } catch (error) {
+      console.error("💥 发表评论出错:", error);
+      showCustomNotification("错误", "评论发表失败，请稍后再试");
+    }
   };
 
   if (loading) {
@@ -310,8 +223,6 @@ const handleAddComment = async () => {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
-
-      {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
@@ -323,23 +234,19 @@ const handleAddComment = async () => {
         <Text style={styles.headerTitle}>投票详情</Text>
         <View style={styles.placeholder} />
       </View>
-
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Main Image */}
         <View style={styles.mainImageContainer}>
           <Image
             source={itemData.image}
             style={styles.mainImage}
             resizeMode="cover"
           />
-          {itemData.name ? (
+          {itemData.name && (
             <View style={styles.imageTitle}>
               <Text style={styles.itemName}>{itemData.name}</Text>
             </View>
-          ) : null}
+          )}
         </View>
-
-        {/* Designer Info */}
         {itemData.designer && (
           <View style={styles.designerSection}>
             <Text style={styles.sectionTitle}>设计师信息</Text>
@@ -348,7 +255,7 @@ const handleAddComment = async () => {
                 <Ionicons
                   name="person-circle"
                   size={40}
-                  color={colors.green_deep}
+                  color={styles.designerIcon.color}
                 />
               </View>
               <View style={styles.designerDetails}>
@@ -362,14 +269,10 @@ const handleAddComment = async () => {
             </View>
           </View>
         )}
-
-        {/* Vote Count */}
         <View style={styles.voteSection}>
           <Text style={styles.voteCountText}>当前投票数</Text>
           <Text style={styles.voteCountNumber}>{voteCount}</Text>
         </View>
-
-        {/* Action Buttons */}
         <View style={styles.actionSection}>
           <TouchableOpacity
             style={[styles.voteButton, hasVoted && styles.votedButton]}
@@ -385,8 +288,6 @@ const handleAddComment = async () => {
             </Text>
           </TouchableOpacity>
         </View>
-
-        {/* Comment Input */}
         <View style={styles.commentInputSection}>
           <Text style={styles.sectionTitle}>发表评论</Text>
           <View style={styles.commentInputContainer}>
@@ -417,13 +318,10 @@ const handleAddComment = async () => {
           </View>
           <Text style={styles.charCount}>{commentText.length}/100</Text>
         </View>
-
-        {/* Comments Section */}
         <View style={styles.commentsSection}>
           <View style={styles.commentsHeader}>
             <Text style={styles.sectionTitle}>评论区 ({comments.length})</Text>
           </View>
-
           {displayedComments.length > 0 ? (
             <>
               {displayedComments.map((comment) => (
@@ -438,13 +336,13 @@ const handleAddComment = async () => {
               {hasMoreComments && (
                 <TouchableOpacity
                   style={styles.loadMoreButton}
-                  onPress={handleLoadMore}
+                  onPress={() => setCommentsDisplayCount(prev => prev + 10)}
                 >
                   <Text style={styles.loadMoreText}>加载更多评论</Text>
                   <Ionicons
                     name="chevron-down"
                     size={16}
-                    color={colors.green_deep}
+                    color={styles.loadMoreIcon.color}
                   />
                 </TouchableOpacity>
               )}
@@ -455,16 +353,15 @@ const handleAddComment = async () => {
             </Text>
           )}
         </View>
-
         <View style={styles.bottomSpacing} />
       </ScrollView>
 
-      {/* 投票确认模态框 */}
+      {/* Modals */}
       <Modal
         visible={showConfirmModal}
         transparent={true}
         animationType="fade"
-        onRequestClose={cancelVote}
+        onRequestClose={() => setShowConfirmModal(false)}
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContainer}>
@@ -476,7 +373,7 @@ const handleAddComment = async () => {
             <View style={styles.modalButtons}>
               <TouchableOpacity
                 style={[styles.modalButton, styles.cancelButton]}
-                onPress={cancelVote}
+                onPress={() => setShowConfirmModal(false)}
               >
                 <Text style={styles.cancelButtonText}>取消</Text>
               </TouchableOpacity>
@@ -490,8 +387,6 @@ const handleAddComment = async () => {
           </View>
         </View>
       </Modal>
-
-      {/* 通知 */}
       <Modal
         visible={showNotification}
         transparent={true}

@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import * as ImagePicker from "expo-image-picker";
 import React, { useCallback, useState } from "react";
 import {
@@ -17,9 +18,8 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import DateTimePicker from "@react-native-community/datetimepicker";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { registerUser, editProfile, uploadFile } from "../../services/UserService/userApi";
+import { registerUser, uploadFile } from "../../services/UserService/userApi";
 import { formatDateForApi } from "../../utils/dateUtils";
 
 const { width, height } = Dimensions.get("window");
@@ -405,43 +405,46 @@ export default function RegisterScreen({ navigation, onRegister }: RegisterScree
       if (response?.success === true && response?.data?.user_id) {
         const userId = response.data.user_id;
 
-        Alert.alert("✅ Success", response.message || "Registration successful!");
-
-        // 如果有头像，上传
         if (avatarUri) {
           const fileInfo = { uri: avatarUri, type: "image/jpeg", name: "avatar.jpg" };
           try {
-            const uploadRes = await uploadFile(userId, fileInfo);
-            console.log("Avatar upload result:", uploadRes);
+            await uploadFile(userId, fileInfo);
           } catch (err) {
             console.warn("Avatar upload failed:", err);
           }
         }
 
-        // 成功后跳转登录页
-        navigation.navigate("Login");
-        return; // 🔥 防止继续执行错误逻辑
+        Alert.alert(
+          "注册成功",
+          "欢迎您！我们即将跳转登录页面！",
+          [
+            {
+              text: "OK",
+              onPress: () => navigation.navigate("Login"),
+            },
+          ],
+          { cancelable: false }
+        );
+      } else {
+                Alert.alert(
+          "注册成功",
+          "欢迎您！我们即将跳转登录页面！",
+          [
+            {
+              text: "OK",
+              onPress: () => navigation.navigate("Login"),
+            },
+          ],
+          { cancelable: false }
+        );
       }
 
       // ❌ 如果没有成功，统一视为失败
       Alert.alert("❌ Registration Failed", response?.message || "Registration failed.");
     } catch (error: any) {
       console.error("Register Error:", error);
-
-      const errorMessage =
-        error.response?.data?.message || error.message || "Unable to register. Please try again.";
-
-      // 检查是否是重复或已存在错误
-      if (
-        errorMessage.toLowerCase().includes("already") ||
-        errorMessage.toLowerCase().includes("exists") ||
-        errorMessage.toLowerCase().includes("taken") ||
-        errorMessage.toLowerCase().includes("duplicate")
-      ) {
-        showRetryWithUniqueValues(errorMessage);
-      } else {
-        Alert.alert("❌ Error", errorMessage);
-      }
+      // Display a clear, static error message regardless of the backend's response text
+      Alert.alert("注册失败", "该用户名或邮箱已被使用，或发生了未知错误。请检查您的信息或稍后再试。");
     } finally {
       updateUiState("loading", false);
     }
@@ -542,7 +545,7 @@ export default function RegisterScreen({ navigation, onRegister }: RegisterScree
         {options.showToggle && (
           <TouchableOpacity
             onPress={options.onToggle}
-            style={styles.eyeButton}
+            style={[styles.eyeButton, styles.pushRight]}
             activeOpacity={0.6}
           >
             <Ionicons
@@ -602,7 +605,7 @@ export default function RegisterScreen({ navigation, onRegister }: RegisterScree
         <Text style={[styles.input, !formData.birthday && styles.placeholderText]}>
           {formData.birthday || "输入生日日期 DD/MM/YYYY"}
         </Text>
-        <Ionicons name="calendar-outline" size={normalize(SIZES.iconSize)} color={COLORS.textLight} />
+        <Ionicons name="calendar-outline" size={normalize(SIZES.iconSize)} color={COLORS.textLight} style={styles.pushRight} />
       </TouchableOpacity>
 
       {uiState.errors.birthday && (
@@ -720,7 +723,7 @@ export default function RegisterScreen({ navigation, onRegister }: RegisterScree
               {/* Phone */}
               {renderInputField(
                 "call-outline",
-                "输入您的电话号码 (例如: +60123456789 或 0123456789)",
+                "输入您的电话号码 (例如: +60123456789)",
                 formatPhoneForDisplay(formData.phone),
                 handlePhoneChange,
                 "phone",
@@ -795,7 +798,7 @@ export default function RegisterScreen({ navigation, onRegister }: RegisterScree
                   <Text style={[styles.input, !formData.location && styles.placeholderText]}>
                     {formData.location || "选择您的地点"}
                   </Text>
-                  <Ionicons name="chevron-down" size={normalize(SIZES.iconSize)} color={COLORS.textLight} />
+                  <Ionicons name="chevron-down" size={normalize(SIZES.iconSize)} color={COLORS.textLight} style={styles.pushRight} />
                 </TouchableOpacity>
                 {uiState.errors.location && (
                   <Text style={styles.errorText}>{uiState.errors.location}</Text>
@@ -1073,8 +1076,7 @@ const styles = StyleSheet.create({
     tintColor: COLORS.textMuted,
   },
   input: {
-    flex: 1,
-    fontSize: normalize(SIZES.base),
+    fontSize: normalize(14),
     color: COLORS.text,
     paddingVertical: 0,
   },
@@ -1083,6 +1085,9 @@ const styles = StyleSheet.create({
   },
   eyeButton: {
     padding: normalize(4),
+  },
+  pushRight: {
+    marginLeft: 'auto',
   },
   errorText: {
     fontSize: normalize(SIZES.small),
@@ -1132,7 +1137,7 @@ const styles = StyleSheet.create({
   },
   termsContainer: {
     flexDirection: "row",
-    alignItems: "flex-start",
+    alignItems: "center",
     marginBottom: hp(3),
     paddingHorizontal: wp(1),
   },
