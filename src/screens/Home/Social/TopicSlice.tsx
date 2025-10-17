@@ -25,6 +25,8 @@ export interface Post {
 }
 
 export interface Comment {
+  createdAt: string;
+  avatar: any;
   likes: number;
   isLiked: any;
   id: string;
