@@ -1,9 +1,9 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 // import VoteLiveScreen from "../../../screens/Home/Vote/VoteCommentScreen";
 import VoteActivityScreen from "../../../screens/Home/Vote/VoteActivityScreen";
-import VoteDetailScreen from "../../../screens/Home/Vote/VoteDetailScreen";
-import VoteMainScreen from "../../../screens/Home/Vote/VoteMainScreen";
+import VoteMainScreen from "../../../screens/Home/Vote/VoteCategoryScreen";
 import VoteOptionScreen from "../../../screens/Home/Vote/VoteOptionScreen";
+import VoteDetailScreen from "../../../screens/Home/Vote/VoteScreen";
 // import VoteRanking from "../../../screens/Home/Vote/VoteRanking";
 
 export type VoteStackParamList = {

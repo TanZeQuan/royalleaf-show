@@ -18,7 +18,7 @@ import {
   Category,
   voteService,
 } from "../../../services/VoteService/voteMainApi";
-import { styles } from "./Styles/VoteMainCSS";
+import { styles } from "./Styles/VoteCategoryScreen";
 
 type VoteNavigationProp = NativeStackNavigationProp<any>;
 

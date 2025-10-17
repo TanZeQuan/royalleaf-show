@@ -25,7 +25,7 @@ import {
   submitVoteFetch,
 } from "../../../services/VoteService/voteDetailsApi";
 import { getUserData } from "../../../utils/storage";
-import { styles } from "./Styles/VoteDetailCSS";
+import { styles } from "./Styles/VoteCSS";
 
 type VoteDetailNavigationProp = NativeStackNavigationProp<any>;
 
