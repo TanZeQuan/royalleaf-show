@@ -138,8 +138,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
   },
   entryImage: {
-    width: wp(20),
-    height: wp(20),
+    width: wp(22),
+    height: wp(22),
     borderRadius: wp(2),
     backgroundColor: colors.gray_light,
     marginRight: wp(3),
@@ -154,10 +154,10 @@ const styles = StyleSheet.create({
     marginBottom: hp(0.5),
   },
   entryCategory: {
-    fontSize: scaleFontSize(12),
+    fontSize: scaleFontSize(13),
     color: colors.gold_deep,
     marginBottom: hp(1),
-    fontWeight: "500",
+    fontWeight: "bold",
   },
   statusRow: {
     flexDirection: "row",

@@ -16,9 +16,8 @@ import {
   View,
 } from "react-native";
 import { colors } from "styles";
-import creatorAPI from "../../../services/CreatorService/CreatorAPI";
-import { getUserData } from "../../../utils/storage";
-import styles from "./CreatorStyles";
+import { creatorApi, Activity, SubmissionRequest } from "./creatorApi";
+import styles from "./styles/CreatorStyles";
 
 interface CreatorSubmitModalProps {
   visible: boolean;
@@ -46,7 +45,7 @@ const CreatorSubmitModal: React.FC<CreatorSubmitModalProps> = ({
   const [notificationTitle, setNotificationTitle] = useState("");
   const [notificationMessage, setNotificationMessage] = useState("");
 
-  const [availableActivities, setAvailableActivities] = useState<any[]>([]);
+  const [availableActivities, setAvailableActivities] = useState<Activity[]>([]);
   const [selectedActivity, setSelectedActivity] = useState<string>("");
   const [activitiesLoading, setActivitiesLoading] = useState(false);
   const [dropdownVisible, setDropdownVisible] = useState(false);
@@ -84,7 +83,7 @@ const CreatorSubmitModal: React.FC<CreatorSubmitModalProps> = ({
   const fetchActivities = async () => {
     setActivitiesLoading(true);
     try {
-      const result = await creatorAPI.getSubmissionOpenActivities();
+      const result = await creatorApi.getSubmissionOpenActivities();
 
       console.log("Selected category:", selectedCategory);
       console.log("Category name:", categoryName);
@@ -271,30 +270,16 @@ const CreatorSubmitModal: React.FC<CreatorSubmitModalProps> = ({
         return;
       }
 
-      const userData = await getUserData();
-
-      if (!userData || !userData.user_id) {
-        Alert.alert("错误", "请先登录");
-        setIsSubmitting(false);
-        return;
-      }
-
-      const submissionData: any = {
+      const submissionData: SubmissionRequest = {
         votesId: selectedActivityObj.votesId,
         name: entryTitle,
         desc: entryDescription,
         image: selectedImage!,
-        userId: userData.user_id,
       };
 
       console.log("Submitting to votesId:", submissionData.votesId);
-      console.log("With userId:", submissionData.userId);
-      console.log("User data:", {
-        username: userData.username,
-        user_id: userData.user_id,
-      });
 
-      const result = await creatorAPI.submitEntry(submissionData);
+      const result = await creatorApi.submitEntry(submissionData);
 
       console.log("API Result:", result);
 
@@ -479,18 +464,20 @@ const CreatorSubmitModal: React.FC<CreatorSubmitModalProps> = ({
                                 >
                                   {activity.desc}
                                 </Text>
-                                <Text
-                                  style={{
-                                    fontSize: 10,
-                                    color: colors.gray_text,
-                                    fontStyle: "italic",
-                                  }}
-                                >
-                                  截止:{" "}
-                                  {new Date(
-                                    activity.submitStop
-                                  ).toLocaleDateString("zh-CN")}
-                                </Text>
+                                {activity.submitStop && (
+                                  <Text
+                                    style={{
+                                      fontSize: 10,
+                                      color: colors.gray_text,
+                                      fontStyle: "italic",
+                                    }}
+                                  >
+                                    截止:{" "}
+                                    {new Date(
+                                      activity.submitStop
+                                    ).toLocaleDateString("zh-CN")}
+                                  </Text>
+                                )}
                               </TouchableOpacity>
                             ))}
                           </ScrollView>
@@ -533,20 +520,23 @@ const CreatorSubmitModal: React.FC<CreatorSubmitModalProps> = ({
                               )?.desc
                             }
                           </Text>
-                          <Text
-                            style={{
-                              fontSize: 11,
-                              color: colors.gray_text,
-                              fontStyle: "italic",
-                            }}
-                          >
-                            投稿截止:{" "}
-                            {new Date(
-                              availableActivities.find(
-                                (a) => a.id.toString() === selectedActivity
-                              )?.submitStop
-                            ).toLocaleDateString("zh-CN")}
-                          </Text>
+                          {(() => {
+                            const stopDate = availableActivities.find(
+                              (a) => a.id.toString() === selectedActivity
+                            )?.submitStop;
+                            return stopDate ? (
+                              <Text
+                                style={{
+                                  fontSize: 11,
+                                  color: colors.gray_text,
+                                  fontStyle: "italic",
+                                }}
+                              >
+                                投稿截止:{" "}
+                                {new Date(stopDate).toLocaleDateString("zh-CN")}
+                              </Text>
+                            ) : null;
+                          })()}
                         </View>
                       )}
                     </View>

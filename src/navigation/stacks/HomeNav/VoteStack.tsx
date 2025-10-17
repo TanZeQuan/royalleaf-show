@@ -1,8 +1,8 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import VoteLiveScreen from "../../../screens/Home/Vote/VoteCommentScreen";
+// import VoteLiveScreen from "../../../screens/Home/Vote/VoteCommentScreen";
+import VoteActivityScreen from "../../../screens/Home/Vote/VoteActivityScreen";
 import VoteDetailScreen from "../../../screens/Home/Vote/VoteDetailScreen";
 import VoteMainScreen from "../../../screens/Home/Vote/VoteMainScreen";
-import VoteActivityScreen from "../../../screens/Home/Vote/VoteActivityScreen";
 import VoteOptionScreen from "../../../screens/Home/Vote/VoteOptionScreen";
 // import VoteRanking from "../../../screens/Home/Vote/VoteRanking";
 
@@ -24,7 +24,7 @@ export default function VoteStack() {
       <Stack.Screen name="VoteActivity" component={VoteActivityScreen} />
       <Stack.Screen name="VoteOption" component={VoteOptionScreen} />
       <Stack.Screen name="VoteDetail" component={VoteDetailScreen} />
-      <Stack.Screen name="VoteLive" component={VoteLiveScreen} />
+      {/* <Stack.Screen name="VoteLive" component={VoteLiveScreen} /> */}
       {/* <Stack.Screen name="Ranking" component={VoteRanking} /> */}
     </Stack.Navigator>
   );

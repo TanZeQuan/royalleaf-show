@@ -15,11 +15,11 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { colors } from "styles";
 import { CreatorStackParamList } from "../../../navigation/stacks/HomeNav/CreatorStack";
-import creatorAPI from "../../../services/CreatorService/CreatorAPI";
 import { getUserData } from "../../../utils/storage";
-import { ContestEntry, RouteParams } from "./CreatorSlice";
-import styles from "./CreatorStyles";
+import { Activity, creatorApi } from "./creatorApi";
 import CreatorSubmitModal from "./CreatorSubmitModal";
+import styles from "./styles/CreatorStyles";
+import { ContestEntry, RouteParams } from "./types";
 
 type CreatorMainNavigationProp = NativeStackNavigationProp<CreatorStackParamList>;
 
@@ -32,7 +32,7 @@ const CreatorMainScreen = () => {
   const [filteredEntries, setFilteredEntries] = useState<ContestEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState<string>("all");
-  const [availableActivities, setAvailableActivities] = useState<any[]>([]);
+  const [availableActivities, setAvailableActivities] = useState<Activity[]>([]);
   const [uploadModalVisible, setUploadModalVisible] = useState(false);
 
   const statusOptions = [
@@ -43,21 +43,26 @@ const CreatorMainScreen = () => {
   ];
 
   useEffect(() => {
-    loadEntries();
-    fetchActivities();
+    const initialLoad = async () => {
+      setIsLoading(true);
+      // fetchActivities sets availableActivities, which loadEntries depends on.
+      // We pass the fresh activities list to loadEntries to ensure it's not stale.
+      const activities = await fetchActivities();
+      await loadEntries(activities);
+      setIsLoading(false);
+    };
+    initialLoad();
   }, []);
 
   useEffect(() => {
     filterEntries();
   }, [entries, filterStatus, params?.selectedCategory]);
 
-  const fetchActivities = async () => {
+  const fetchActivities = async (): Promise<Activity[]> => {
     try {
-      const result = await creatorAPI.getSubmissionOpenActivities();
-
+      const result = await creatorApi.getSubmissionOpenActivities();
       if (result.success && result.data) {
         let activities = result.data;
-
         if (params?.selectedCategory) {
           activities = activities.filter((activity: any) => {
             return (
@@ -67,104 +72,74 @@ const CreatorMainScreen = () => {
             );
           });
         }
-
         setAvailableActivities(activities);
+        return activities;
       } else {
         console.error("获取活动失败:", result.error);
         setAvailableActivities([]);
+        return [];
       }
     } catch (error) {
       console.error("获取活动失败:", error);
       setAvailableActivities([]);
+      return [];
     }
   };
 
-  const loadEntries = async () => {
-    console.log("==========================================");
-    console.log("🚀🚀🚀 loadEntries CALLED 🚀🚀🚀");
-    console.log("==========================================");
-
-    setIsLoading(true);
+  const loadEntries = async (activities: Activity[]) => {
+    // No need to set loading here, it's handled by the calling function
     try {
       let allEntries: ContestEntry[] = [];
+      const userData = await getUserData();
 
-      if (params?.entries && params.entries.length > 0) {
-        console.log("📦 Loading entries from route params");
-        allEntries = params.entries.map((entry: any) => ({
-          ...entry,
-          submittedAt: new Date(entry.submittedAt),
-          reviewedAt: entry.reviewedAt ? new Date(entry.reviewedAt) : undefined,
-        }));
-      } else {
-        console.log("🔍 Fetching user data from storage...");
-        const userData = await getUserData();
-        console.log("👤 User data:", userData);
+      if (userData && userData.user_id) {
+        const result = await creatorApi.getUserEntries(userData.user_id);
 
-        if (userData && userData.user_id) {
-          console.log("✅ User ID found:", userData.user_id);
-          console.log("📡 Calling API to get user entries...");
-
-          const result = await creatorAPI.getUserEntries(userData.user_id);
-
-          console.log("📥 API Response:", result);
-          console.log(
-            "📊 Data type:",
-            typeof result.data,
-            "Is array:",
-            Array.isArray(result.data)
-          );
-
-          if (result.success && result.data && Array.isArray(result.data)) {
-            console.log(
-              "✅ Successfully received",
-              result.data.length,
-              "entries"
-            );
-
-            allEntries = result.data.map((item: any) => ({
-              id: item.subId,
-              category: params?.selectedCategory || "general",
-              categoryName: params?.categoryName || "通用",
-              image: item.image,
-              title: item.name,
-              description: item.desc,
-              status:
-                item.isStatus === 1
-                  ? "pending"
-                  : item.isStatus === 2
-                  ? "approved"
-                  : item.isStatus === 3
-                  ? "rejected"
-                  : "pending",
-              submittedAt: new Date(item.createdAt),
-              reviewedAt: item.modifyAt ? new Date(item.modifyAt) : undefined,
-              likes: item.voted || 0,
-              views: 0,
-              isPublic: true,
-              authorName: userData.username || "当前用户",
-              authorId: userData.user_id,
-              activityId: item.votesId,
-              activityName: "",
-            }));
-
-            console.log("✅ Mapped entries:", allEntries);
-          } else {
-            console.log("❌ Failed to get entries or data is not an array");
-            if (!result.success) {
-              console.log("❌ Error:", result.error);
-            }
-          }
+        if (result.success && result.data && Array.isArray(result.data)) {
+          allEntries = result.data
+            .filter((item: any) => item.createdAt)
+            .map((item: any) => {
+              const activity = activities.find(
+                (a) => a.votesId === item.votesId
+              );
+              return {
+                id: item.subId,
+                category: params?.selectedCategory || "general",
+                categoryName: params?.categoryName || "通用",
+                image: item.image,
+                title: item.name,
+                description: item.desc,
+                status:
+                  item.isStatus === 1
+                    ? "pending"
+                    : item.isStatus === 2
+                    ? "approved"
+                    : item.isStatus === 3
+                    ? "rejected"
+                    : "pending",
+                submittedAt: new Date(item.createdAt),
+                reviewedAt: item.modifyAt
+                  ? new Date(item.modifyAt)
+                  : undefined,
+                likes: item.voted || 0,
+                views: 0,
+                isPublic: true,
+                authorName: userData.username || "当前用户",
+                authorId: userData.user_id,
+                activityId: item.votesId,
+                activityName: activity ? activity.name : "", // Set the activity name here
+              };
+            });
         } else {
-          console.log("❌ No user data or user_id not found");
+          if (!result.success) {
+            console.log("❌ Error fetching entries:", result.error);
+          }
         }
       }
-
-      console.log("📋 Final entries count:", allEntries.length);
       setEntries(allEntries);
     } catch (error) {
       console.error("❌ Error loading entries:", error);
-    } finally {
-      setIsLoading(false);
+      setEntries([]); // Clear entries on error
     }
   };
 
@@ -189,7 +164,8 @@ const CreatorMainScreen = () => {
   };
 
   const handleUploadSuccess = () => {
-    loadEntries();
+    // availableActivities should be up-to-date in state
+    loadEntries(availableActivities);
   };
 
   const getStatusText = (status: ContestEntry["status"]) => {
@@ -227,10 +203,6 @@ const CreatorMainScreen = () => {
   };
 
   const renderEntry = ({ item }: { item: ContestEntry }) => {
-    const activity = availableActivities.find(
-      (a) => a.id.toString() === item.activityId
-    );
-
     return (
       <View style={styles.entryCard}>
         <Image source={{ uri: String(item.image) }} style={styles.entryImage} />
@@ -239,8 +211,8 @@ const CreatorMainScreen = () => {
             {item.title}
           </Text>
 
-          {activity && (
-            <Text style={styles.entryCategory}>{activity.name}</Text>
+          {item.activityName && (
+            <Text style={styles.entryCategory}>{item.activityName}</Text>
           )}
 
           <View style={styles.statusRow}>
@@ -255,6 +227,7 @@ const CreatorMainScreen = () => {
             <Text style={styles.dateText}>{formatDate(item.submittedAt)}</Text>
           </View>
 
+{/* 还没做 */}
           {item.status === "rejected" && item.feedback && (
             <View style={styles.rejectionReasonContainer}>
               <Text style={styles.rejectionReasonText}>
@@ -263,106 +236,242 @@ const CreatorMainScreen = () => {
             </View>
           )}
 
-          <View style={styles.statsRow}>
+          {/* <View style={styles.statsRow}>
             <Text style={styles.statText}>👁 {item.views}</Text>
             <Text style={styles.statText}>❤️ {item.likes}</Text>
-          </View>
+          </View> */}
         </View>
       </View>
     );
   };
 
-  if (isLoading) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={colors.gold_deep} />
-          <Text style={styles.loadingText}>加载中...</Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
+    const getEmptyStateContent = () => {
 
-  return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
+      const categoryName = params?.categoryName ? `“${params.categoryName}”分类下` : "";
 
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-          activeOpacity={0.7}
-        >
-          <Ionicons name="arrow-back" size={24} color="#333" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>
-          {params?.categoryName
-            ? `${params.categoryName} - 我的创意`
-            : "我的创意"}
-        </Text>
-        <TouchableOpacity style={styles.uploadButton} onPress={handleUpload}>
-          <Text style={styles.uploadButtonText}>上传</Text>
-        </TouchableOpacity>
-      </View>
+      switch (filterStatus) {
 
-      <View style={styles.filterContainer}>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={styles.filterRow}
-        >
-          {statusOptions.map((option) => (
-            <TouchableOpacity
-              key={option.value}
-              style={[
-                styles.filterButton,
-                filterStatus === option.value && styles.activeFilterButton,
-              ]}
-              onPress={() => setFilterStatus(option.value)}
-            >
-              <Text
-                style={[
-                  styles.filterButtonText,
-                  filterStatus === option.value &&
-                    styles.activeFilterButtonText,
-                ]}
-              >
-                {option.label}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-        <Text style={styles.countText}>{filteredEntries.length}份</Text>
-      </View>
+        case "pending":
 
-      <FlatList
-        data={filteredEntries}
-        renderItem={renderEntry}
-        keyExtractor={(item) => item.id}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.listContainer}
-        ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyTitle}>暂无创意投稿</Text>
-            <Text style={styles.emptyMessage}>
-              {params?.selectedCategory
-                ? `您在"${params.categoryName}"分类下还没有作品`
-                : "您还没有投稿作品"}
-              {"\n"}点击右上角"上传"按钮开始创作！
-            </Text>
+          return {
+
+            title: "暂无待审核作品",
+
+            message: `您在${categoryName}还没有待审核的作品。`,
+
+          };
+
+        case "approved":
+
+          return {
+
+            title: "暂无已通过作品",
+
+            message: `您在${categoryName}还没有已通过的作品。`,
+
+          };
+
+        case "rejected":
+
+          return {
+
+            title: "暂无未通过作品",
+
+            message: `您在${categoryName}还没有未通过的作品。`,
+
+          };
+
+        case "all":
+
+        default:
+
+          return {
+
+            title: "暂无创意投稿",
+
+            message: `您在${categoryName}还没有作品，点击右上角“上传”按钮开始创作！`,
+
+          };
+
+      }
+
+    };
+
+  
+
+    if (isLoading) {
+
+      return (
+
+        <SafeAreaView style={styles.container}>
+
+          <View style={styles.loadingContainer}>
+
+            <ActivityIndicator size="large" color={colors.gold_deep} />
+
+            <Text style={styles.loadingText}>加载中...</Text>
+
           </View>
-        }
-      />
 
-      <CreatorSubmitModal
-        visible={uploadModalVisible}
-        onClose={() => setUploadModalVisible(false)}
-        onSuccess={handleUploadSuccess}
-        selectedCategory={params?.selectedCategory}
-        categoryName={params?.categoryName}
-      />
-    </SafeAreaView>
-  );
+        </SafeAreaView>
+
+      );
+
+    }
+
+  
+
+    return (
+
+      <SafeAreaView style={styles.container}>
+
+        <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
+
+  
+
+        <View style={styles.header}>
+
+          <TouchableOpacity
+
+            style={styles.backButton}
+
+            onPress={() => navigation.goBack()}
+
+            activeOpacity={0.7}
+
+          >
+
+            <Ionicons name="arrow-back" size={24} color="#333" />
+
+          </TouchableOpacity>
+
+          <Text style={styles.headerTitle}>
+
+            {params?.categoryName
+
+              ? `${params.categoryName} - 我的创意`
+
+              : "我的创意"}
+
+          </Text>
+
+          <TouchableOpacity style={styles.uploadButton} onPress={handleUpload}>
+
+            <Text style={styles.uploadButtonText}>上传</Text>
+
+          </TouchableOpacity>
+
+        </View>
+
+  
+
+        <View style={styles.filterContainer}>
+
+          <ScrollView
+
+            horizontal
+
+            showsHorizontalScrollIndicator={false}
+
+            style={styles.filterRow}
+
+          >
+
+            {statusOptions.map((option) => (
+
+              <TouchableOpacity
+
+                key={option.value}
+
+                style={[
+
+                  styles.filterButton,
+
+                  filterStatus === option.value && styles.activeFilterButton,
+
+                ]}
+
+                onPress={() => setFilterStatus(option.value)}
+
+              >
+
+                <Text
+
+                  style={[
+
+                    styles.filterButtonText,
+
+                    filterStatus === option.value &&
+
+                      styles.activeFilterButtonText,
+
+                  ]}
+
+                >
+
+                  {option.label}
+
+                </Text>
+
+              </TouchableOpacity>
+
+            ))}
+
+          </ScrollView>
+
+          <Text style={styles.countText}>{filteredEntries.length}份</Text>
+
+        </View>
+
+  
+
+        <FlatList
+
+          data={filteredEntries}
+
+          renderItem={renderEntry}
+
+          keyExtractor={(item) => item.id}
+
+          showsVerticalScrollIndicator={false}
+
+          contentContainerStyle={styles.listContainer}
+
+          ListEmptyComponent={
+
+            <View style={styles.emptyContainer}>
+
+              <Text style={styles.emptyTitle}>{getEmptyStateContent().title}</Text>
+
+              <Text style={styles.emptyMessage}>{getEmptyStateContent().message}</Text>
+
+            </View>
+
+          }
+
+        />
+
+  
+
+        <CreatorSubmitModal
+
+          visible={uploadModalVisible}
+
+          onClose={() => setUploadModalVisible(false)}
+
+          onSuccess={handleUploadSuccess}
+
+          selectedCategory={params?.selectedCategory}
+
+          categoryName={params?.categoryName}
+
+        />
+
+      </SafeAreaView>
+
+    );
+
+  
 };
 
 export default CreatorMainScreen;
