@@ -20,7 +20,7 @@ export const fetchAllCoupons = async (): Promise<Coupon[]> => {
       return data.data;
     } else {
       throw new Error(data.message || 'Failed to fetch coupons');
-    }
+    } 
   } catch (error) {
     console.error('Error fetching coupons:', error);
     if (axios.isAxiosError(error)) {

@@ -1,3 +1,5 @@
+import { use } from "react";
+
 const API_BASE_URL = "http://192.168.0.122:8080/royal/api";
 
 /* ------------------- 🔹 Helpers ------------------- */
@@ -40,13 +42,21 @@ export const getActivePosts = async () => {
 export const getAllPosts = getActivePosts;
 
 export const createPost = async (postData: any) => {
+  const formData = new FormData();
+  for (const key in postData) {
+    if (postData[key] !== undefined && postData[key] !== null) {
+      formData.append(key, postData[key]);
+    }
+  }
+
   const res = await fetch(`${API_BASE_URL}/posts`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(postData),
+    body: formData,
   });
+
   return handleResponse(res);
 };
+
 
 export const updatePost = async (postId: string, postData: any) => {
   const res = await fetch(`${API_BASE_URL}/posts/${postId}`, {
@@ -103,10 +113,18 @@ export const getCommentsByPostId = async (postId: string, limit = 10, offset = 0
   );
   const data = await handleResponse(res);
 
+  // 🔍 打印原始数据看看结构
+  console.log("原始API返回:", data);
+
+  // 处理两种可能的数据结构
+  const commentsList = Array.isArray(data) ? data : (data?.data || []);
+  
+  console.log("处理后的评论列表:", commentsList);
+  
   return {
-    comments: data.data || data,
-    total: data.total || data.length,
-    hasMore: (data.data || data).length === limit,
+    comments: commentsList,
+    total: data?.total || commentsList.length,
+    hasMore: commentsList.length === limit,
   };
 };
 
@@ -126,6 +144,46 @@ export const unlikeComment = async (commentId: string) => {
   return handleResponse(res);
 };
 
+
+/* ------------------- 🔹 Create Comment or Reply ------------------- */
+export const postComment = async (
+  postId: string,
+  content: string,
+  author: string,
+  parentCommentId: string | null = null,
+  repliedOnLog: string | null = null
+) => {
+  try {
+    // ✅ 动态设置层级 gens
+    const gens = parentCommentId ? 2 : 1;
+
+    const payload = {
+      postId: postId,
+      userId: author,
+      desc: content,
+      parentCommentId: parentCommentId || null,
+      repliedOnLog: repliedOnLog || "",
+      gens: gens
+    };
+
+    console.log("📤 Sending comment payload:", payload);
+
+    const res = await fetch(`${API_BASE_URL}/posts-comments/compose`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await handleResponse(res);
+    console.log("📥 Comment/Reply created successfully:", data);
+
+    return data;
+  } catch (error: any) {
+    console.error("❌ 创建评论失败:", error);
+    throw error;
+  }
+};
+
 /* ------------------- 🔹 Replies ------------------- */
 export const getCommentReplies = async (commentId: string, limit = 10, offset = 0) => {
   const res = await fetch(
@@ -141,14 +199,44 @@ export const getCommentReplies = async (commentId: string, limit = 10, offset = 
   };
 };
 
-export const postCommentReply = async (commentId: string, content: string, userId: string) => {
-  const res = await fetch(`${API_BASE_URL}/posts-comment-logs`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ commentId, desc: content, userId }),
-  });
-  const data = await handleResponse(res);
-  return data;
+export const getPostCommentReplies = async (postId: string) => {
+  console.log("🟢 [getPostCommentReplies] 正在请求评论数据 for postId:", postId);
+
+  try {
+    const res = await fetch(`${API_BASE_URL}/posts-comment-logs/post/${postId}/with-logs`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
+
+    console.log("📡 请求已发送到:", `${API_BASE_URL}/posts-comment-logs/post/${postId}/with-logs`);
+
+    const data = await handleResponse(res);
+    console.log("📥 获取帖子评论及回复成功:", data);
+
+    return data;
+  } catch (error: any) {
+    console.error("❌ 获取帖子评论及回复失败 for postId:", postId, "错误信息:", error);
+    throw error;
+  }
+};
+
+
+// 创建回复 API 调用
+export const sendPostCommentReply = async (payload: any) => {
+  try {
+    const res = await fetch(`${API_BASE_URL}/posts-comment-logs`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await res.json();
+    console.log("✅ 回复已发送:", data);
+    return data;
+  } catch (error) {
+    console.error("❌ 回复发送失败:", error);
+    throw error;
+  }
 };
 
 /* ------------------- 🔹 Combine Posts & Comments ------------------- */
@@ -161,14 +249,30 @@ export const getAllPostsWithComments = async () => {
       posts.map(async (post: any) => {
         try {
           const { comments, total, hasMore } = await getCommentsByPostId(post.postId, 10, 0);
-          const formattedComments = comments.map((comment: any, index: number) => ({
-            id: comment.commentId || `c${index + 1}`,
-            user: comment.userId || `user${comment.userId?.slice(-3)}`,
-            text: comment.content || `评论内容 ${index + 1}`,
-            isDesigner: comment.userId?.includes("designer") || false,
-            replyTo: null,
-            isLiked: false,
-          }));
+          
+          console.log(`[Post ${post.postId}] 评论数据:`, comments);
+          
+          const formattedComments = comments.map((comment: any, index: number) => {
+            // 尝试所有可能的字段名
+            const commentText = 
+              comment.desc || 
+              comment.content || 
+              comment.comment || 
+              comment.text || 
+              comment.message ||
+              `评论内容 ${index + 1}`;
+            
+            return {
+              id: comment.commentId || comment.id || `c${index + 1}`,
+              user: comment.userId || comment.user || `用户${index}`,
+              text: commentText,
+              isDesigner: false,
+              replyTo: null,
+              isLiked: false,
+            };
+          });
+
+          console.log(`[Post ${post.postId}] 格式化后评论:`, formattedComments);
 
           return {
             ...post,

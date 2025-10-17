@@ -2,7 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import * as ImagePicker from "expo-image-picker";
-import React, { useEffect, useLayoutEffect, useState } from "react";
+import React, { useEffect, useLayoutEffect, useState, useRef } from "react";
 import {
   Alert,
   Dimensions,
@@ -23,7 +23,19 @@ import {
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
 import { HomeStackParamList } from "../../../navigation/stacks/HomeNav/HomeStack";
-import { getAllPostsWithComments, getCommentReplies, postCommentReply, likeComment, unlikePost, likePost, createPost, deletePost, updateWrappedPost, updatePost } from "../../../services/SocialService/SocialScreenApi"; // 新增导入
+import {
+  getAllPostsWithComments,
+  getCommentReplies,
+  getPostCommentReplies,
+  likeComment,
+  unlikePost,
+  likePost,
+  createPost,
+  deletePost,
+  updateWrappedPost,
+  updatePost,
+  postComment,
+} from "../../../services/SocialService/SocialScreenApi";
 import {
   commentModalStyles,
   newStyles,
@@ -50,7 +62,7 @@ const mockTopics = [
     posts: 42,
     participants: 28,
     isHot: true,
-    color: "#FF6B6B", // 热门话题特有颜色
+    color: "#FF6B6B",
     icon: "🧋",
     trending: true,
   },
@@ -100,135 +112,23 @@ const mockTopics = [
   },
 ];
 
-const mockPosts = [
-  {
-    id: "1",
-    username: "Coffee_Lover_88",
-    avatar: "👩‍💼",
-    image: require("assets/images/mock.jpg"),
-    caption:
-      "Just tried the new Royal Leaf bubble tea! Amazing flavor combination 🧋✨ #RoyalLeaf #BubbleTea",
-    likes: 42,
-    comments: 2,
-    timeAgo: "2h ago",
-    isLiked: false,
-    isSaved: false,
-    commentsList: [
-      {
-        id: "c1",
-        user: "TeaFan",
-        text: "我也超爱这款！😍",
-        isDesigner: false,
-        replyTo: null,
-      },
-      {
-        id: "c2",
-        user: "BobaKing",
-        text: "下次一起去喝！🧋",
-        isDesigner: false,
-        replyTo: null,
-      },
-      {
-        id: "c4",
-        user: "RoyalLeaf_Designer",
-        text: "谢谢大家的支持！这款的灵感来自传统茶艺与现代包装的融合 🍃",
-        isDesigner: true,
-        replyTo: null,
-      },
-    ],
-  },
-  {
-    id: "2",
-    username: "TeaEnthusiast",
-    avatar: "👨‍🎓",
-    image: require("assets/images/mock.jpg"),
-    caption:
-      "Afternoon tea break with friends! Royal Leaf never disappoints 🍃💚",
-    likes: 28,
-    comments: 1,
-    timeAgo: "4h ago",
-    isLiked: true,
-    isSaved: false,
-    commentsList: [
-      {
-        id: "c3",
-        user: "FriendA",
-        text: "好羡慕！🥹",
-        isDesigner: false,
-        replyTo: null,
-      },
-    ],
-  },
-  {
-    id: "3",
-    username: "FoodieBlogger",
-    avatar: "👩‍🍳",
-    image: require("assets/images/mock.jpg"),
-    caption:
-      "Reviewing the top 5 bubble tea spots in town. Royal Leaf definitely makes the list! 📱🎬",
-    likes: 156,
-    comments: 0,
-    timeAgo: "1d ago",
-    isLiked: false,
-    isSaved: false,
-    commentsList: [
-      {
-        id: "c1",
-        user: "TeaFan",
-        text: "我也超爱这款！😍",
-        isDesigner: false,
-        replyTo: null,
-      },
-      {
-        id: "c2",
-        user: "BobaKing",
-        text: "下次一起去喝！🧋",
-        isDesigner: false,
-        replyTo: null,
-      },
-      {
-        id: "c4",
-        user: "RoyalLeaf_Designer",
-        text: "谢谢大家的支持！这款的灵感来自传统茶艺与现代包装的融合 🍃",
-        isDesigner: true,
-        replyTo: null,
-      },
-    ],
-  },
-];
-
 export default function SocialScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<SocialScreenNavigationProp>();
-  const [posts, setPosts] = useState<any[]>([]); // 初始为空数组
+
+  // Use ref to track if component mounted to prevent unnecessary re-fetches
+  const isMountedRef = useRef(true);
+  const hasInitialFetchRef = useRef(false);
+
+  const [posts, setPosts] = useState<any[]>([]);
   const [newPostText, setNewPostText] = useState("");
-
-  // 获取当前用户信息
   const [user, setUser] = useState<any>(null);
-
-  useEffect(() => {
-    (async () => {
-      try {
-        const userData = await getUserData();
-        if (userData) {
-          console.log("✅ Loaded user from storage:", userData);
-          setUser(userData);
-        } else {
-          console.warn("⚠️ No user data found in storage");
-        }
-      } catch (error) {
-        console.error("❌ Failed to load user:", error);
-      }
-    })();
-  }, []);
   const [showCreatePost, setShowCreatePost] = useState(false);
   const [showCommentModal, setShowCommentModal] = useState(false);
   const [selectedPostForComments, setSelectedPostForComments] = useState<any>(null);
   const [commentText, setCommentText] = useState("");
   const [showShareOverlay, setShowShareOverlay] = useState(false);
-  const [currentSharePostId, setCurrentSharePostId] = useState<string | null>(
-    null
-  );
+  const [currentSharePostId, setCurrentSharePostId] = useState<string | null>(null);
   const [showDeleteDropdown, setShowDeleteDropdown] = useState(false);
   const [postToDelete, setPostToDelete] = useState<string | null>(null);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -242,31 +142,62 @@ export default function SocialScreen() {
   const [showPhotoRequired, setShowPhotoRequired] = useState(false);
   const [savedPosts, setSavedPosts] = useState<Set<string>>(new Set());
   const [activeTab, setActiveTab] = useState<"posts" | "topics">("posts");
-  const [isLoading, setIsLoading] = useState(true); // 新增加载状态
+  const [isLoading, setIsLoading] = useState(true);
 
-  // 回复相关状态
   const [activeReplyCommentId, setActiveReplyCommentId] = useState<string | null>(null);
   const [replyText, setReplyText] = useState("");
   const [commentReplies, setCommentReplies] = useState<Record<string, any[]>>({});
   const [loadingReplies, setLoadingReplies] = useState<Set<string>>(new Set());
   const [visibleRepliesCount, setVisibleRepliesCount] = useState<Record<string, number>>({});
 
+  // Load user data once
   useEffect(() => {
+    (async () => {
+      try {
+        const userData = await getUserData();
+        console.log("Loaded user:", userData);
+        if (isMountedRef.current) {
+          setUser(userData);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    })();
+  }, []);
+
+  // Fetch posts only once on mount
+  useEffect(() => {
+    if (hasInitialFetchRef.current) return;
+
     const fetchPostsData = async () => {
       try {
         setIsLoading(true);
         const apiPosts = await getAllPostsWithComments();
-        setPosts(apiPosts || []); // 确保总是数组
+        if (isMountedRef.current) {
+          setPosts(apiPosts || []);
+          hasInitialFetchRef.current = true;
+        }
       } catch (error) {
         console.error("获取帖子数据失败:", error);
-        setPosts([]); // 出错时设为空数组
-        Alert.alert("错误", "获取帖子数据失败，请稍后重试");
+        if (isMountedRef.current) {
+          setPosts([]);
+          Alert.alert("错误", "获取帖子数据失败，请稍后重试");
+        }
       } finally {
-        setIsLoading(false);
+        if (isMountedRef.current) {
+          setIsLoading(false);
+        }
       }
     };
 
     fetchPostsData();
+  }, []);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+    };
   }, []);
 
   useLayoutEffect(() => {
@@ -295,7 +226,6 @@ export default function SocialScreen() {
     };
   }, [navigation]);
 
-  // 在 SocialScreen 组件中修复 handleLike 函数
   const handleLike = async (postId: string) => {
     const originalPosts = [...posts];
     const post = posts.find(p => p.id === postId);
@@ -303,7 +233,6 @@ export default function SocialScreen() {
     if (!post) return;
 
     try {
-      // 乐观更新：立即更新UI
       setPosts((prev) =>
         prev.map((p) =>
           p.id === postId
@@ -316,20 +245,15 @@ export default function SocialScreen() {
         )
       );
 
-      // 修复：调用正确的帖子点赞API
       if (post.isLiked) {
-        await unlikePost(postId); // 取消点赞
+        await unlikePost(postId);
       } else {
-        await likePost(postId);   // 点赞
+        await likePost(postId);
       }
-
     } catch (error: any) {
       console.error('点赞失败:', error);
-
-      // 出错时恢复原始状态
       setPosts(originalPosts);
 
-      // 只在非网络错误时显示提示
       if (!error.message?.includes('Network request failed')) {
         Alert.alert('错误', '点赞失败，请稍后重试');
       }
@@ -338,12 +262,7 @@ export default function SocialScreen() {
 
   const handleCommentLike = async (commentId: string) => {
     try {
-      // 调用评论点赞API
       await likeComment(commentId);
-
-      // 如果需要更新本地评论的点赞状态，可以在这里处理
-      // 这取决于你的UI是否需要显示评论的点赞数
-
     } catch (error) {
       console.error('评论点赞失败:', error);
       Alert.alert('错误', '评论点赞失败，请稍后重试');
@@ -359,36 +278,44 @@ export default function SocialScreen() {
     }
   };
 
-  const handleAddComment = () => {
+  const handleAddComment = async () => {
     if (!commentText.trim() || !selectedPostForComments) return;
 
-    const newComment = {
-      id: Date.now().toString(),
-      user: "Me",
-      text: commentText,
-      isDesigner: false,
-      replyTo: null,
-    };
+    const postId = selectedPostForComments.id;
+    const content = commentText;
+    const author = user?.username || user?.user_id || "匿名用户";
 
-    // 先更新选中的帖子数据，避免闪烁
-    const updatedSelectedPost = {
-      ...selectedPostForComments,
-      comments: selectedPostForComments.comments + 1,
-      commentsList: [...selectedPostForComments.commentsList, newComment],
-    };
+    try {
+      const apiResponse = await postComment(postId, content, author);
+      console.log("📥 API Response:", apiResponse);
 
-    setSelectedPostForComments(updatedSelectedPost);
+      // 🚫 不格式化，直接保留后端原始返回结构
+      const data = apiResponse?.data;
+      const comment = data?.comment || {};
+      const log = Array.isArray(data?.logs) ? data.logs[0] : data?.log || {};
 
-    // 然后更新主列表
-    setPosts((prev) =>
-      prev.map((p) =>
-        p.id === selectedPostForComments.id
-          ? updatedSelectedPost
-          : p
-      )
-    );
+      const newComment = {
+        id: comment.commentId || Date.now().toString(),
+        user: comment.userId || log.userId || author,
+        text: log?.desc ?? content, // ✅ 优先 desc，没有就显示用户输入
+        raw: data, // 🧩 保留后端原始对象（方便调试或后续兼容）
+      };
 
-    setCommentText("");
+      const updatedPost = {
+        ...selectedPostForComments,
+        comments: (selectedPostForComments.comments || 0) + 1,
+        commentsList: [...(selectedPostForComments.commentsList || []), newComment],
+      };
+
+      setSelectedPostForComments(updatedPost);
+      setPosts(prev => prev.map(p => (p.id === postId ? updatedPost : p)));
+
+      setCommentText("");
+      Alert.alert("成功", "评论已发布");
+    } catch (error) {
+      console.error("❌ Failed to post comment:", error);
+      Alert.alert("错误", "评论发送失败，请稍后重试");
+    }
   };
 
   const handleCloseCommentModal = () => {
@@ -398,12 +325,11 @@ export default function SocialScreen() {
     Keyboard.dismiss();
   };
 
-  // 显示更多回复
   const showMoreReplies = (commentId: string) => {
     setVisibleRepliesCount(prev => {
       const currentCount = prev[commentId] || 3;
       const totalReplies = commentReplies[commentId]?.length || 0;
-      const newCount = Math.min(currentCount + 10, totalReplies); // 每次增加10个
+      const newCount = Math.min(currentCount + 10, totalReplies);
       return {
         ...prev,
         [commentId]: newCount
@@ -411,30 +337,40 @@ export default function SocialScreen() {
     });
   };
 
-  // 处理回复
   const handleReply = (commentId: string) => {
     setActiveReplyCommentId(prev => prev === commentId ? null : commentId);
     setReplyText("");
   };
 
-  // 加载评论的回复
   const loadCommentReplies = async (commentId: string) => {
     if (loadingReplies.has(commentId) || commentReplies[commentId]) return;
 
     setLoadingReplies(prev => new Set(prev).add(commentId));
+
     try {
-      const repliesData = await getCommentReplies(commentId, 20, 0); // 一次加载20个回复
-      setCommentReplies(prev => ({
-        ...prev,
-        [commentId]: repliesData.replies
+      const repliesData = await getCommentReplies(commentId, 20, 0);
+      console.log("📥 加载到的回复数据:", repliesData);
+
+      const formattedReplies = (repliesData?.replies || []).map((reply: any) => ({
+        id: reply.id || reply.commentId || Math.random().toString(36).slice(2),
+        userId: reply.userId || reply.user_id || "未知用户",
+        desc: reply.desc || reply.comment || reply.content || "(无内容)",
+        createdAt: reply.createdAt || reply.created_at || "",
       }));
-      // 初始设置显示3个回复
-      setVisibleRepliesCount(prev => ({
-        ...prev,
-        [commentId]: Math.min(3, repliesData.replies.length)
-      }));
+
+      if (isMountedRef.current) {
+        setCommentReplies(prev => ({
+          ...prev,
+          [commentId]: formattedReplies
+        }));
+
+        setVisibleRepliesCount(prev => ({
+          ...prev,
+          [commentId]: Math.min(3, formattedReplies.length)
+        }));
+      }
     } catch (error) {
-      console.error('获取回复失败:', error);
+      console.error("❌ 获取回复失败:", error);
     } finally {
       setLoadingReplies(prev => {
         const newSet = new Set(prev);
@@ -444,34 +380,41 @@ export default function SocialScreen() {
     }
   };
 
-  // 发送回复
   const handleSendReply = async (commentId: string) => {
     if (!replyText.trim()) return;
 
-    try {
-      const newReply = await postCommentReply(commentId, replyText, "Me");
+    const userId = localStorage.getItem("userId") || "Me";
+    const username = localStorage.getItem("username") || "我";
 
-      // 更新本地回复列表
+    console.log("📨 Sending reply for commentId:", commentId, "replyText:", replyText);
+
+    try {
+      const newReply = await postComment(
+        selectedPostForComments.id,
+        replyText,
+        userId,
+        commentId
+      );
+
+      const newReplyObj = {
+        id: Date.now().toString(),
+        userId,
+        username,
+        desc: replyText.trim(),
+        createdAt: new Date().toISOString(),
+        parentCommentId: commentId
+      };
+
       setCommentReplies(prev => ({
         ...prev,
-        [commentId]: [...(prev[commentId] || []), {
-          ...newReply,
-          userId: "Me",
-          desc: replyText
-        }]
+        [commentId]: [...(prev[commentId] || []), newReplyObj]
       }));
 
-      // 更新可见回复计数，确保新回复可见
-      setVisibleRepliesCount(prev => {
-        const currentCount = prev[commentId] || 3;
-        const newTotalCount = (prev[commentId] || 0) + 1;
-        return {
-          ...prev,
-          [commentId]: Math.max(currentCount, newTotalCount)
-        };
-      });
+      setVisibleRepliesCount(prev => ({
+        ...prev,
+        [commentId]: (prev[commentId] || 3) + 1
+      }));
 
-      // 更新选中帖子的评论数据以保持同步
       if (selectedPostForComments) {
         const updatedPost = {
           ...selectedPostForComments,
@@ -479,19 +422,14 @@ export default function SocialScreen() {
             if (comment.id === commentId) {
               return {
                 ...comment,
-                replies: [...(comment.replies || []), {
-                  ...newReply,
-                  userId: "Me",
-                  desc: replyText
-                }]
+                replies: [...(comment.replies || []), newReplyObj]
               };
             }
             return comment;
           })
         };
-        setSelectedPostForComments(updatedPost);
 
-        // 同时更新主列表中的帖子数据
+        setSelectedPostForComments(updatedPost);
         setPosts(prev => prev.map(p =>
           p.id === selectedPostForComments.id ? updatedPost : p
         ));
@@ -499,15 +437,15 @@ export default function SocialScreen() {
 
       setReplyText("");
       setActiveReplyCommentId(null);
+      Keyboard.dismiss();
     } catch (error) {
-      console.error('发送回复失败:', error);
+      console.error("❌ 发送回复失败:", error);
       Alert.alert("错误", "发送回复失败，请稍后重试");
     }
   };
 
   const handleCreatePost = async () => {
     if (!newPostText.trim() && !newPostImage) {
-      // ✅ 没有内容也自动关闭发布框并重置状态
       setShowCreatePost(false);
       setShowPhotoRequired(false);
       setNewPostText("");
@@ -516,22 +454,30 @@ export default function SocialScreen() {
     }
 
     try {
-      const postData = {
+      const postData: any = {
         title: newPostText.trim() || "无标题",
         content: newPostText.trim(),
         author: user?.user_id || "unknown",
       };
 
-      console.log("📦 postData before API:", postData);
+      if (newPostImage) {
+        postData.file = {
+          uri: newPostImage,
+          name: "photo.jpg",
+          type: "image/jpeg",
+        };
+      }
+
+      console.log("📦 Sending postData to API:", postData);
 
       const response = await createPost(postData);
       console.log("✅ Post created:", response);
 
       const newPost = {
-        id: Date.now().toString(),
-        user_id: user?.user_id || "",
-        username: user?.username || "匿名用户",
-        avatar: user?.image || "🧑🏻",
+        id: response.id || Date.now().toString(),
+        user_id: user.user_id,
+        username: user.username,
+        avatar: user.image ? { uri: user.image } : null,
         image: newPostImage ? { uri: newPostImage } : null,
         caption: newPostText.trim(),
         likes: 0,
@@ -556,8 +502,6 @@ export default function SocialScreen() {
     }
   };
 
-
-  // 拍照
   const handleTakePhoto = async () => {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
     if (status !== "granted") {
@@ -574,11 +518,10 @@ export default function SocialScreen() {
 
     if (!result.canceled) {
       setNewPostImage(result.assets[0].uri);
-      setShowPhotoRequired(false); // Hide the warning when photo is selected
+      setShowPhotoRequired(false);
     }
   };
 
-  // 相册
   const handlePickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
@@ -595,14 +538,12 @@ export default function SocialScreen() {
 
     if (!result.canceled) {
       setNewPostImage(result.assets[0].uri);
-      setShowPhotoRequired(false); // Hide the warning when photo is selected
+      setShowPhotoRequired(false);
     }
   };
 
-  const handleGoBack = () => navigation.goBack();
   const handleCameraClick = () => setShowCreatePost((prev) => !prev);
 
-  // Share 功能
   const handleShare = (postId: string) => {
     setCurrentSharePostId(postId);
     setShowShareOverlay(true);
@@ -632,7 +573,6 @@ export default function SocialScreen() {
     }
   };
 
-  // 话题相关功能
   const handleTopicSelect = (topicId: string) => {
     const selectedTopicData = mockTopics.find((t) => t.id === topicId);
     if (selectedTopicData) {
@@ -644,7 +584,6 @@ export default function SocialScreen() {
     }
   };
 
-  // 生成专属分享语
   const getShareText = (platform: string, post: any) => {
     const baseText = post?.caption || "";
     const platformTexts: Record<string, string> = {
@@ -657,14 +596,11 @@ export default function SocialScreen() {
     return platformTexts[platform] || baseText;
   };
 
-  // More Menu - Fixed the event handling
   const handleMore = (postId: string, event: any) => {
-    // Use nativeEvent to get the touch coordinates
-    const { locationX, locationY, pageX, pageY } = event.nativeEvent;
+    const { pageX, pageY } = event.nativeEvent;
 
-    // Set position for dropdown - adjust as needed for your UI
     setDropdownPosition({
-      x: Math.max(10, pageX - 100), // Ensure it doesn't go off screen
+      x: Math.max(10, pageX - 100),
       y: pageY + 20,
     });
     setSelectedPostId(postId);
@@ -676,10 +612,8 @@ export default function SocialScreen() {
     setSelectedPostId(null);
   };
 
-  // 删除 post
   const handleDelete = () => {
     if (selectedPostId) {
-      // 移除原有的 Alert.alert，改为使用自定义模态框
       setPostToDelete(selectedPostId);
       setShowDeleteDropdown(true);
       closeDropdown();
@@ -690,11 +624,9 @@ export default function SocialScreen() {
     if (!postToDelete) return;
 
     try {
-      // 🔥 调用后端 API 删除帖子
       await deletePost(postToDelete);
       console.log(`✅ 已从后端删除帖子 ${postToDelete}`);
 
-      // ✅ 前端同步移除
       setPosts((prev) => prev.filter((p) => p.id !== postToDelete));
 
       Alert.alert("成功", "帖子已删除！");
@@ -712,7 +644,6 @@ export default function SocialScreen() {
     setPostToDelete(null);
   };
 
-  // Edit 编辑
   const handleEdit = () => {
     if (selectedPostId) {
       const post = posts.find((p) => p.id === selectedPostId);
@@ -729,11 +660,9 @@ export default function SocialScreen() {
       try {
         const postData = { content: editPostText.trim() };
 
-        // 调用后端接口
         const res = await updatePost(editingPostId, postData);
         console.log("✅ 更新成功:", res);
 
-        // 同步更新前端 UI
         setPosts((prev) =>
           prev.map((p) =>
             p.id === editingPostId ? { ...p, caption: editPostText } : p
@@ -756,7 +685,6 @@ export default function SocialScreen() {
     setEditPostText("");
   };
 
-  // 收藏
   const handleSave = (postId: string) => {
     setSavedPosts((prev) => {
       const newSet = new Set(prev);
@@ -772,6 +700,7 @@ export default function SocialScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#f7fafc" />
+
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity
@@ -805,7 +734,6 @@ export default function SocialScreen() {
               }}
             >
               <View style={styles.createPostSection}>
-                {/* 关闭按钮绝对定位 */}
                 <TouchableOpacity
                   onPress={handleCreatePost}
                   style={styles.closeButtonAbsolute}
@@ -813,7 +741,6 @@ export default function SocialScreen() {
                   <Text style={styles.closeButtonText}>×</Text>
                 </TouchableOpacity>
 
-                {/* 原有布局保持不变 */}
                 <View style={styles.userAvatar}>
                   <Text style={styles.avatarEmoji}>👨🏾</Text>
                 </View>
@@ -826,7 +753,6 @@ export default function SocialScreen() {
                     onChangeText={setNewPostText}
                   />
 
-                  {/* 预览图片 */}
                   {newPostImage ? (
                     <View style={styles.previewContainer}>
                       <Image
@@ -845,7 +771,6 @@ export default function SocialScreen() {
                     </View>
                   ) : null}
 
-                  {/* 提示 */}
                   {showPhotoRequired && (
                     <Text
                       style={{ color: "red", fontSize: 12, marginBottom: 8 }}
@@ -905,7 +830,6 @@ export default function SocialScreen() {
           <View style={shareStyles.overlay}>
             <TouchableWithoutFeedback>
               <View style={shareStyles.shareContainer}>
-                {/* 标题和关闭按钮 */}
                 <View style={shareStyles.shareHeader}>
                   <Text style={shareStyles.shareTitle}>分享至</Text>
                   <TouchableOpacity
@@ -916,7 +840,6 @@ export default function SocialScreen() {
                   </TouchableOpacity>
                 </View>
 
-                {/* 分享预览文本 */}
                 {currentSharePostId && (
                   <View>
                     <Text style={shareStyles.sharePreviewTitle}>
@@ -931,7 +854,6 @@ export default function SocialScreen() {
                   </View>
                 )}
 
-                {/* 横向排列的分享选项 */}
                 <View style={shareStyles.shareOptionsHorizontal}>
                   {[
                     {
@@ -971,7 +893,6 @@ export default function SocialScreen() {
                   ))}
                 </View>
 
-                {/* 取消按钮 */}
                 <TouchableOpacity
                   style={shareStyles.cancelButton}
                   onPress={handleCloseShare}
@@ -1110,7 +1031,7 @@ export default function SocialScreen() {
           <View style={styles.bottomSpacing} />
         </ScrollView>
       ) : (
-        // 话题讨论区 - 话题列表
+        // Topics Section
         <ScrollView
           style={styles.feedContainer}
           showsVerticalScrollIndicator={false}
@@ -1126,7 +1047,6 @@ export default function SocialScreen() {
                   onPress={() => handleTopicSelect(topic.id)}
                   activeOpacity={0.9}
                 >
-                  {/* 参与度指示器 */}
                   <View style={topicStyles.participationIndicator} />
 
                   <View style={topicStyles.topicHeader}>
@@ -1140,7 +1060,6 @@ export default function SocialScreen() {
                     {topic.description}
                   </Text>
 
-                  {/* 活跃度指示器 */}
                   <View style={topicStyles.activityIndicator}>
                     <View
                       style={[
@@ -1182,7 +1101,6 @@ export default function SocialScreen() {
                     </View>
                   </View>
 
-                  {/* 互动预览 */}
                   <View style={topicStyles.interactionPreview}>
                     <View style={topicStyles.previewAvatar} />
                     <View style={topicStyles.previewAvatar} />
@@ -1212,7 +1130,6 @@ export default function SocialScreen() {
                     {topic.description}
                   </Text>
 
-                  {/* 活跃度指示器 */}
                   <View style={topicStyles.activityIndicator}>
                     <View
                       style={[
@@ -1244,7 +1161,6 @@ export default function SocialScreen() {
                     </View>
                   </View>
 
-                  {/* 互动预览 */}
                   <View style={topicStyles.interactionPreview}>
                     <View style={topicStyles.previewAvatar} />
                     <View style={topicStyles.previewAvatar} />
@@ -1260,7 +1176,7 @@ export default function SocialScreen() {
         </ScrollView>
       )}
 
-      {/* Editing Post*/}
+      {/* Editing Post Modal */}
       {editingPostId && (
         <TouchableWithoutFeedback onPress={cancelEdit}>
           <View style={newStyles.overlay}>
@@ -1303,7 +1219,7 @@ export default function SocialScreen() {
         </TouchableWithoutFeedback>
       )}
 
-      {/* Dropdown */}
+      {/* Dropdown Menu */}
       {showDropdown && (
         <TouchableWithoutFeedback onPress={closeDropdown}>
           <View style={newStyles.dropdownOverlay}>
@@ -1341,6 +1257,7 @@ export default function SocialScreen() {
         </TouchableWithoutFeedback>
       )}
 
+      {/* Delete Confirmation Modal */}
       {showDeleteDropdown && (
         <TouchableWithoutFeedback onPress={cancelDelete}>
           <View style={newStyles.overlay}>
@@ -1370,21 +1287,18 @@ export default function SocialScreen() {
         </TouchableWithoutFeedback>
       )}
 
-      {/* Comment Modal - Instagram Style */}
+      {/* Comment Modal */}
       {showCommentModal && selectedPostForComments && (
         <TouchableWithoutFeedback onPress={handleCloseCommentModal}>
           <View style={commentModalStyles.overlay}>
             <KeyboardAvoidingView
               behavior={Platform.OS === "ios" ? "padding" : undefined}
-              keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
               style={{ flex: 1, justifyContent: "flex-end" }}
             >
               <TouchableWithoutFeedback>
                 <View style={commentModalStyles.commentModal}>
-                  {/* Modal Handle */}
                   <View style={commentModalStyles.modalHandle} />
 
-                  {/* Modal Header */}
                   <View style={commentModalStyles.modalHeader}>
                     <Text style={commentModalStyles.modalTitle}>评论</Text>
                     <TouchableOpacity
@@ -1395,20 +1309,11 @@ export default function SocialScreen() {
                     </TouchableOpacity>
                   </View>
 
-                  {/* Comments List */}
                   <ScrollView
                     style={commentModalStyles.commentsList}
                     contentContainerStyle={{ paddingBottom: 20, flexGrow: 1 }}
                     showsVerticalScrollIndicator={false}
-                    bounces={true}
-                    alwaysBounceVertical={true}
-                    scrollEventThrottle={16}
-                    removeClippedSubviews={false}
                     keyboardShouldPersistTaps="handled"
-                    nestedScrollEnabled={true}
-                    scrollEnabled={true}
-                    directionalLockEnabled={true}
-                    decelerationRate="normal"
                   >
                     {selectedPostForComments.commentsList.length > 0 ? (
                       selectedPostForComments.commentsList.map((comment: Comment) => (
@@ -1438,7 +1343,6 @@ export default function SocialScreen() {
                                 </TouchableOpacity>
                               </View>
 
-                              {/* Reply Input for this comment */}
                               {activeReplyCommentId === comment.id && (
                                 <View style={commentModalStyles.replyInputContainer}>
                                   <View style={commentModalStyles.replyInputWrapper}>
@@ -1480,7 +1384,6 @@ export default function SocialScreen() {
                                 </View>
                               )}
 
-                              {/* Replies */}
                               {commentReplies[comment.id] && commentReplies[comment.id].length > 0 && (
                                 <View style={commentModalStyles.repliesContainer}>
                                   {commentReplies[comment.id].slice(0, visibleRepliesCount[comment.id] || 3).map((reply: any, index: number) => (
@@ -1495,7 +1398,6 @@ export default function SocialScreen() {
                                     </View>
                                   ))}
 
-                                  {/* 查看更多回复按钮 */}
                                   {commentReplies[comment.id].length > (visibleRepliesCount[comment.id] || 3) && (
                                     <TouchableOpacity
                                       style={commentModalStyles.loadMoreReplies}
@@ -1509,7 +1411,6 @@ export default function SocialScreen() {
                                 </View>
                               )}
 
-                              {/* Load replies button */}
                               {!commentReplies[comment.id] && !loadingReplies.has(comment.id) && (
                                 <TouchableOpacity
                                   style={commentModalStyles.loadRepliesButton}
@@ -1537,7 +1438,6 @@ export default function SocialScreen() {
                     )}
                   </ScrollView>
 
-                  {/* Comment Input */}
                   <View style={commentModalStyles.commentInputSection}>
                     <View style={commentModalStyles.commentInputAvatar}>
                       <Text style={commentModalStyles.commentAvatarText}>🧑🏻</Text>
