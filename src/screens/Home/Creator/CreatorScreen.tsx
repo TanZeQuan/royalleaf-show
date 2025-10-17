@@ -91,7 +91,7 @@ const CreatorStack = () => {
 
           {categories.map((cat) => (
             <TouchableOpacity
-              key={cat.id}
+              key={cat.cateId} 
               style={styles.categoryCard}
               onPress={() => handleCategorySelect(cat.cateId)}
             >

@@ -9,7 +9,6 @@ import {
     Alert,
     FlatList,
     Image,
-    Keyboard,
     Modal,
     Platform,
     ScrollView,
@@ -27,8 +26,10 @@ import {
 } from "react-native-safe-area-context";
 import { colors } from "styles";
 import { CreatorStackParamList } from "../../../navigation/stacks/HomeNav/CreatorStack";
+import { getUserData } from "../../../utils/storage";
 import styles from "../../Home/Creator/CreatorStyles";
 import { ContestEntry, RouteParams } from "../Creator/CreatorSlice";
+import { creatorAPI } from "./CreatorService";
 
 type MySubmissionsNavigationProp =
     NativeStackNavigationProp<CreatorStackParamList>;
@@ -165,32 +166,78 @@ const MySubmissionsScreen = () => {
     };
 
     const loadEntries = async () => {
+        console.log('==========================================');
+        console.log('🚀🚀🚀 loadEntries CALLED 🚀🚀🚀');
+        console.log('==========================================');
+
         setIsLoading(true);
         try {
             let allEntries: ContestEntry[] = [];
 
-            if (params?.entries) {
+            // 优先从路由参数获取（仅当有数据时）
+            if (params?.entries && params.entries.length > 0) {
+                console.log('📦 Loading entries from route params');
                 allEntries = params.entries.map((entry: any) => ({
                     ...entry,
                     submittedAt: new Date(entry.submittedAt),
                     reviewedAt: entry.reviewedAt ? new Date(entry.reviewedAt) : undefined,
                 }));
             } else {
-                const storedEntries = await AsyncStorage.getItem("contestEntries");
-                if (storedEntries) {
-                    allEntries = JSON.parse(storedEntries).map((entry: any) => ({
-                        ...entry,
-                        submittedAt: new Date(entry.submittedAt),
-                        reviewedAt: entry.reviewedAt
-                            ? new Date(entry.reviewedAt)
-                            : undefined,
-                    }));
+                // 从后端API获取用户投稿记录
+                console.log('🔍 Fetching user data from storage...');
+                const userData = await getUserData();
+                console.log('👤 User data:', userData);
+
+                if (userData && userData.user_id) {
+                    console.log('✅ User ID found:', userData.user_id);
+                    console.log('📡 Calling API to get user entries...');
+
+                    const result = await creatorAPI.getUserEntries(userData.user_id);
+
+                    console.log('📥 API Response:', result);
+                    console.log('📊 Data type:', typeof result.data, 'Is array:', Array.isArray(result.data));
+
+                    if (result.success && result.data && Array.isArray(result.data)) {
+                        console.log('✅ Successfully received', result.data.length, 'entries');
+
+                        // 将后端数据转换为前端格式
+                        allEntries = result.data.map((item: any) => ({
+                            id: item.subId,
+                            category: params?.selectedCategory || "general",
+                            categoryName: params?.categoryName || "通用",
+                            image: item.image,
+                            title: item.name,
+                            description: item.desc,
+                            status: item.isStatus === 1 ? "pending" :
+                                    item.isStatus === 2 ? "approved" :
+                                    item.isStatus === 3 ? "rejected" : "pending",
+                            submittedAt: new Date(item.createdAt),
+                            reviewedAt: item.modifyAt ? new Date(item.modifyAt) : undefined,
+                            likes: item.voted || 0,
+                            views: 0,
+                            isPublic: true,
+                            authorName: userData.username || "当前用户",
+                            authorId: userData.user_id,
+                            activityId: item.votesId,
+                            activityName: "",
+                        }));
+
+                        console.log('✅ Mapped entries:', allEntries);
+                    } else {
+                        console.log('❌ Failed to get entries or data is not an array');
+                        if (!result.success) {
+                            console.log('❌ Error:', result.error);
+                        }
+                    }
+                } else {
+                    console.log('❌ No user data or user_id not found');
                 }
             }
 
+            console.log('📋 Final entries count:', allEntries.length);
             setEntries(allEntries);
         } catch (error) {
-            console.error("Error loading entries:", error);
+            console.error("❌ Error loading entries:", error);
         } finally {
             setIsLoading(false);
         }
@@ -380,37 +427,56 @@ const MySubmissionsScreen = () => {
         setIsSubmitting(true);
 
         try {
-            await new Promise((resolve) => setTimeout(resolve, 1500));
-
+            // 获取选中活动的 votesId
             const selectedActivityObj = availableActivities.find(
                 activity => activity.id.toString() === selectedActivity
             );
 
-            const newEntry: ContestEntry = {
-                id: Date.now().toString(),
-                category: params?.selectedCategory || "general",
-                categoryName: params?.categoryName || "通用",
+            if (!selectedActivityObj) {
+                Alert.alert("错误", "请选择一个活动");
+                setIsSubmitting(false);
+                return;
+            }
+
+            // 使用 storage.ts 的 getUserData() 获取用户信息
+            const userData = await getUserData();
+
+            if (!userData || !userData.user_id) {
+                Alert.alert("错误", "请先登录");
+                setIsSubmitting(false);
+                return;
+            }
+
+            // 准备提交数据 - 包含 votesId, name, desc, image, userId
+            const submissionData: any = {
+                votesId: selectedActivityObj.votesId, // 使用活动的 votesId
+                name: entryTitle,
+                desc: entryDescription,
                 image: selectedImage!,
-                title: entryTitle,
-                description: entryDescription,
-                status: "pending",
-                submittedAt: new Date(),
-                likes: 0,
-                views: 0,
-                isPublic: isPublicEntry,
-                authorName: "当前用户",
+                userId: userData.user_id, // 从 storage 获取的 user_id
             };
 
-            const updatedEntries = [...entries, newEntry];
-            setEntries(updatedEntries);
-            await AsyncStorage.setItem(
-                "contestEntries",
-                JSON.stringify(updatedEntries)
-            );
+            console.log('Submitting to votesId:', submissionData.votesId);
+            console.log('With userId:', submissionData.userId);
+            console.log('User data:', { username: userData.username, user_id: userData.user_id });
 
-            setSuccessModalVisible(true);
-            resetEntryForm();
+            // 调用 API
+            const result = await creatorAPI.submitEntry(submissionData);
+
+            console.log('API Result:', result);
+
+            if (result.success && result.data) {
+                // 提交成功后，重新从后端加载数据
+                setSuccessModalVisible(true);
+                resetEntryForm();
+
+                // 重新加载投稿列表
+                await loadEntries();
+            } else {
+                Alert.alert("提交失败", result.error || "创意提交失败,请稍后重试");
+            }
         } catch (error) {
+            console.error('Submit error:', error);
             Alert.alert("错误", "创意提交失败，请稍后重试");
         } finally {
             setIsSubmitting(false);
@@ -562,7 +628,7 @@ const MySubmissionsScreen = () => {
                 contentContainerStyle={styles.listContainer}
                 ListEmptyComponent={
                     <View style={styles.emptyContainer}>
-                        <Text style={styles.emptyIcon}>📝</Text>
+                        {/* <Text style={styles.emptyIcon}>📝</Text> */}
                         <Text style={styles.emptyTitle}>暂无创意投稿</Text>
                         <Text style={styles.emptyMessage}>
                             {params?.selectedCategory
@@ -872,7 +938,7 @@ const MySubmissionsScreen = () => {
                         <View style={styles.confirmModalContent}>
                             <Text style={styles.confirmTitle}>确认提交</Text>
                             <Text style={styles.confirmNote}>
-                                提交后将进入审核流程，请耐心等待结果。通过审核后，其他会员就能浏览、投票和评论你的创意！
+                                提交后将进入审核流程，请耐心等待。通过审核后，其他会员就能浏览、投票和评论你的创意！
                             </Text>
                             <View style={styles.confirmButtons}>
                                 <TouchableOpacity
@@ -916,10 +982,10 @@ const MySubmissionsScreen = () => {
 
                         {/* Modal 内部内容，点击不会关闭 */}
                         <View style={styles.successModalContent}>
-                            <Text style={styles.successIcon}>🎉</Text>
+                            {/* <Text style={styles.successIcon}>🎉</Text> */}
                             <Text style={styles.successTitle}>提交成功！</Text>
                             <Text style={styles.successMessage}>
-                                您的创意已提交，请耐心等待审核结果！{"\n"}
+                                您的创意已提交，请耐心等待审核！{"\n"}
                                 你的创意很快就能被大家看见！
                             </Text>
                             <TouchableOpacity
