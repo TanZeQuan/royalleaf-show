@@ -1,8 +1,11 @@
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
+  ActivityIndicator,
+  Alert,
   Dimensions,
   Image,
   ImageBackground,
@@ -11,14 +14,11 @@ import {
   Text,
   TouchableOpacity,
   View,
-  ActivityIndicator,
-  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { typography, colors } from "styles";
-import { ProfileStackParamList } from "../../navigation/stacks/ProfileNav/ProfileStack";
 import { viewProfile } from "services/UserService/userApi";
+import { colors, typography } from "styles";
+import { ProfileStackParamList } from "../../navigation/stacks/ProfileNav/ProfileStack";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 
@@ -38,7 +38,7 @@ const verticalScale = (size: number) => (screenHeight / 812) * size;
 const getFullImageUrl = (img: string | undefined) => {
   if (!img) return undefined;
   // 如果 img 以 http/https 开头就直接用，否则拼接 BASE_URL
-  return img.startsWith("http") ? img : `http://192.168.0.241:8080/royal/${img.replace(/^\/+/, '')}`;
+  return img.startsWith("http") ? img : `http://192.168.0.127:8080/royal/${img.replace(/^\/+/, '')}`;
 };
 
 // ---------- Types ----------

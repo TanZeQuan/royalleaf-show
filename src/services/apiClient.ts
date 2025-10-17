@@ -9,7 +9,7 @@ if (Platform.OS === "android") {
 } else if (Platform.OS === "ios") {
   baseURL = "http://localhost:8080/royal"; // iOS Simulator
 } else {
-  baseURL = "http://192.168.0.241:8080/royal"; // Physical device
+  baseURL = "http://192.168.0.127:8080/royal"; // Physical device
 }
 
 const api = axios.create({

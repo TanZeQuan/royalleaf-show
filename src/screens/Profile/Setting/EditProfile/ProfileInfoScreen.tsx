@@ -1,13 +1,20 @@
 // ProfileInfoScreen.tsx
 import Ionicons from "@expo/vector-icons/Ionicons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { editProfile, uploadFile } from "@services/UserService/userApi";
 import * as ImagePicker from "expo-image-picker";
-import React, { useState, useEffect } from "react";
+import { SettingStackParamList } from "navigation/stacks/ProfileNav/SettingStack";
+import React, { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
+  Alert,
   FlatList,
   Image,
   Modal,
+  Platform,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -15,15 +22,8 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-  Platform,
-  ActivityIndicator,
-  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import DateTimePicker from "@react-native-community/datetimepicker";
-import { SettingStackParamList } from "navigation/stacks/ProfileNav/SettingStack";
-import { editProfile, uploadFile } from "@services/UserService/userApi";
 
 interface FormData {
   username: string;
@@ -148,7 +148,9 @@ export default function ProfileInfoScreen() {
       let imageUrl = avatar;
       if (avatarFile) {
         const uploadResult = await uploadFile(currentUserId, avatarFile);
-        if (uploadResult.success) imageUrl = uploadResult.data.link;
+        if (uploadResult.success && uploadResult.data?.url) {
+          imageUrl = uploadResult.data.url;  //  修改了这里 ← 修改为 url，backend返回字段一致
+        }
       }
 
       // ✅ 这里改了：后端要求 name 必填，我们自动传一个默认值（例如用户名或 "User"）
