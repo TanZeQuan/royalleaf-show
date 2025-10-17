@@ -56,8 +56,7 @@ const CreatorStack = () => {
     // 找到选中的分类对象
     const category = categories.find(cat => cat.cateId === categoryId);
 
-    navigation.navigate("CreatorSubmit", {
-      entries: [], // 如果还没数据，先传空数组
+    navigation.navigate("CreatorMain", {
       selectedCategory: categoryId,
       categoryName: category?.name || '通用',
     });
@@ -87,7 +86,7 @@ const CreatorStack = () => {
         </View>
       ) : (
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-          <Text style={styles.subtitle}>选择一个领域提交您的创意想法</Text>
+          <Text style={styles.subtitle}>一个领域提交您的创意想法</Text>
 
           {categories.map((cat) => (
             <TouchableOpacity
