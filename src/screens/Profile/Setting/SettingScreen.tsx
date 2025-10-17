@@ -271,7 +271,7 @@ const styles = StyleSheet.create({
   content: { flex: 1, paddingHorizontal: 16, paddingTop: 20 },
   section: { marginBottom: 30 },
   sectionTitle: {
-    fontSize: 14,
+    fontSize: 16,
     color: "#999",
     marginBottom: 12,
     marginLeft: 4,

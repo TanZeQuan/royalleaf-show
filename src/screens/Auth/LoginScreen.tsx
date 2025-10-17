@@ -60,7 +60,7 @@ export default function LoginScreen({ navigation, onLogin }: LoginScreenProps) {
         // 👉 保持 onLogin 传 username（如果你只想改 Profile，就不用动 AppNavigator）
         onLogin(userData.username);
 
-        Alert.alert("✅ 登录成功", response.message || "欢迎回来！");
+        // Alert.alert("✅ 登录成功", response.message || "欢迎回来！");
       } else {
         Alert.alert("❌ 登录失败", response.message || "账号或密码错误");
       }
