@@ -4,7 +4,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { editProfile, uploadFile } from "@services/UserService/userApi";
+import { editProfile, uploadFile, viewProfile } from "@services/UserService/userApi";
 import * as ImagePicker from "expo-image-picker";
 import { SettingStackParamList } from "navigation/stacks/ProfileNav/SettingStack";
 import React, { useEffect, useState } from "react";
@@ -72,31 +72,70 @@ export default function ProfileInfoScreen() {
   }, []);
 
   const loadUserData = async () => {
+    setIsLoading(true);
     try {
+      // 1. Get user_id from local storage
       const stored = await AsyncStorage.getItem("userData");
-      if (stored) {
-        const userData = JSON.parse(stored);
-        setCurrentUserId(userData.user_id || "");
+      if (!stored) {
+        Alert.alert("错误", "无法获取用户信息，请重新登录。");
+        navigation.goBack();
+        return;
+      }
 
+      const localUserData = JSON.parse(stored);
+      const userId = localUserData.user_id;
+
+      if (!userId) {
+        Alert.alert("错误", "用户ID无效，请重新登录。");
+        navigation.goBack();
+        return;
+      }
+      
+      setCurrentUserId(userId);
+
+      // 2. Fetch latest profile from backend
+      const response = await viewProfile(userId);
+      if (response.success && response.data) {
+        const backendUserData = response.data;
+
+        // 3. Populate form with fresh data
         setFormData({
-          username: userData.username || "",
-          name: userData.name || "",
-          email: userData.email || "",
-          phone: userData.phone || "",
-          address: userData.address || "",
-          gender: userData.gender || 0,
-          dob: userData.dob || "",
+          username: backendUserData.username || "",
+          name: backendUserData.name || "",
+          email: backendUserData.email || "",
+          phone: backendUserData.phone || "",
+          address: backendUserData.address || "",
+          gender: backendUserData.gender || 0,
+          dob: backendUserData.dob || "",
         });
 
-        if (userData.dob) {
-          const dobDate = new Date(userData.dob);
+        if (backendUserData.dob) {
+          const dobDate = new Date(backendUserData.dob);
           if (!isNaN(dobDate.getTime())) setSelectedDate(dobDate);
         }
 
-        if (userData.image) setAvatar(userData.image);
+        if (backendUserData.image) {
+          setAvatar(backendUserData.image);
+        }
+      } else {
+        // Fallback to local data if API fails
+        console.warn("后端资料获取失败，使用本地缓存数据。");
+        setFormData({
+            username: localUserData.username || "",
+            name: localUserData.name || "",
+            email: localUserData.email || "",
+            phone: localUserData.phone || "",
+            address: localUserData.address || "",
+            gender: localUserData.gender || 0,
+            dob: localUserData.dob || "",
+        });
+        if (localUserData.image) setAvatar(localUserData.image);
       }
     } catch (error) {
       console.error("加载用户数据失败:", error);
+      Alert.alert("错误", "加载用户数据时发生网络错误。");
+    } finally {
+      setIsLoading(false);
     }
   };
 
