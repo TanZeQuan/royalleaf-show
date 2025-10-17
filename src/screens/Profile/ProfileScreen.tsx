@@ -38,7 +38,7 @@ const verticalScale = (size: number) => (screenHeight / 812) * size;
 const getFullImageUrl = (img: string | undefined) => {
   if (!img) return undefined;
   // 如果 img 以 http/https 开头就直接用，否则拼接 BASE_URL
-  return img.startsWith("http") ? img : `http://192.168.0.127:8080/royal/${img.replace(/^\/+/, '')}`;
+  return img.startsWith("http") ? img : `http://192.168.0.122:8080/royal/${img.replace(/^\/+/, '')}`;
 };
 
 // ---------- Types ----------
@@ -50,12 +50,12 @@ type ProfileScreenNavigationProp = NativeStackNavigationProp<
 interface UserProfile {
   image?: string;
   user_id: string;
-  username: string;
+  name: string;
   wallet_balance: number;
   crown: number;
 }
 
-type ParsedUser = UserProfile | { username: string } | null;
+type ParsedUser = UserProfile | { name: string } | null;
 
 // ---------- Component ----------
 export default function ProfileScreen() {
@@ -81,7 +81,7 @@ export default function ProfileScreen() {
         // 仅有用户名
         setUser({
           user_id: "----",
-          username: (parsed as any)?.username || "未登录",
+          name: (parsed as any)?.name || "未登录",
           wallet_balance: 0,
           crown: 0,
         });
@@ -156,7 +156,7 @@ export default function ProfileScreen() {
             </View>
             <View style={styles.profileInfo}>
               <Text style={styles.username} numberOfLines={1}>
-                {user?.username || "未登录"}
+                {user?.name || "未登录"}
               </Text>
               <Text style={styles.userId} numberOfLines={1}>
                 ID: {user?.user_id || "----"}

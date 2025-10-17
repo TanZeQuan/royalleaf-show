@@ -20,7 +20,7 @@ import { colors } from "styles";
 // 导入导航类型
 import { CreatorStackParamList } from "@navigation/stacks/HomeNav/CreatorStack";
 // 导入投票服务，复用相同的分类 API
-import { Category, voteService } from "../../../services/VoteService/voteMainApi";
+import { Category, voteService } from "../../../services/VoteService/voteCategoryApi";
 import styles from "./styles/CreatorCategoryScreenStyles";
 
 type CreatorNavigationProp = NativeStackNavigationProp<CreatorStackParamList>;

@@ -26,8 +26,8 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 interface FormData {
-  username: string;
-  name: string;
+  username: string;  // 用户名（只读，不可修改）
+  name: string;      // 昵称（可编辑）
   email: string;
   phone: string;
   dob: string;
@@ -153,11 +153,11 @@ export default function ProfileInfoScreen() {
         }
       }
 
-      // ✅ 这里改了：后端要求 name 必填，我们自动传一个默认值（例如用户名或 "User"）
+      // 准备提交数据 - username 只读不提交，只提交 name（昵称）
       const payload: any = {
         user_id: currentUserId,
-        username: formData.username?.trim() || "",
-        name: formData.username?.trim() || "User", // 👈 自动填充
+        username: formData.username,  // username 保持原值，后端不会修改
+        name: formData.name?.trim() || formData.username || "User", // 昵称可修改
         image: imageUrl || avatar || "",
         address: formData.address?.trim() || "",
         gender: [0, 1, 2].includes(formData.gender) ? formData.gender : 0,
@@ -236,18 +236,24 @@ export default function ProfileInfoScreen() {
         <View style={styles.formSection}>
           <InputField
             value={formData.username}
-            onChangeText={(text: string) => setFormData({ ...formData, username: text })}
-            placeholder="输入用户名"
+            placeholder="用户名"
             label="用户名"
             iconName="person-outline"
+            editable={false}
+          />
+          <InputField
+            value={formData.name}
+            onChangeText={(text: string) => setFormData({ ...formData, name: text })}
+            placeholder="输入您的昵称"
+            label="昵称"
+            iconName="person-circle-outline"
           />
           <InputField
             value={formData.email}
-            onChangeText={(text: string) => setFormData({ ...formData, email: text })}
-            placeholder="输入您的邮箱地址"
+            placeholder="邮箱地址"
             label="邮箱"
             iconName="mail-outline"
-            keyboardType="email-address"
+            editable={false}
           />
           <InputField
             value={formData.phone}
@@ -266,6 +272,7 @@ export default function ProfileInfoScreen() {
             iconName="calendar-outline"
             showArrow
             onPress={() => setShowDatePicker(true)}
+            editable={false}
           />
 
           {/* 性别选择 */}

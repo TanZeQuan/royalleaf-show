@@ -23,7 +23,7 @@ import {
   getVoteProductDetails,
   submitComment,
   submitVoteFetch,
-} from "../../../services/VoteService/voteDetailsApi";
+} from "../../../services/VoteService/voteMainApi";
 import { getUserData } from "../../../utils/storage";
 import { styles } from "./Styles/VoteCSS";
 

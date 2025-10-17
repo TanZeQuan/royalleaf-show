@@ -17,7 +17,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import {
   Category,
   voteService,
-} from "../../../services/VoteService/voteMainApi";
+} from "../../../services/VoteService/voteCategoryApi";
 import { styles } from "./Styles/VoteCategoryScreen";
 
 type VoteNavigationProp = NativeStackNavigationProp<any>;
