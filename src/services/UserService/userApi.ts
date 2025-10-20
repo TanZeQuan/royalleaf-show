@@ -116,7 +116,7 @@ export const profileResetPassword = async ({
 // ====================== 用户资料 ======================
 export const viewProfile = async (userId: string) => {
   try {
-    const { data } = await api.post("http://18.166.69.97:8080/royal/view_profile", { user_id: userId });
+    const { data } = await api.post("/view_profile", { user_id: userId });
     return data; // { success: true, data: {...} }
   } catch (error: any) {
     console.error("❌ viewProfile Error:", error.response?.data || error.message);
