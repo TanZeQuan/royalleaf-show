@@ -1,12 +1,17 @@
 {
   "expo": {
-    "name": "",
+    "name": "RoyalLeafApp",
     "slug": "royalleaf-premium",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "src/assets/icons/login-logo.png",
     "scheme": "royalleafapp",
     "userInterfaceStyle": "automatic",
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ],
     "plugins": [
       [
         "expo-image-picker",
@@ -40,7 +45,7 @@
     ],
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "src/assets/images/splashScreen.png",
+        "foregroundImage": "src/assets/icons/login-logo.png",
         "backgroundColor": "#000000"
       },
       "edgeToEdgeEnabled": true,
@@ -48,7 +53,13 @@
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.READ_EXTERNAL_STORAGE",
-        "android.permission.WRITE_EXTERNAL_STORAGE"
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.READ_MEDIA_VISUAL_USER_SELECTED",
+        "android.permission.ACCESS_MEDIA_LOCATION",
+        "android.permission.READ_MEDIA_IMAGES",
+        "android.permission.READ_MEDIA_VIDEO",
+        "android.permission.READ_MEDIA_AUDIO"
       ]
     },
     "ios": {
@@ -64,7 +75,10 @@
     "extra": {
       "appDescription": "RoyalLeaf Premium 是专为奶茶爱好者设计的会员应用，提供会员积分、专属优惠及活动资讯。",
       "brandColor": "#4A5D23",
-      "primaryFont": "Roboto-Regular"
+      "primaryFont": "Roboto-Regular",
+      "eas": {
+        "projectId": "ab06e770-a644-40b0-83fe-d6bd44fff208"
+      }
     }
   }
 }
