@@ -124,7 +124,7 @@ export default function LoginScreen({ navigation, onLogin }: LoginScreenProps) {
               />
               <TextInput
                 style={styles.input}
-                placeholder="输入您的电子邮件或电话号码"
+                placeholder="输入您的用户名字"
                 placeholderTextColor="#B4B4B4"
                 value={username}
                 onChangeText={setUsername}
