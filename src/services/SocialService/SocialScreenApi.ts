@@ -106,25 +106,53 @@ export const updateWrappedPost = async (postId: string, postData: any) => {
 };
 
 /* ------------------- 🔹 Comments ------------------- */
-export const getCommentsByPostId = async (postId: string, limit = 10, offset = 0) => {
-  const res = await fetch(
-    `${API_BASE_URL}/posts-comments/post/${postId}/with-logs?limit=${limit}&offset=${offset}`
-  );
-  const data = await handleResponse(res);
+export const getCommentsByPostId = async (
+  postId: string,
+  limit = 10,
+  offset = 0
+) => {
+  try {
+    const res = await fetch(
+      `${API_BASE_URL}/posts-comments/post/${postId}/with-logs?limit=${limit}&offset=${offset}`
+    );
+    const data = await handleResponse(res);
 
-  // 🔍 打印原始数据看看结构
-  // console.log("原始API返回:", data.length);
+    // 🧩 提取评论列表（有时 API 返回 data.data / 有时直接返回数组）
+    const commentsList = Array.isArray(data) ? data : data?.data || [];
 
-  // 处理两种可能的数据结构
-  const commentsList = Array.isArray(data) ? data : (data?.data || []);
+    // ✅ 扁平化 & 提取字段（确保 CommentItem 能正确显示）
+    const formattedComments = commentsList.map((item: any) => ({
+      id: item.comment?.commentId || item.comment?.id,
+      postId: item.comment?.postId,
+      userId: item.comment?.userId || item.logs?.[0]?.userId,
+      username:
+        item.logs?.[0]?.userId ||
+        item.comment?.userId ||
+        "匿名用户",
+      content:
+        item.logs?.[0]?.desc ||
+        item.logs?.[0]?.content ||
+        item.logs?.[0]?.comment_desc ||
+        "（无内容）",
+      createdAt:
+        item.comment?.createdAt ||
+        item.logs?.[0]?.createdAt ||
+        new Date().toISOString(),
+      // 如果你未来要显示子回复可以留个空数组
+      replies: [],
+    }));
 
-  // console.log("处理后的评论列表:", commentsList);
+    console.log("✅ 格式化评论数据:", formattedComments);
 
-  return {
-    comments: commentsList,
-    total: data?.total || commentsList.length,
-    hasMore: commentsList.length === limit,
-  };
+    return {
+      comments: formattedComments,
+      total: data?.total || formattedComments.length,
+      hasMore: formattedComments.length === limit,
+    };
+  } catch (error) {
+    console.error("❌ 获取评论失败:", error);
+    return { comments: [], total: 0, hasMore: false };
+  }
 };
 
 export const likeComment = async (commentId: string) => {
@@ -226,14 +254,14 @@ export const CreateComment = async (payload: any) => {
       body: JSON.stringify(payload),
     });
 
-    const data = await handleResponse(res);
-    console.log("✅ 评论/回复已创建:", data);
-    return data;
+    const result = await handleResponse(res);
+    return result.data; // 确保这里返回 { commentId, postId, ... }
   } catch (error) {
     console.error("❌ 评论/回复创建失败:", error);
     throw error;
   }
 };
+
 
 // 创建回复 API 调用
 export const sendPostCommentReply = async (payload: any) => {

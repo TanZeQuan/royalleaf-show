@@ -2,6 +2,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // 用户接口
 export interface User {
+  id: string;
   user_id: string;
   username: string;
   wallet_balance?: number;
@@ -63,6 +64,7 @@ export const getUserData = async (): Promise<User | null> => {
 
     const parsed = JSON.parse(userData);
     return {
+      id: parsed.id || parsed.user_id || "",
       user_id: parsed.user_id || parsed.id || "",
       username: parsed.username || "",
       wallet_balance: parsed.wallet_balance ?? 0,

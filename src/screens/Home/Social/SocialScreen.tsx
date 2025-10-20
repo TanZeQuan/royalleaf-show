@@ -30,7 +30,7 @@ import {
   unlikePost,
 } from "../../../services/SocialService/CreatepostsApi";
 import { styles, commentModalStyles, newStyles } from "./SocialStyles";
-import { getUserData } from "../../../utils/storage";
+import { getUserData, User } from "../../../utils/storage";
 import * as ImagePicker from "expo-image-picker";
 
 import { useCommentLogic } from "../Social/useCommentLogic";
@@ -192,28 +192,16 @@ export default function SocialScreen() {
           : undefined,
       };
 
-      const response = await getLatestPosts();
-      // console.log("📦 后端帖子返回结果:", response);
-
-      const apiPosts = Array.isArray(response?.data) ? response.data : [];
-
+      // ✅ 这里应该调用 createPost 而不是 getLatestPosts
+      const newPostResponse = await createPost(postData);
+      console.log("✅ 新帖子已创建:", newPostResponse);
 
       if (isMountedRef.current) {
-        // 立即加载新帖子的评论
-        const comments = await getCommentsByPostId(response.id);
-
-        const newPost = {
-          ...response,
-          commentsList: comments || [],
-        };
-
-        setPosts((prev) => [newPost, ...prev]);
-
+        setPosts((prev) => [newPostResponse.data || newPostResponse, ...prev]);
         setNewPostText("");
         setNewPostImage(null);
         setShowCreatePost(false);
         setShowPhotoRequired(false);
-
         Alert.alert("成功", "帖子发布成功！");
       }
     } catch (error: any) {
@@ -224,20 +212,24 @@ export default function SocialScreen() {
     }
   };
 
-  const handleOpenCommentModal = async (id: any) => {
+  const handleOpenCommentModal = async (post: any) => {
     try {
-      // 重新加载最新评论
-      const comments = await getCommentsByPostId(id);
+      const { comments } = await getCommentsByPostId(post.id || post.postId);
+
       const updatedPost = {
-        commentsList: comments || [],
+        ...post,
+        commentsList: comments,
       };
+
       setSelectedPostForComments(updatedPost);
       openCommentModal(updatedPost);
     } catch (error) {
       console.error("加载评论失败:", error);
-      openCommentModal(id);
+      openCommentModal(post);
     }
   };
+
+
 
   if (isLoading) {
     return (
@@ -287,10 +279,21 @@ export default function SocialScreen() {
               <View style={styles.postHeader}>
                 <View style={styles.postUserInfo}>
                   <View style={styles.postAvatar}>
-                    <Text style={styles.avatarEmoji}>{post.avatar || "👨🏾"}</Text>
+                    {user?.image ? (
+                      <Image
+                        source={{ uri: user.image }}
+                        style={{ width: 40, height: 40, borderRadius: 20 }}
+                      />
+                    ) : (
+                      <Text style={styles.avatarEmoji}>{post.avatar || "👨🏾"}</Text>
+                      
+                    )}
+                    
                   </View>
                   <View>
-                    <Text style={styles.username}>{post.author || "用户"}</Text>
+                    <Text style={styles.username}>
+                      {user?.username || "用户"}
+                    </Text>
                     <Text style={styles.timeAgo}>{post.createdAt || "刚刚"}</Text>
                   </View>
                 </View>
@@ -332,7 +335,7 @@ export default function SocialScreen() {
 
                   <TouchableOpacity
                     style={styles.actionButton}
-                    onPress={() => handleOpenCommentModal(post.id)}
+                    onPress={() => handleOpenCommentModal(post)}
                   >
                     <Image
                       source={require("assets/icons/comment.png")}
@@ -461,34 +464,32 @@ export default function SocialScreen() {
                     <TouchableOpacity
                       style={styles.photoButton}
                       onPress={async () => {
-                        const { status } =
-                          await ImagePicker.requestMediaLibraryPermissionsAsync();
-                        if (status !== "granted") {
-                          Alert.alert(
-                            "权限不足",
-                            "需要访问相册权限才能选择照片"
-                          );
-                          return;
-                        }
+                        try {
+                          const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+                          if (status !== "granted") {
+                            Alert.alert("权限不足", "需要访问相册权限才能选择图片");
+                            return;
+                          }
 
-                        let result =
-                          await ImagePicker.launchImageLibraryAsync({
-                            mediaTypes:
-                              ImagePicker.MediaTypeOptions.Images,
+                          const result = await ImagePicker.launchImageLibraryAsync({
+                            mediaTypes: ImagePicker.MediaTypeOptions.Images,
                             allowsEditing: true,
                             aspect: [1, 1],
-                            quality: 1,
+                            quality: 0.8,
                           });
 
-                        if (!result.canceled) {
-                          setNewPostImage(result.assets[0].uri);
-                          setShowPhotoRequired(false);
+                          if (!result.canceled && result.assets?.length > 0) {
+                            setNewPostImage(result.assets[0].uri);
+                          }
+                        } catch (err) {
+                          console.error("选择图片失败:", err);
+                          Alert.alert("错误", "选择图片时出错");
                         }
                       }}
                       disabled={isPosting}
                     >
-                      <Text style={styles.actionIcon}>🖼️</Text>
-                      <Text style={styles.actionText}>相册</Text>
+                      <Ionicons name="image-outline" size={22} color="#555" />
+                      <Text style={{ marginLeft: 6, color: "#333" }}>图片</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity
@@ -549,42 +550,49 @@ export default function SocialScreen() {
                     showsVerticalScrollIndicator={false}
                     keyboardShouldPersistTaps="handled"
                   >
-                    {selectedPostForComments.commentsList &&
+                    {selectedPostForComments?.commentsList &&
                       selectedPostForComments.commentsList.length > 0 ? (
-                      selectedPostForComments.commentsList.map(
-                        (comment: any) => (
-                          <CommentItem
-                            key={comment.id}
-                            comment={comment}
-                            activeReplyCommentId={activeReplyCommentId}
-                            replyText={replyText}
-                            commentReplies={commentReplies}
-                            loadingReplies={loadingReplies}
-                            visibleRepliesCount={visibleRepliesCount}
-                            onReply={handleReply}
-                            onCommentLike={handleCommentLike}
-                            onSendReply={handleSendReply}
-                            onLoadReplies={loadCommentReplies}
-                            onShowMoreReplies={showMoreReplies}
-                            onReplyTextChange={setReplyText}
-                          />
-                        )
-                      )
+                      selectedPostForComments.commentsList.map((comment: any, index: number) => (
+                        <CommentItem
+                          key={comment.id || `comment-${index}`}
+                          comment={{
+                            ...comment,
+                            user: comment.user?.username || comment.user?.name || "匿名用户",
+                          }}
+                          activeReplyCommentId={activeReplyCommentId}
+                          replyText={replyText}
+                          commentReplies={commentReplies}
+                          loadingReplies={loadingReplies}
+                          visibleRepliesCount={visibleRepliesCount}
+                          onReply={handleReply}
+                          onCommentLike={handleCommentLike}
+                          onSendReply={handleSendReply}
+                          onLoadReplies={loadCommentReplies}
+                          onShowMoreReplies={showMoreReplies}
+                          onReplyTextChange={setReplyText}
+                        />
+                      ))
                     ) : (
                       <EmptyComments />
                     )}
                   </ScrollView>
 
                   <CommentInputSection
-                    postId={selectedPostForComments.id} // 当前帖子ID
-                    userId={user?.user_id || user?.id || "anonymous"}
+                    postId={selectedPostForComments?.id || ""}
                     commentText={commentText}
                     onTextChange={setCommentText}
                     onCommentCreated={(newComment) => {
-                      setSelectedPostForComments((prev: any) => ({
-                        ...prev,
-                        commentsList: [newComment, ...(prev.commentsList || [])],
-                      }));
+                      if (!selectedPostForComments) return;
+
+                      setSelectedPostForComments((prev: any) => {
+                        if (!prev) return prev;
+                        return {
+                          ...prev,
+                          commentsList: [newComment, ...(prev.commentsList || [])],
+                          comments: (prev.comments || 0) + 1,
+                        };
+                      });
+
                       setCommentText(""); // 清空输入框
                     }}
                   />

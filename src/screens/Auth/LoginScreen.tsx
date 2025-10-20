@@ -201,7 +201,7 @@ export default function LoginScreen({ navigation, onLogin }: LoginScreenProps) {
                 <Text style={styles.socialButtonText}>Google</Text>
               </TouchableOpacity>
 
-              {/* <TouchableOpacity
+              <TouchableOpacity
                 style={styles.socialButton}
                 onPress={() => handleSocialLogin("Apple")}
               >
@@ -211,11 +211,11 @@ export default function LoginScreen({ navigation, onLogin }: LoginScreenProps) {
                   resizeMode="contain"
                 />
                 <Text style={styles.socialButtonText}>Apple</Text>
-              </TouchableOpacity> */}
+              </TouchableOpacity>
             </View>
 
             {/* Second row */}
-            {/* <View style={styles.socialButtonsContainer}>
+            <View style={styles.socialButtonsContainer}>
               <TouchableOpacity
                 style={styles.socialButton}
                 onPress={() => handleSocialLogin("Facebook")}
@@ -239,7 +239,7 @@ export default function LoginScreen({ navigation, onLogin }: LoginScreenProps) {
                 />
                 <Text style={styles.socialButtonText}>Instagram</Text>
               </TouchableOpacity>
-            </View> */}
+            </View>
           </View>
 
           {/* Register */}

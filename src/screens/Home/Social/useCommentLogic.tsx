@@ -2,9 +2,10 @@
 import { useState, useCallback, useRef } from 'react';
 import { Alert, Keyboard } from 'react-native';
 import {
+  getCommentReplies,
   postComment,
   likeComment,
-  getCommentReplies,
+  getCommentsByPostId,
 } from '../../../services/SocialService/SocialScreenApi';
 
 export function useCommentLogic(isMountedRef?: React.MutableRefObject<boolean>) {
@@ -21,10 +22,27 @@ export function useCommentLogic(isMountedRef?: React.MutableRefObject<boolean>) 
   const [visibleRepliesCount, setVisibleRepliesCount] = useState<Record<string, number>>({});
 
   /* ---------------- 🟢 打开 & 关闭评论 ---------------- */
-  const openCommentModal = useCallback((post: any) => {
+  const openCommentModal = useCallback(async (post: any) => {
     setSelectedPostForComments(post);
     setShowCommentModal(true);
     setCommentText("");
+
+    try {
+      const { comments } = await getCommentsByPostId(post.id);
+      console.log("✅ 加载评论数据:", comments);
+
+      setSelectedPostForComments((prev: any) => ({
+        ...prev,
+        commentsList: comments.map((c: any) => ({
+          id: c.commentId,
+          user: { username: c.userId || "匿名用户" },
+          content: c.desc || c.content || "",
+          createdAt: c.createdAt,
+        })),
+      }));
+    } catch (error) {
+      console.error("加载评论失败:", error);
+    }
   }, []);
 
   const closeCommentModal = useCallback(() => {
@@ -52,14 +70,13 @@ export function useCommentLogic(isMountedRef?: React.MutableRefObject<boolean>) 
         const newComment = {
           id: apiResponse?.commentId || Date.now().toString(),
           user: {
-            username: apiResponse?.data?.author || "匿名用户",
-            id: apiResponse?.data?.author || "unknown", // 如果没有真实 userId，可以暂时用 author
+            username: apiResponse?.data?.author || author || "匿名用户", // ✅ 用对象包裹
+            id: apiResponse?.data?.author || "unknown",
           },
           content: apiResponse?.data?.content || commentText,
           createdAt: apiResponse?.data?.createdAt || new Date().toISOString(),
           isLiked: false,
         };
-
 
         // ✅ 本地更新评论列表
         setSelectedPostForComments((prev: any) => ({
@@ -89,21 +106,17 @@ export function useCommentLogic(isMountedRef?: React.MutableRefObject<boolean>) 
     }
   }, []);
 
-  /* ---------------- 🟢 展开回复 ---------------- */
+  /* ---------------- 🟢 回复逻辑 ---------------- */
   const handleReply = useCallback((commentId: string) => {
     setActiveReplyCommentId((prev) => (prev === commentId ? null : commentId));
     setReplyText("");
   }, []);
 
-  /* ---------------- 🟢 加载回复 ---------------- */
   const loadCommentReplies = useCallback(async (commentId: string) => {
     if (loadingReplies.has(commentId) || commentReplies[commentId]) return;
-
     setLoadingReplies((prev) => new Set(prev).add(commentId));
     try {
       const repliesData = await getCommentReplies(commentId);
-      console.log("📥 加载到的回复数据:", repliesData);
-
       const formattedReplies = (repliesData?.replies || []).map((reply: any) => ({
         id: reply.id || reply.commentId || Math.random().toString(36).slice(2),
         userId: reply.userId || "未知用户",
@@ -133,21 +146,17 @@ export function useCommentLogic(isMountedRef?: React.MutableRefObject<boolean>) 
     }
   }, [commentReplies, loadingReplies]);
 
-  /* ---------------- 🟢 查看更多回复 ---------------- */
   const showMoreReplies = useCallback((commentId: string) => {
     setVisibleRepliesCount((prev) => {
       const currentCount = prev[commentId] || 3;
       const totalReplies = commentReplies[commentId]?.length || 0;
-      const newCount = Math.min(currentCount + 10, totalReplies);
-      return { ...prev, [commentId]: newCount };
+      return { ...prev, [commentId]: Math.min(currentCount + 10, totalReplies) };
     });
   }, [commentReplies]);
 
-  /* ---------------- 🟢 发送回复 ---------------- */
   const handleSendReply = useCallback(
     async (commentId: string) => {
       if (!replyText.trim() || !selectedPostForComments) return;
-
       const userId = "Me";
       const username = "我";
 
@@ -182,9 +191,9 @@ export function useCommentLogic(isMountedRef?: React.MutableRefObject<boolean>) 
   );
 
   return {
-    // 状态
     showCommentModal,
     selectedPostForComments,
+    commentList: selectedPostForComments?.commentsList || [], // ✅ 加这个字段！
     commentText,
     activeReplyCommentId,
     replyText,
@@ -192,7 +201,6 @@ export function useCommentLogic(isMountedRef?: React.MutableRefObject<boolean>) 
     loadingReplies,
     visibleRepliesCount,
 
-    // 方法
     openCommentModal,
     closeCommentModal,
     setCommentText,

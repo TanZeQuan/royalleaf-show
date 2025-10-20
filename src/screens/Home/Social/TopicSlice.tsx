@@ -25,6 +25,15 @@ export interface Post {
 }
 
 export interface Comment {
+  username: ReactNode;
+  logs: any;
+  logs: any;
+  comment: any;
+  message: any;
+  body: any;
+  comment_desc: any;
+  content: any;
+  desc: any;
   createdAt: string;
   avatar: any;
   likes: number;
