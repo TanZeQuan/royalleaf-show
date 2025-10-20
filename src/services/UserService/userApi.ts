@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const BASE_URL = "http://192.168.0.122:8080/royal";
+const BASE_URL = "http://18.166.69.97:8080/royal";
 
 // 创建 axios 实例
 const api = axios.create({

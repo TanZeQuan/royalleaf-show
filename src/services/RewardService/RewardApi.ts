@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { Coupon, CouponResponse, Voucher } from "../../screens/Home/Reward/RewardSlice";
 
-const API_BASE_URL = "http://192.168.0.122:8080/royal/api";
+const API_BASE_URL = "http://18.166.69.97:8080/royal/api";
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,

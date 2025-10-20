@@ -1,5 +1,5 @@
 // voteDetailsApi.ts
-const API_BASE_URL = "http://192.168.0.122:8080/royal/api";
+const API_BASE_URL = "http://18.166.69.97:8080/royal/api";
 import { getUserData } from "../../utils/storage"; // 🔑 引入存储工具
 
 export interface RouteParams {

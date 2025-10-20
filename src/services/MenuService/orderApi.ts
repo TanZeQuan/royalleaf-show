@@ -1,6 +1,6 @@
 import api from "../apiClient";
 
-const API_BASE_URL = "http://192.168.0.122:8080/royal/api";
+const API_BASE_URL = "http://18.166.69.97:8080/royal/api";
 
 export interface ProductOption {
   id: number;
