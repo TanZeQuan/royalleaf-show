@@ -18,6 +18,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { viewProfile } from "services/UserService/userApi";
 import { colors, typography } from "styles";
+import CustomAlert from "../../components/common/CustomAlert";
 import { ProfileStackParamList } from "../../navigation/stacks/ProfileNav/ProfileStack";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
@@ -62,6 +63,7 @@ export default function ProfileScreen() {
   const navigation = useNavigation<ProfileScreenNavigationProp>();
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isAlertVisible, setAlertVisible] = useState(false);
 
   // ---------- Load profile ----------
   const loadProfile = async () => {
@@ -186,7 +188,7 @@ export default function ProfileScreen() {
               <Text
                 style={styles.statLabel}
                 numberOfLines={1}
-                onPress={() => navigation.navigate("WalletStack" as never)}
+                onPress={() => setAlertVisible(true)}
               >
                 钱包(RM)
               </Text>
@@ -237,7 +239,7 @@ export default function ProfileScreen() {
                 />
                 <TouchableOpacity
                   style={styles.benefitsButton}
-                  onPress={() => navigation.navigate("Benefit")}
+                  onPress={() => setAlertVisible(true)}
                   activeOpacity={0.7}
                 >
                   <Text style={styles.benefitsText}>View My Benefits</Text>
@@ -324,6 +326,11 @@ export default function ProfileScreen() {
           </View>
         </View>
       </ScrollView>
+      <CustomAlert
+        visible={isAlertVisible}
+        onClose={() => setAlertVisible(false)}
+        message="功能暂未开放，请敬请期待！"
+      />
     </SafeAreaView>
   );
 }

@@ -1,4 +1,3 @@
-import { use } from "react";
 
 const API_BASE_URL = "http://192.168.0.122:8080/royal/api";
 
@@ -107,25 +106,53 @@ export const updateWrappedPost = async (postId: string, postData: any) => {
 };
 
 /* ------------------- 🔹 Comments ------------------- */
-export const getCommentsByPostId = async (postId: string, limit = 10, offset = 0) => {
-  const res = await fetch(
-    `${API_BASE_URL}/posts-comments/post/${postId}?limit=${limit}&offset=${offset}`
-  );
-  const data = await handleResponse(res);
+export const getCommentsByPostId = async (
+  postId: string,
+  limit = 10,
+  offset = 0
+) => {
+  try {
+    const res = await fetch(
+      `${API_BASE_URL}/posts-comments/post/${postId}/with-logs?limit=${limit}&offset=${offset}`
+    );
+    const data = await handleResponse(res);
 
-  // 🔍 打印原始数据看看结构
-  console.log("原始API返回:", data);
+    // 🧩 提取评论列表（有时 API 返回 data.data / 有时直接返回数组）
+    const commentsList = Array.isArray(data) ? data : data?.data || [];
 
-  // 处理两种可能的数据结构
-  const commentsList = Array.isArray(data) ? data : (data?.data || []);
-  
-  console.log("处理后的评论列表:", commentsList);
-  
-  return {
-    comments: commentsList,
-    total: data?.total || commentsList.length,
-    hasMore: commentsList.length === limit,
-  };
+    // ✅ 扁平化 & 提取字段（确保 CommentItem 能正确显示）
+    const formattedComments = commentsList.map((item: any) => ({
+      id: item.comment?.commentId || item.comment?.id,
+      postId: item.comment?.postId,
+      userId: item.comment?.userId || item.logs?.[0]?.userId,
+      username:
+        item.logs?.[0]?.userId ||
+        item.comment?.userId ||
+        "匿名用户",
+      content:
+        item.logs?.[0]?.desc ||
+        item.logs?.[0]?.content ||
+        item.logs?.[0]?.comment_desc ||
+        "（无内容）",
+      createdAt:
+        item.comment?.createdAt ||
+        item.logs?.[0]?.createdAt ||
+        new Date().toISOString(),
+      // 如果你未来要显示子回复可以留个空数组
+      replies: [],
+    }));
+
+    console.log("✅ 格式化评论数据:", formattedComments);
+
+    return {
+      comments: formattedComments,
+      total: data?.total || formattedComments.length,
+      hasMore: formattedComments.length === limit,
+    };
+  } catch (error) {
+    console.error("❌ 获取评论失败:", error);
+    return { comments: [], total: 0, hasMore: false };
+  }
 };
 
 export const likeComment = async (commentId: string) => {
@@ -166,8 +193,7 @@ export const postComment = async (
       gens: gens
     };
 
-    console.log("📤 Sending comment payload:", payload);
-
+    // console.log("📤 Sending comment payload:", payload);
     const res = await fetch(`${API_BASE_URL}/posts-comments/compose`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -211,11 +237,27 @@ export const getPostCommentReplies = async (postId: string) => {
     console.log("📡 请求已发送到:", `${API_BASE_URL}/posts-comment-logs/post/${postId}/with-logs`);
 
     const data = await handleResponse(res);
-    console.log("📥 获取帖子评论及回复成功:", data);
+    // console.log("📥 获取帖子评论及回复成功:", data);
 
     return data;
   } catch (error: any) {
     console.error("❌ 获取帖子评论及回复失败 for postId:", postId, "错误信息:", error);
+    throw error;
+  }
+};
+
+export const CreateComment = async (payload: any) => {
+  try {
+    const res = await fetch(`${API_BASE_URL}/posts-comments/compose`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    const result = await handleResponse(res);
+    return result.data; // 确保这里返回 { commentId, postId, ... }
+  } catch (error) {
+    console.error("❌ 评论/回复创建失败:", error);
     throw error;
   }
 };
@@ -248,68 +290,62 @@ export const getAllPostsWithComments = async () => {
     const postsWithComments = await Promise.all(
       posts.map(async (post: any) => {
         try {
-          const { comments, total, hasMore } = await getCommentsByPostId(post.postId, 10, 0);
-          
-          console.log(`[Post ${post.postId}] 评论数据:`, comments);
-          
-          const formattedComments = comments.map((comment: any, index: number) => {
-            // 尝试所有可能的字段名
-            const commentText = 
-              comment.desc || 
-              comment.content || 
-              comment.comment || 
-              comment.text || 
-              comment.message ||
-              `评论内容 ${index + 1}`;
-            
-            return {
-              id: comment.commentId || comment.id || `c${index + 1}`,
-              user: comment.userId || comment.user || `用户${index}`,
-              text: commentText,
-              isDesigner: false,
-              replyTo: null,
-              isLiked: false,
-            };
-          });
+          // const { comments, total, hasMore } = await getCommentsByPostId(post.postId, 10, 0);
 
-          console.log(`[Post ${post.postId}] 格式化后评论:`, formattedComments);
+          // const formattedComments = comments.map((comment: any, index: number) => {
+          //   // 尝试所有可能的字段名
+          //   const commentText = 
+          //     comment.desc || 
+          //     comment.content || 
+          //     comment.comment || 
+          //     comment.text || 
+          //     comment.message ||
+          //     `评论内容 ${index + 1}`;
+
+          //   return {
+          //     id: comment.commentId || comment.id || `c${index + 1}`,
+          //     user: comment.userId || comment.user || `用户${index}`,
+          //     text: commentText,
+          //     isDesigner: false,
+          //     replyTo: null,
+          //     isLiked: false,
+          //   };
+          // });
 
           return {
             ...post,
             id: post.postId,
             username: post.userId || "未知用户",
             avatar: getAvatarByUserId(post.userId),
-            image: post.gallery
-              ? { uri: post.gallery }
-              : require("../../assets/images/mock.jpg"),
+            image: (post.gallery === undefined) ? "assets/images/mock.jpg" : post.gallery,
             caption: post.desc || "暂无描述",
             likes: post.liked || 0,
-            comments: total,
+            comments: post.total,
             timeAgo: formatTimeAgo(post.createdAt),
             isLiked: false,
             isSaved: false,
-            commentsList: formattedComments,
-            hasMoreComments: hasMore,
+            // commentsList: formattedComments,
+            // hasMoreComments: hasMore,
           };
         } catch (err) {
           console.error(`获取帖子 ${post.postId} 的评论失败:`, err);
-          return {
-            ...post,
-            id: post.postId,
-            username: post.userId || "未知用户",
-            avatar: getAvatarByUserId(post.userId),
-            image: post.gallery
-              ? { uri: post.gallery }
-              : require("../../assets/images/mock.jpg"),
-            caption: post.desc || "暂无描述",
-            likes: post.liked || 0,
-            comments: 0,
-            timeAgo: formatTimeAgo(post.createdAt),
-            isLiked: false,
-            isSaved: false,
-            commentsList: [],
-            hasMoreComments: false,
-          };
+          // return {
+          //   ...post,
+          //   id: post.postId,
+          //   username: post.userId || "未知用户",
+          //   avatar: getAvatarByUserId(post.userId),
+          //   image: post.gallery
+          //     ? { uri: post.gallery }
+          //     : require("../../assets/images/mock.jpg"),
+          //   caption: post.desc || "暂无描述",
+          //   likes: post.liked || 0,
+          //   comments: 0,
+          //   timeAgo: formatTimeAgo(post.createdAt),
+          //   isLiked: false,
+          //   isSaved: false,
+          //   commentsList: [],
+          //   hasMoreComments: false,
+          // };
         }
       })
     );

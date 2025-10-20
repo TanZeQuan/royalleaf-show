@@ -405,12 +405,6 @@ export default function RegisterScreen({ navigation, onRegister }: RegisterScree
       if (response?.success === true && response?.data?.user_id) {
         const userId = response.data.user_id;
 
-<<<<<<< HEAD
-=======
-        Alert.alert("✅ Success", response.message || "Registration successful!");
-
-        // 如果有头像，上传
->>>>>>> main
         if (avatarUri) {
           const fileInfo = { uri: avatarUri, type: "image/jpeg", name: "avatar.jpg" };
           try {
@@ -420,7 +414,6 @@ export default function RegisterScreen({ navigation, onRegister }: RegisterScree
           }
         }
 
-<<<<<<< HEAD
         Alert.alert(
           "注册成功",
           "欢迎您！我们即将跳转登录页面！",
@@ -444,37 +437,14 @@ export default function RegisterScreen({ navigation, onRegister }: RegisterScree
           ],
           { cancelable: false }
         );
-=======
-        // 成功后跳转登录页
-        navigation.navigate("Login");
-        return; // 🔥 防止继续执行错误逻辑
->>>>>>> main
       }
 
       // ❌ 如果没有成功，统一视为失败
       Alert.alert("❌ Registration Failed", response?.message || "Registration failed.");
     } catch (error: any) {
       console.error("Register Error:", error);
-<<<<<<< HEAD
       // Display a clear, static error message regardless of the backend's response text
       Alert.alert("注册失败", "该用户名或邮箱已被使用，或发生了未知错误。请检查您的信息或稍后再试。");
-=======
-
-      const errorMessage =
-        error.response?.data?.message || error.message || "Unable to register. Please try again.";
-
-      // 检查是否是重复或已存在错误
-      if (
-        errorMessage.toLowerCase().includes("already") ||
-        errorMessage.toLowerCase().includes("exists") ||
-        errorMessage.toLowerCase().includes("taken") ||
-        errorMessage.toLowerCase().includes("duplicate")
-      ) {
-        showRetryWithUniqueValues(errorMessage);
-      } else {
-        Alert.alert("❌ Error", errorMessage);
-      }
->>>>>>> main
     } finally {
       updateUiState("loading", false);
     }
