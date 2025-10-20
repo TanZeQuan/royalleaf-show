@@ -60,7 +60,7 @@ const styles = StyleSheet.create({
     elevation: 10,
   },
   message: {
-    fontSize: 20,
+    fontSize: 18,
     color: '#2c2c2c',
     textAlign: 'center',
     marginBottom: 40,
@@ -75,7 +75,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   buttonWrapper: {
-    width: 100,
+    width: 90,
     borderRadius: 18,
     shadowColor: colors.gold_deep,
     shadowOffset: { width: 0, height: 4 },
@@ -85,7 +85,7 @@ const styles = StyleSheet.create({
   },
   button: {
     borderRadius: 18,
-    paddingVertical: 12,
+    paddingVertical: 10,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: colors.gold_deep,
@@ -93,7 +93,7 @@ const styles = StyleSheet.create({
   buttonText: {
     color: colors.white,
     fontWeight: '500',
-    fontSize: 16,
+    fontSize: 15,
     textAlign: 'center',
     letterSpacing: 0.5,
   },
