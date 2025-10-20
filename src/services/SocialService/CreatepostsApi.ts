@@ -1,5 +1,5 @@
 // services/SocialService/PostsApi.ts
-const API_BASE_URL = "http://192.168.0.122:8080/royal/api";
+const API_BASE_URL = "http://18.166.69.97:8080/royal/api";
 
 /**
  * 获取所有活跃帖子

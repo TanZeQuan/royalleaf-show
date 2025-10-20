@@ -3,13 +3,13 @@
 // ================================
 // 所有 API 请求都使用 fetch 方法
 
-import { Activity, ApiResponse, SubmissionRequest } from "../../screens/Home/Creator/CreatorSlice";
+import { Activity, ApiResponse, SubmissionRequest } from "../../screens/Home/Creator/creatorApi";
 
 // ================================
 // API 配置
 // ================================
 
-const API_BASE_URL = "http://192.168.0.122:8080/royal/api";
+const API_BASE_URL = "http://18.166.69.97:8080/royal/api";
 
 const API_ENDPOINTS = {
   ACTIVITIES_SUBMISSION_OPEN: "/votes/submission-open",
