@@ -16,9 +16,10 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { colors, typography } from "styles"; // ✅ 用统一字体 & 颜色
 import Carousel from "react-native-reanimated-carousel";
+import { colors, typography } from "styles"; // ✅ 用统一字体 & 颜色
 import VotePopup from "../../components/VotePopup";
+import CustomAlert from "../../components/common/CustomAlert";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 type HomeScreenNavigationProp = NativeStackNavigationProp<HomeStackParamList>;
@@ -28,6 +29,7 @@ export default function BubbleTeaHomepage() {
   const [showVotePopup, setShowVotePopup] = useState(false);
   const navigation = useNavigation<HomeScreenNavigationProp>();
   const [showTaskModal, setShowTaskModal] = useState(false);
+  const [isAlertVisible, setAlertVisible] = useState(false);
 
   const heroImages = [
     require("assets/images/home-bg1.jpg"),
@@ -97,7 +99,7 @@ export default function BubbleTeaHomepage() {
           <View style={styles.walletStats}>
             <TouchableOpacity
               style={styles.walletItem}
-              onPress={() => navigation.navigate("WalletStack" as never)}
+              onPress={() => setAlertVisible(true)}
             >
               <Text style={styles.walletAmount}>0.00</Text>
               <Text style={styles.walletLabel}>钱包(RM)</Text>
@@ -124,7 +126,7 @@ export default function BubbleTeaHomepage() {
           <View style={styles.recommendationRow}>
             <TouchableOpacity
               style={styles.recommendationItem}
-              onPress={() => navigation.navigate("Reward" as never)}
+              onPress={() => setAlertVisible(true)}
             >
               <View style={styles.recommendationIcon}>
                 <Ionicons name="gift-outline" size={28} color={colors.black} />
@@ -205,6 +207,13 @@ export default function BubbleTeaHomepage() {
 
       {/* Vote Popup */}
       <VotePopup visible={showVotePopup} onClose={handleCloseVotePopup} />
+
+      {/* Custom Alert */}
+      <CustomAlert
+        visible={isAlertVisible}
+        onClose={() => setAlertVisible(false)}
+        message="功能暂未开放，请敬请期待！"
+      />
     </View>
   );
 }
