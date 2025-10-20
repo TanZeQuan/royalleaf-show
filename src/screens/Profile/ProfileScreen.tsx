@@ -39,7 +39,7 @@ const verticalScale = (size: number) => (screenHeight / 812) * size;
 const getFullImageUrl = (img: string | undefined) => {
   if (!img) return undefined;
   // 如果 img 以 http/https 开头就直接用，否则拼接 BASE_URL
-  return img.startsWith("http") ? img : `http://192.168.0.122:8080/royal/${img.replace(/^\/+/, '')}`;
+  return img.startsWith("http") ? img : `http://18.166.69.97:8080/royal${img.replace(/^\/+/, '')}`;
 };
 
 // ---------- Types ----------

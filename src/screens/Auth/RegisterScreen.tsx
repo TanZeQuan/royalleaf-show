@@ -440,7 +440,7 @@ export default function RegisterScreen({ navigation, onRegister }: RegisterScree
       }
 
       // ❌ 如果没有成功，统一视为失败
-      Alert.alert("❌ Registration Failed", response?.message || "Registration failed.");
+      // Alert.alert("❌ Registration Failed", response?.message || "Registration failed.");
     } catch (error: any) {
       console.error("Register Error:", error);
       // Display a clear, static error message regardless of the backend's response text
