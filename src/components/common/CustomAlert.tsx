@@ -1,5 +1,6 @@
+import colors from '@styles/colors';
 import React from 'react';
-import { Modal, View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 interface CustomAlertProps {
   visible: boolean;
@@ -10,20 +11,28 @@ interface CustomAlertProps {
 const CustomAlert: React.FC<CustomAlertProps> = ({ visible, onClose, message }) => {
   return (
     <Modal
-      transparent={true}
+      transparent
       animationType="fade"
       visible={visible}
       onRequestClose={onClose}
     >
-      <View style={styles.centeredView}>
-        <View style={styles.modalView}>
-          <Text style={styles.modalText}>{message}</Text>
-          <TouchableOpacity
-            style={{ ...styles.button, backgroundColor: '#4CAF50' }}
-            onPress={onClose}
-          >
-            <Text style={styles.textStyle}>确定</Text>
-          </TouchableOpacity>
+      <View style={styles.overlay}>
+        <View style={styles.modalContainer}>
+          <Text style={styles.message}>{message}</Text>
+
+          {/* 按钮区域 */}
+          <View style={styles.buttonRow}>
+            <TouchableOpacity
+              onPress={onClose}
+              activeOpacity={0.85}
+              style={styles.buttonWrapper}
+            >
+              <View style={styles.button}>
+                <Text style={styles.buttonText}>确定</Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+
         </View>
       </View>
     </Modal>
@@ -31,42 +40,62 @@ const CustomAlert: React.FC<CustomAlertProps> = ({ visible, onClose, message }) 
 };
 
 const styles = StyleSheet.create({
-  centeredView: {
+  overlay: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.4)',
+    backgroundColor: 'rgba(0, 0, 0, 0.55)',
   },
-  modalView: {
-    margin: 20,
-    backgroundColor: 'white',
-    borderRadius: 20,
-    padding: 35,
+  modalContainer: {
+    width: '80%',
+    backgroundColor: colors.white,
+    borderRadius: 28,
+    paddingVertical: 32,
+    paddingHorizontal: 24,
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
+    shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
+    shadowRadius: 10,
+    elevation: 10,
   },
-  modalText: {
-    marginBottom: 15,
+  message: {
+    fontSize: 20,
+    color: '#2c2c2c',
     textAlign: 'center',
-    fontSize: 18,
+    marginBottom: 40,
+    lineHeight: 28,
+    fontWeight: '600',
+    letterSpacing: 0.4,
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    width: '100%',
+    justifyContent: 'center', // ✨ 居中
+    alignItems: 'center',
+  },
+  buttonWrapper: {
+    width: 100,
+    borderRadius: 18,
+    shadowColor: colors.gold_deep,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
+    elevation: 6,
   },
   button: {
-    borderRadius: 10,
-    padding: 10,
-    elevation: 2,
-    minWidth: 100,
+    borderRadius: 18,
+    paddingVertical: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: colors.gold_deep,
   },
-  textStyle: {
-    color: 'white',
-    fontWeight: 'bold',
+  buttonText: {
+    color: colors.white,
+    fontWeight: '500',
+    fontSize: 16,
     textAlign: 'center',
+    letterSpacing: 0.5,
   },
 });
 

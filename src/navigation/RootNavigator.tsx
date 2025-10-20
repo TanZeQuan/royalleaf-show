@@ -3,10 +3,10 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import React, { useState } from "react";
 import { Platform } from "react-native";
 
+import CustomAlert from "../components/common/CustomAlert";
 import HomeStack from "./stacks/HomeNav/HomeStack";
 import MenuStack from "./stacks/MenuNav/MenuStack";
 import ProfileStack from "./stacks/ProfileNav/ProfileStack";
-import CustomAlert from "../components/common/CustomAlert";
 
 const Tab = createBottomTabNavigator();
 
@@ -84,7 +84,7 @@ export default function RootNavigator({ onLogout }: RootNavigatorProps) {
       <CustomAlert
         visible={isAlertVisible}
         onClose={() => setAlertVisible(false)}
-        message="功能暂未开放"
+        message="功能暂未开放，请敬请期待！"
       />
     </>
   );
