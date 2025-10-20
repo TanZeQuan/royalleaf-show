@@ -25,6 +25,9 @@ export interface Post {
 }
 
 export interface Comment {
+  userAvatar: string;
+  userImage: string | undefined;
+  userImage: any;
   username: ReactNode;
   logs: any;
   logs: any;
