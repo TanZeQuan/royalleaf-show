@@ -1,16 +1,18 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
   FlatList,
   TouchableOpacity,
   TextInput,
+  Image,
 } from "react-native";
 import { commentModalStyles } from "../Social/SocialStyles";
 import { useCommentLogic } from "../Social/useCommentLogic";
 import { Comment } from "./TopicSlice";
 import { getUserData } from "utils/storage";
 
+/* ------------------------- 🔹 单条评论组件 ------------------------- */
 /* ------------------------- 🔹 单条评论组件 ------------------------- */
 export const CommentItem: React.FC<{
   comment: Comment;
@@ -45,6 +47,23 @@ export const CommentItem: React.FC<{
     const visibleCount = visibleRepliesCount[comment?.comment?.id] || 3;
     const isReplying = activeReplyCommentId === comment?.comment?.id;
 
+    const [user, setUser] = useState<any>(null);
+
+    useEffect(() => {
+      let mounted = true;
+      (async () => {
+        try {
+          const userData = await getUserData();
+          if (mounted) setUser(userData);
+        } catch (err) {
+          console.error("Error loading user:", err);
+        }
+      })();
+      return () => {
+        mounted = false;
+      };
+    }, []);
+
     const handleSendReply = async () => {
       await onSendReply(comment?.comment?.id);
     };
@@ -54,32 +73,41 @@ export const CommentItem: React.FC<{
       onReplyTextChange("");
     };
 
-    // 🔹 显示用户名 & 评论内容
-    const username =
-      comment?.logs?.[0]?.userId ||
-      comment?.comment?.userId ||
-      "匿名用户";
-
-    const content =
+    // 评论用户信息
+    const commentUser = comment?.user || comment?.comment?.userId || "匿名用户";
+    const commentContent =
+      comment?.content ||
       comment?.logs?.[0]?.desc ||
       comment?.logs?.[0]?.content ||
-      comment?.logs?.[0]?.comment_desc ||
       "（无内容）";
 
     return (
       <View style={commentModalStyles.commentItem}>
-        {/* 头像 */}
+        {/* 评论头像 */}
         <View style={commentModalStyles.commentAvatar}>
-          <Text style={commentModalStyles.commentAvatarText}>👤</Text>
+          {user?.image ? (
+            <Image
+              source={{ uri: user.image }}
+              style={{ width: 40, height: 40, borderRadius: 20 }}
+              onError={(e) =>
+                console.log("❌ Comment avatar image load error:", e.nativeEvent.error)
+              }
+            />
+          ) : (
+            <Text style={commentModalStyles.commentAvatarText}>
+              {user?.avatar || "👤"}
+            </Text>
+          )}
         </View>
 
         {/* 评论内容 */}
         <View style={commentModalStyles.commentContent}>
           <Text style={commentModalStyles.commentUser}>
-            {currentUser || comment.user || "匿名用户"}
+            {user?.username || commentUser}
           </Text>
 
-          <Text style={commentModalStyles.commentText}>{comment.content}</Text>
+          <Text style={commentModalStyles.commentText}>{commentContent}</Text>
+
           <View style={commentModalStyles.commentMeta}>
             <Text style={commentModalStyles.commentTime}>
               {comment?.logs?.[0]?.createdAt
@@ -103,7 +131,7 @@ export const CommentItem: React.FC<{
             <View style={commentModalStyles.replyInputContainer}>
               <TextInput
                 style={commentModalStyles.replyInput}
-                placeholder={`回复 ${currentUser || username}...`}
+                placeholder={`回复 ${user?.username || commentUser}...`}
                 value={replyText}
                 onChangeText={onReplyTextChange}
                 multiline
@@ -114,10 +142,7 @@ export const CommentItem: React.FC<{
                 <TouchableOpacity onPress={handleCancelReply}>
                   <Text style={commentModalStyles.replyActionText}>取消</Text>
                 </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={handleSendReply}
-                  disabled={!replyText.trim()}
-                >
+                <TouchableOpacity onPress={handleSendReply} disabled={!replyText.trim()}>
                   <Text
                     style={[
                       commentModalStyles.replyActionText,
@@ -140,11 +165,27 @@ export const CommentItem: React.FC<{
                   style={commentModalStyles.replyItem}
                 >
                   <View style={commentModalStyles.replyAvatar}>
-                    <Text style={commentModalStyles.replyAvatarText}>👤</Text>
+                    {user?.image ? (
+                      <Image
+                        source={{ uri: user.image }}
+                        style={{ width: 30, height: 30, borderRadius: 15 }}
+                        onError={(e) =>
+                          console.log(
+                            "❌ Reply avatar image load error:",
+                            e.nativeEvent.error
+                          )
+                        }
+                      />
+                    ) : (
+                      <Text style={commentModalStyles.replyAvatarText}>
+                        {user?.avatar || "👤"}
+                      </Text>
+                    )}
                   </View>
+
                   <View style={commentModalStyles.replyContent}>
                     <Text style={commentModalStyles.replyUser}>
-                      {reply.userId || "User"}
+                      {user?.username || reply.userId || "User"}
                     </Text>
                     <Text style={commentModalStyles.replyText}>
                       {reply.desc || reply.content || "（无内容）"}
@@ -166,13 +207,11 @@ export const CommentItem: React.FC<{
             </View>
           )}
 
-          {/* 加载回复 */}
+          {/* 加载回复按钮 */}
           {!commentReplies[comment.comment?.id] &&
             !loadingReplies.has(comment.comment?.id) && (
               <TouchableOpacity onPress={() => onLoadReplies(comment.comment?.id)}>
-                <Text style={commentModalStyles.loadRepliesButtonText}>
-                  查看回复
-                </Text>
+                <Text style={commentModalStyles.loadRepliesButtonText}>查看回复</Text>
               </TouchableOpacity>
             )}
 
@@ -183,6 +222,7 @@ export const CommentItem: React.FC<{
       </View>
     );
   };
+
 
 /* ------------------------- 🔹 空评论状态 ------------------------- */
 export const EmptyComments = () => (

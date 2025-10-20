@@ -173,7 +173,7 @@ export default function SettingScreen({ onLogout }: SettingScreenProps) {
           onPress={handleLogoutPress}
           activeOpacity={0.8}
         >
-          <Text style={styles.logoutText}>LOG OUT</Text>
+          <Text style={styles.logoutText}>退出</Text>
         </TouchableOpacity>
       </View>
 

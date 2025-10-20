@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, Image } from 'react-native';
 import { commentModalStyles } from '../Social/SocialStyles';
 import { CreateComment } from '../../../services/SocialService/SocialScreenApi';
 import { getUserData, User } from '../../../utils/storage';
@@ -46,13 +46,10 @@ export const CommentInputSection: React.FC<CommentInputSectionProps> = ({
 
       console.log("🟢 准备发送评论:", payload);
 
-      // 调用创建评论 API
       const response = await CreateComment(payload);
 
-      // 使用后端返回的对象，如果没有 commentId，则生成一个临时 id
       const commentId = response?.data?.commentId || response?.commentId || `temp-${Date.now()}`;
 
-      // 构造用于 UI 显示的新评论
       const newCommentForUI = {
         id: commentId,
         content: commentText,
@@ -67,10 +64,7 @@ export const CommentInputSection: React.FC<CommentInputSectionProps> = ({
         isLiked: false,
       };
 
-      // 立即更新评论区
       onCommentCreated?.(newCommentForUI);
-
-      // 清空输入框
       onTextChange("");
 
     } catch (error) {
@@ -83,9 +77,17 @@ export const CommentInputSection: React.FC<CommentInputSectionProps> = ({
   return (
     <View style={commentModalStyles.commentInputSection}>
       <View style={commentModalStyles.commentInputAvatar}>
-        <Text style={commentModalStyles.commentAvatarText}>
-          {currentUser?.image || "🧑🏻"}
-        </Text>
+        {currentUser?.image ? (
+          <Image
+            source={{ uri: currentUser.image }}
+            style={{ width: 40, height: 40, borderRadius: 20 }}
+            onError={(e) => console.log("❌ Input avatar image load error:", e.nativeEvent.error)}
+          />
+        ) : (
+          <Text style={commentModalStyles.commentAvatarText}>
+            {currentUser?.image ? " " : "🧑🏻"}
+          </Text>
+        )}
       </View>
 
       <View style={commentModalStyles.commentInputWrapper}>
