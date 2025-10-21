@@ -472,22 +472,14 @@ export default function SocialScreen() {
               <View style={styles.postHeader}>
                 <View style={styles.postUserInfo}>
                   <View style={styles.postAvatar}>
-                    {user?.image ? (
-                      <Image
-                        source={{ uri: user.image }}
-                        style={{ width: 40, height: 40, borderRadius: 20 }}
-                        onError={(e) => console.log("❌ Image load error:", e.nativeEvent.error)}
-                      />
-                    ) : (
-                      <Text style={styles.avatarEmoji}>{user?.avatar || "👨🏾"}</Text>
-                    )}
+                    <Text style={styles.avatarEmoji}>{post?.avatar || "👨🏾"}</Text>
                   </View>
 
                   <View>
                     <Text style={styles.username}>
-                      {user?.username || "用户"}
+                      {post?.username || post?.userId || post?.author || "用户"}
                     </Text>
-                    <Text style={styles.timeAgo}>{post.createdAt || "刚刚"}</Text>
+                    <Text style={styles.timeAgo}>{post.timeAgo || post.createdAt || "刚刚"}</Text>
                   </View>
                 </View>
 
