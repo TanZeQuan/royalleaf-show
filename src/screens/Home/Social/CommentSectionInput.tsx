@@ -55,7 +55,7 @@ export const CommentInputSection: React.FC<CommentInputSectionProps> = ({
         content: commentText,
         user: {
           user_id: currentUser.user_id || currentUser.id || "anonymous",
-          username: currentUser.username || "匿名用户",
+          username: currentUser.user_id || currentUser.id || "匿名用户",  // ✅ 使用 userId 显示
           avatar: currentUser.image || "🧑🏻",
         },
         likes: 0,

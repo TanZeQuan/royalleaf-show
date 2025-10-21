@@ -122,19 +122,23 @@ export const getCommentsByPostId = async (
 
     // ✅ 扁平化 & 提取字段（确保 CommentItem 能正确显示）
     const formattedComments = commentsList.map((item: any) => ({
-      id: item.comment?.commentId || item.comment?.id,
-      postId: item.comment?.postId,
-      userId: item.comment?.userId || item.logs?.[0]?.userId,
+      id: item.commentId || item.comment?.commentId || item.comment?.id || item.id,
+      postId: item.postId || item.comment?.postId,
+      userId: item.userId || item.comment?.userId || item.logs?.[0]?.userId,
       username:
-        item.logs?.[0]?.userId ||
-        item.comment?.userId ||
+        item.username ||                    // ✅ 优先使用后端直接返回的 username
+        item.comment?.username ||           // ✅ 或从嵌套的 comment 对象中取
+        item.logs?.[0]?.username ||         // ✅ 或从 logs 中取 username（不是 userId）
         "匿名用户",
       content:
+        item.desc ||                        // ✅ 优先使用后端直接返回的 desc
+        item.content ||                     // ✅ 或直接返回的 content
         item.logs?.[0]?.desc ||
         item.logs?.[0]?.content ||
         item.logs?.[0]?.comment_desc ||
         "（无内容）",
       createdAt:
+        item.createdAt ||                   // ✅ 优先使用后端直接返回的 createdAt
         item.comment?.createdAt ||
         item.logs?.[0]?.createdAt ||
         new Date().toISOString(),

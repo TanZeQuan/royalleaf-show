@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -47,23 +47,6 @@ export const CommentItem: React.FC<{
     const visibleCount = visibleRepliesCount[comment?.comment?.id] || 3;
     const isReplying = activeReplyCommentId === comment?.comment?.id;
 
-    const [user, setUser] = useState<any>(null);
-
-    useEffect(() => {
-      let mounted = true;
-      (async () => {
-        try {
-          const userData = await getUserData();
-          if (mounted) setUser(userData);
-        } catch (err) {
-          console.error("Error loading user:", err);
-        }
-      })();
-      return () => {
-        mounted = false;
-      };
-    }, []);
-
     const handleSendReply = async () => {
       await onSendReply(comment?.comment?.id);
     };
@@ -74,7 +57,7 @@ export const CommentItem: React.FC<{
     };
 
     // 评论用户信息
-    const commentUser = comment?.user || comment?.comment?.userId || "匿名用户";
+    const commentUsername = comment?.username || comment?.user?.username || comment?.userId || "匿名用户";
     const commentContent =
       comment?.content ||
       comment?.logs?.[0]?.desc ||
@@ -85,9 +68,9 @@ export const CommentItem: React.FC<{
       <View style={commentModalStyles.commentItem}>
         {/* 评论头像 */}
         <View style={commentModalStyles.commentAvatar}>
-          {user?.image ? (
+          {comment?.user?.image ? (
             <Image
-              source={{ uri: user.image }}
+              source={{ uri: comment.user.image }}
               style={{ width: 40, height: 40, borderRadius: 20 }}
               onError={(e) =>
                 console.log("❌ Comment avatar image load error:", e.nativeEvent.error)
@@ -95,7 +78,7 @@ export const CommentItem: React.FC<{
             />
           ) : (
             <Text style={commentModalStyles.commentAvatarText}>
-              {user?.avatar || "👤"}
+              {comment?.avatar || "👤"}
             </Text>
           )}
         </View>
@@ -103,7 +86,7 @@ export const CommentItem: React.FC<{
         {/* 评论内容 */}
         <View style={commentModalStyles.commentContent}>
           <Text style={commentModalStyles.commentUser}>
-            {user?.username || commentUser}
+            {commentUsername}
           </Text>
 
           <Text style={commentModalStyles.commentText}>{commentContent}</Text>
@@ -131,7 +114,7 @@ export const CommentItem: React.FC<{
             <View style={commentModalStyles.replyInputContainer}>
               <TextInput
                 style={commentModalStyles.replyInput}
-                placeholder={`回复 ${user?.username || commentUser}...`}
+                placeholder={`回复 ${commentUsername}...`}
                 value={replyText}
                 onChangeText={onReplyTextChange}
                 multiline
@@ -165,9 +148,9 @@ export const CommentItem: React.FC<{
                   style={commentModalStyles.replyItem}
                 >
                   <View style={commentModalStyles.replyAvatar}>
-                    {user?.image ? (
+                    {reply?.user?.image ? (
                       <Image
-                        source={{ uri: user.image }}
+                        source={{ uri: reply.user.image }}
                         style={{ width: 30, height: 30, borderRadius: 15 }}
                         onError={(e) =>
                           console.log(
@@ -178,14 +161,14 @@ export const CommentItem: React.FC<{
                       />
                     ) : (
                       <Text style={commentModalStyles.replyAvatarText}>
-                        {user?.avatar || "👤"}
+                        {reply?.avatar || "👤"}
                       </Text>
                     )}
                   </View>
 
                   <View style={commentModalStyles.replyContent}>
                     <Text style={commentModalStyles.replyUser}>
-                      {user?.username || reply.userId || "User"}
+                      {reply.username || reply.userId || "User"}
                     </Text>
                     <Text style={commentModalStyles.replyText}>
                       {reply.desc || reply.content || "（无内容）"}

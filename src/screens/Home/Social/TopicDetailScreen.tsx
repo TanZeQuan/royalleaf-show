@@ -166,9 +166,49 @@ export default function TopicDetailScreen() {
     );
   };
 
-  const handleComment = (postId: string) => {
-    setActiveCommentPostId((prev) => (prev === postId ? null : postId));
+  const handleComment = async (postId: string) => {
+    const isOpening = activeCommentPostId !== postId;
+    setActiveCommentPostId(isOpening ? postId : null);
     setCommentText("");
+
+    if (isOpening) {
+      try {
+        setCommentsLoading(true);
+        
+        // First, get the list of comments (which are missing content)
+        const { comments: commentsWithIds } = await getCommentsByPostId(postId);
+
+        // Second, fetch the details for each comment individually
+        const commentsWithDetails = await Promise.all(
+          commentsWithIds.map(async (comment: any) => {
+            const details = await getCommentDetails(comment.id); // 'comment.id' might need to be 'comment.commentId'
+            return { ...comment, ...details }; // Merge the original data with the fetched content
+          })
+        );
+
+        // Finally, update the state with the complete comment data
+        setPosts((prev) =>
+          prev.map((p) =>
+            p.id === postId
+              ? {
+                  ...p,
+                  commentsList: commentsWithDetails.map((c: any) => ({
+                    id: c.id,
+                    user: c.username,
+                    text: c.content, // This content comes from the second API call
+                    isDesigner: false,
+                    replyTo: null,
+                  })),
+                }
+              : p
+          )
+        );
+      } catch (error) {
+        console.error("Failed to fetch comments", error);
+      } finally {
+        setCommentsLoading(false);
+      }
+    }
   };
 
   const handleAddComment = (postId: string) => {
@@ -473,7 +513,9 @@ export default function TopicDetailScreen() {
               {/* Comment Section */}
               {activeCommentPostId === post.id && (
                 <View style={topicDetailStyles.commentSection}>
-                  {post.commentsList.length > 0 ? (
+                  {commentsLoading ? (
+                    <ActivityIndicator style={{ marginVertical: 20 }} />
+                  ) : post.commentsList.length > 0 ? (
                     post.commentsList.map((comment) => (
                       <View
                         key={comment.id}

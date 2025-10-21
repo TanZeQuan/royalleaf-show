@@ -34,10 +34,17 @@ export function useCommentLogic(isMountedRef?: React.MutableRefObject<boolean>) 
       setSelectedPostForComments((prev: any) => ({
         ...prev,
         commentsList: comments.map((c: any) => ({
-          id: c.commentId,
-          user: { username: c.userId || "匿名用户" },
-          content: c.desc || c.content || "",
+          comment: {
+            id: c.id,
+            commentId: c.id,
+            userId: c.userId,
+          },
+          id: c.id,
+          userId: c.userId,
+          username: c.userId || "匿名用户",  // ✅ 使用 userId 作为显示名称
+          content: c.content || "",
           createdAt: c.createdAt,
+          logs: [{ createdAt: c.createdAt }],  // 为了兼容时间显示
         })),
       }));
     } catch (error) {
@@ -61,7 +68,7 @@ export function useCommentLogic(isMountedRef?: React.MutableRefObject<boolean>) 
 
       const postId = selectedPostForComments.id;
       const content = commentText.trim();
-      const author = user?.username || user?.user_id || "匿名用户";
+      const author = user?.user_id || user?.id || "匿名用户";  // ✅ 使用 user_id
 
       try {
         const apiResponse = await postComment(postId, content, author, null);
@@ -70,8 +77,8 @@ export function useCommentLogic(isMountedRef?: React.MutableRefObject<boolean>) 
         const newComment = {
           id: apiResponse?.commentId || Date.now().toString(),
           user: {
-            username: apiResponse?.data?.author || author || "匿名用户", // ✅ 用对象包裹
-            id: apiResponse?.data?.author || "unknown",
+            username: author,  // ✅ 使用 userId 作为显示名称
+            id: author,
           },
           content: apiResponse?.data?.content || commentText,
           createdAt: apiResponse?.data?.createdAt || new Date().toISOString(),
@@ -157,19 +164,17 @@ export function useCommentLogic(isMountedRef?: React.MutableRefObject<boolean>) 
   const handleSendReply = useCallback(
     async (commentId: string) => {
       if (!replyText.trim() || !selectedPostForComments) return;
-      const userId = "Me";
-      const username = "我";
+      const userId = "Me";  // ✅ 保持使用 userId
 
       try {
         const apiResponse = await postComment(selectedPostForComments.id, replyText.trim(), userId, commentId);
         const newReply = {
           id: apiResponse?.commentId || Date.now().toString(),
-          user: {
-            username: apiResponse?.data?.author || username || "匿名用户",
-            id: apiResponse?.data?.author || userId || "unknown",
-          },
-          content: apiResponse?.data?.content || replyText,
-          createdAt: apiResponse?.data?.createdAt || new Date().toISOString(),
+          userId: userId,  // ✅ 使用 userId
+          username: userId,  // ✅ 显示 userId
+          desc: replyText,
+          content: replyText,
+          createdAt: new Date().toISOString(),
           parentCommentId: commentId,
         };
 
