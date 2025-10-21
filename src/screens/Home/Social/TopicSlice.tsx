@@ -1,3 +1,5 @@
+import { ReactNode } from "react";
+
 // types/topic.ts
 export interface Topic {
   id: string;
@@ -27,9 +29,7 @@ export interface Post {
 export interface Comment {
   userAvatar: string;
   userImage: string | undefined;
-  userImage: any;
   username: ReactNode;
-  logs: any;
   logs: any;
   comment: any;
   message: any;

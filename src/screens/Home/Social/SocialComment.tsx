@@ -13,7 +13,6 @@ import { Comment } from "./TopicSlice";
 import { getUserData } from "utils/storage";
 
 /* ------------------------- 🔹 单条评论组件 ------------------------- */
-/* ------------------------- 🔹 单条评论组件 ------------------------- */
 export const CommentItem: React.FC<{
   comment: Comment;
   activeReplyCommentId: string | null;
@@ -57,7 +56,7 @@ export const CommentItem: React.FC<{
     };
 
     // 评论用户信息
-    const commentUsername = comment?.username || comment?.user?.username || comment?.userId || "匿名用户";
+    const commentUsername = comment?.username || comment?.user?.username || comment?.user || "匿名用户";
     const commentContent =
       comment?.content ||
       comment?.logs?.[0]?.desc ||
