@@ -9,7 +9,7 @@ import { Activity, ApiResponse, SubmissionRequest } from "../../screens/Home/Cre
 // API 配置
 // ================================
 
-const API_BASE_URL = "https://8002606ac2d3.ngrok-free.app/royal/api";
+const API_BASE_URL = "http://18.166.69.97:8080/royal/api";
 
 const API_ENDPOINTS = {
   ACTIVITIES_SUBMISSION_OPEN: "/votes/submission-open",

@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const BASE_URL = "https://8002606ac2d3.ngrok-free.app/royal";
+const BASE_URL = "http://18.166.69.97:8080/royal";
 
 // 创建 axios 实例
 const api = axios.create({

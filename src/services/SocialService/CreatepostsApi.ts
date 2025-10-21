@@ -1,5 +1,5 @@
 // services/SocialService/PostsApi.ts
-const API_BASE_URL = "https://8002606ac2d3.ngrok-free.app/royal/api";
+const API_BASE_URL = "http://18.166.69.97:8080/royal/api";
 
 /**
  * 获取所有活跃帖子
