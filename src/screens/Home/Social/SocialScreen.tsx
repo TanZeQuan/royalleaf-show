@@ -533,9 +533,10 @@ export default function SocialScreen() {
                       source={require("assets/icons/comment.png")}
                       style={styles.actionButtonIcons}
                     />
-                    <Text style={styles.actionCount}>
+                    {/* 暂时隐藏评论数量 */}
+                    {/* <Text style={styles.actionCount}>
                       {post.total || 0}
-                    </Text>
+                    </Text> */}
                   </TouchableOpacity>
 
                   <TouchableOpacity

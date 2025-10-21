@@ -196,10 +196,11 @@ const VoteImagesScreen = () => {
     return newArray;
   };
 
-  const refreshRandomOrder = () => {
-    const otherProducts = getOtherProducts();
-    setRandomProducts(shuffleArray([...otherProducts]));
-  };
+const refreshRandomOrder = () => {
+  if (!voteProducts.length) return;
+  setRandomProducts(shuffleArray([...voteProducts]));
+};
+
 
   const getProductRank = (product: VoteProduct): number => {
     const sortedByVotes = [...voteProducts].sort((a, b) => b.voted - a.voted);

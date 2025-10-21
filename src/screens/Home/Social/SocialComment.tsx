@@ -64,6 +64,18 @@ export const CommentItem: React.FC<{
       comment?.logs?.[0]?.content ||
       "（无内容）";
 
+    // 格式化时间到分钟（去掉秒数）
+    const formatTimeToMinute = (dateString: string) => {
+      if (!dateString) return "刚刚";
+      const date = new Date(dateString);
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      return `${year}-${month}-${day} ${hours}:${minutes}`;
+    };
+
     return (
       <View style={commentModalStyles.commentItem}>
         {/* 评论头像 */}
@@ -94,7 +106,9 @@ export const CommentItem: React.FC<{
           <View style={commentModalStyles.commentMeta}>
             <Text style={commentModalStyles.commentTime}>
               {comment?.logs?.[0]?.createdAt
-                ? new Date(comment.logs[0].createdAt).toLocaleString()
+                ? formatTimeToMinute(comment.logs[0].createdAt)
+                : comment?.createdAt
+                ? formatTimeToMinute(comment.createdAt)
                 : "刚刚"}
             </Text>
             <TouchableOpacity onPress={() => onReply(comment.comment?.id)}>
