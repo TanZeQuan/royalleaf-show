@@ -27,12 +27,6 @@
         }
       ],
       [
-        "expo-barcode-scanner",
-        {
-          "cameraPermission": "需要使用您的相机来扫描二维码"
-        }
-      ],
-      [
         "expo-media-library",
         {
           "photosPermission": "需要访问您的相册以保存二维码图片",
